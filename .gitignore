@@ -1,0 +1,6 @@
+.clj-kondo/
+.env
+.env.local
+.calva/
+.lsp/
+source-users
