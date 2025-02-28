@@ -27,7 +27,6 @@
 (defn wrap-json [handler]
   (fn [request]
   (let [body (slurp (:body request))]
-  (println "in wrap-json")
     (println (json/read-value body json/keyword-keys-object-mapper))
     (encode-body-json
      (handler (decode-body-json
@@ -43,6 +42,7 @@
        (.getBytes encoding)
        (java.io.ByteArrayInputStream.))))
 
-((wrap-json (fn [request] request)) {:headers {"Content-Type" "application/json"}
-                                     :body (string->stream "{\"username\": \"merve\"}" )})
+(comment
+  ((wrap-json (fn [request] request)) {:headers {"Content-Type" "application/json"}
+                                       :body (string->stream "{\"username\": \"merve\"}")}))
 

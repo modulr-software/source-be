@@ -19,6 +19,7 @@
                     ) {:port 3000})))
 
 (defn stop-server []
+  (println "Stopping server...")
   (when (some? @*server)
     (@*server))
   (reset! *server nil))
