@@ -1,5 +1,4 @@
-(ns dev
-  (:require [modulr.server :as server]))
+(ns dev)
 
 (defn after-ns-reload []
   (server/restart-server))
@@ -8,6 +7,4 @@
   (server/start-server)
   (server/stop-server)
   (server/running?)
-  (server/restart-server)
-  )
-            
+  (server/restart-server))
