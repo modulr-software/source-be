@@ -4,25 +4,33 @@
             [ring.middleware.cookies :as cookies]
             [modulr.routes :as routes]))
 
-(def ^:private *server (atom nil))
+(defonce ^:private *server (atom nil))
 
 (defn running? []
   (some? @*server))
 
 (defn start-server []
-  (println "Starting server on port 3000")
-  (reset! *server (http/run-server
-                   (->
-                    routes/app
-                    (util/wrap-json)
-                    (cookies/wrap-cookies)
-                    ) {:port 3000})))
+  (cond (not (some? @*server))
+        (do
+          (println "Starting server on port 3000")
+          (reset! *server (http/run-server
+                           (->
+                            routes/app
+                            (util/wrap-json)
+                            (cookies/wrap-cookies)) {:port 3000})))
+        :else
+        (println "Server already running"))
+  )
 
 (defn stop-server []
   (println "Stopping server...")
   (when (some? @*server)
     (@*server))
   (reset! *server nil))
+
+(defn restart-server []
+  (stop-server)
+  (start-server))
 
 (comment
   (def test-wrapper

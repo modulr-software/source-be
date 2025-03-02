@@ -26,7 +26,7 @@
 
 (defn wrap-json [handler]
   (fn [request]
-  (let [body (slurp (:body request))]
+  (let [body (when (some? (:body request)) (slurp (:body request)))]
     (println (json/read-value body json/keyword-keys-object-mapper))
     (encode-body-json
      (handler (decode-body-json
