@@ -1,6 +1,0 @@
--Djdk.attach.allowAttachSelf
--XX:+UseG1GC
--XX:-OmitStackTraceInFastThrow
--Djdk.attach.allowAttachSelf
--XX:+UnlockDiagnosticVMOptions
--XX:+DebugNonSafepoints

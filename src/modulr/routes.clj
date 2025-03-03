@@ -5,7 +5,7 @@
 
 (def home (GET "/" []
             {:status 200
-                       :body {:value "Henlo there"}
+                       :body {:value "bye"}
                        :headers {"Content-Type" "application/json"}
                        :cookies {"test-session" {:value "test"}}}
             ))
