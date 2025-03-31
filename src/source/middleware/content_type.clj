@@ -1,0 +1,14 @@
+(ns source.middleware.content-type
+  (:require [source.util :as util]))
+
+
+(defn wrap-content-type [handler]
+  (fn [request]
+    (let [response (handler request)
+          content-type (util/request->content-type response)]
+       (assoc
+        response
+        :headers
+        (->
+         (assoc (:headers response) "Content-Type" (or content-type "application/json"))
+         (dissoc (:headers response) :content-type :Content-Type "content-type"))))))
