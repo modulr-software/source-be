@@ -77,9 +77,7 @@
                     :cols ["name"]
                     :vals [["renewable energy"]
                            ["conservation ecology"]
-                           ["recycling"]]})
-    )
-  )
+                           ["recycling"]]})))
 
 
 (defn drop-tables [ds]
@@ -111,5 +109,6 @@
   (cadences/cadences ds)
   (baselines/baselines ds)
   (sectors/sectors ds)
+  (users/users ds)
   )
 
