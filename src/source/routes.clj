@@ -1,8 +1,9 @@
 (ns source.routes
   (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [source.users :as users]
             [source.auth :as auth]
+            [source.db.master.users :as users]
+            [source.db.master.connection :as con]
             [source.password :as pw]))
 
 (def home (GET "/" []
@@ -12,19 +13,16 @@
 
 (def login
   (POST "/login" request
-    (clojure.pprint/pprint request)
-    (let [body (:body request)
-          user (users/get-user-by-username (:username :body))
-          hashed-password (get-in user [:password])
-          password (get-in body [:password])]
-      
-      (clojure.pprint/pprint user)
-
+    (let [user (users/user-by
+                con/ds
+                {:col "email"
+                 :val (get-in request [:body :email])})
+          password (get-in request [:body :password])]
     (cond
       (not (some? user))
       {:status 401 :body {:message "Invalid username or password!"}}
 
-      (not (pw/verify-password password hashed-password))
+      (not (pw/verify-password password (:password user)))
       {:status 401
        :body {:message "Invalid username or password!"}}
 
@@ -34,20 +32,39 @@
          :body (merge
                 {:user payload}
                 (auth/create-session payload))}))
-
       )))
-
-(login [{:username "test" :password "test"}])
 
 (def register
   (POST "/register" request
     (println "in register")
-    (users/create-user (:body request))))
+    (let [user (users/user-by
+                con/ds
+                {:col "email"
+                 :val (get-in request [:body :email])})
+          {:keys [password confirm-password]} (:body request)]
+      (cond
+        (not (= password confirm-password))
+        {:status 400 :body {:message "passwords do not match!"}}
+
+        (some? user)
+        {:status 400 :body {:message "an account for this email already exists!"}}
+
+        :else
+        (let [new-user (get-in request [:body])]
+            (users/insert-user con/ds {:email (:email new-user)
+                                       :password (pw/hash-password password)
+                                       :sector-id 1
+                                       :firstname (:firstname new-user)
+                                       :lastname (:lastname new-user)
+                                       :business-name nil
+                                       :type (:type new-user)})
+            {:status 200 :body {:message "successfully created user"}})))))
 
 (def users
   (GET "/users" []
     {:status 200
-     :body {:users (users/get-users)}}))
+     :body {:users (users/users con/ds)}
+     }))
 
 
 (defroutes app

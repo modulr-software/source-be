@@ -1,6 +1,5 @@
 (ns source.auth
   (:require [source.password :as pw]
-            [source.users :as users]
             [buddy.sign.jwt :as jwt]
             [source.config :as conf]))
 

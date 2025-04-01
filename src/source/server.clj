@@ -4,7 +4,9 @@
    [ring.middleware.cookies :as cookies]
    [source.routes :as routes]
    [source.util :as util]
-   [source.middleware.core :as middle]))
+   [source.middleware.core :as middle]
+   [source.db.master.core :as db]
+   [source.db.master.connection :as ds]))
 
 (defonce ^:private *server (atom nil))
 
@@ -20,7 +22,8 @@
                             routes/app
                             (middle/wrap-middleware)
                             )
-                           {:port 3000})))
+                           {:port 3000}))
+          (db/setup-db ds/ds))
         :else
         (println "Server already running"))
   )

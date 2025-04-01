@@ -31,9 +31,17 @@ drop table if exists users;
 -- :doc Insert a single character
 insert into users (email, password, firstname, lastname, business_name, type) values (:email, :password, :firstname, :lastname, :business-name, :type)
 
+-- :name insert-into-users :! :n
+-- :doc Insert a given set of values into given columns
+insert into users (:i*:cols) values (:v*:vals)
+
 -- :name user :? :1
 -- :doc query for a single user by id
 select * from users where id = :id
+
+-- :name user-by :? :1
+-- :doc get a user by a given column with given value
+select * from users where :i:col = :val
 
 -- :name users :? :*
 -- :doc get all users

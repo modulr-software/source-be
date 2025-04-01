@@ -19,3 +19,18 @@ select count(*) as count from :i:table
 -- :name seed-table :! :n
 -- :doc seeds initial table data
 insert into :i:table (:i*:cols) values :t*:vals
+
+
+-- :name create-user-post-table :! :n
+-- :doc create a table with a unique name that matches the user schema
+create table if not exists :i:table (
+    id integer primary key autoincrement,
+    title text,
+    description text,
+    stream_url text,
+    views text
+)
+
+-- :name select-user-posts :? :*
+-- :doc returns all posts for a given user
+select * from :i:table

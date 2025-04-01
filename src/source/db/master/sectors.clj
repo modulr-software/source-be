@@ -18,7 +18,7 @@
   (drop-sectors-table ds)
 
   (insert-sector ds {:name "something"})
-  (select-all-sectors ds)
+  (sectors ds)
 
   (sector ds {:id 1})
   )
