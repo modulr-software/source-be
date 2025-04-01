@@ -13,20 +13,6 @@
 
 (defn conn [dbname]
   (-> sqlite-config
-      (merge {:dbname dbname})
+      (merge {:dbname (db-path dbname)})
       (jdbc/get-connection)
       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
-
-(defn x
-  ([q]
-   (let [conn (conn "master")]
-     (x conn q)))
-  ([ds q]
-   (jdbc/execute! ds q)))
-
-(defn x-one
-  ([q]
-   (let [conn (conn "master")]
-     (x-one conn q)))
-  ([ds q]
-   (jdbc/execute-one! ds q)))
