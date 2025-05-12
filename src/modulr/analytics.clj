@@ -1,125 +1,11 @@
 (ns modulr.analytics
-  (:require [clojure.java.jdbc :as jdbc]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clojure.pprint :refer [pprint]]))
+  (:require [next.jdbc :as jdbc]
+            [modulr.db :as db]
+            [clojure.set :as set]))(def db-spec {:classname   "org.sqlite.JDBC"
+                                                 :subprotocol "sqlite"
+                                                 :subname     "analytics-test.db"})
 
 
-(def db-spec {:classname   "org.sqlite.JDBC"
-              :subprotocol "sqlite"
-              :subname     "analytics-test.db"})
-
-;; TABLE CREATION
-(defn create-bundle_post_analytics-table []
-  (jdbc/execute! db-spec
-                 ["CREATE TABLE IF NOT EXISTS bundle_post_analytics (
-        id INTEGER PRIMARY KEY,
-        bundle_id TEXT,
-        clicks INTEGER,
-        post_id TEXT,
-        date DATE,
-        trend INTEGER,
-        category TEXT,
-        completion_percentage REAL,
-        completions INTEGER,
-        likes INTEGER,
-        shared INTEGER,
-        comments INTEGER,
-        saves INTEGER
-    )"]))
-
-(defn create-bundle-aggregate-table []
-  (jdbc/execute! db-spec
-                 ["CREATE TABLE IF NOT EXISTS bundle_analytics (
-        id INTEGER PRIMARY KEY,
-        bundle_id TEXT,
-        date DATE,
-        clicks INTEGER,
-        impressions INTEGER,
-        views INTEGER,
-        influencer1 TEXT,
-        influencer2 TEXT,
-        influencer3 TEXT
-    )"]))
-
-;; HELPERS
-(defn today []
-  (str (java.time.LocalDate/now)))
-
-;; INSERTION FUNCTIONS
-(defn insert-bundle-post-analytics [record]
-  (jdbc/insert! db-spec :bundle_post_analytics record))
-
-(defn insert-bundle-aggrigate [record]
-  (jdbc/insert! db-spec :bundle_analytics record))
-
-;; UPDATE FUNCTIONS
-(defn update-bundle-post-analytics [id record]
-  (jdbc/update! db-spec :bundle_post_analytics record ["id = ?" id]))
-
-(defn update-bundle-aggregate [id record]
-  (jdbc/update! db-spec :bundle_analytics record ["id = ?" id]))
-
-;; DELETE FUNCTIONS
-(defn delete-bundle-post-analytics [id]
-  (jdbc/delete! db-spec :bundle_post_analytics ["id = ?" id]))
-
-(defn delete-bundle-aggregate [id]
-  (jdbc/delete! db-spec :bundle_analytics ["id = ?" id]))
-
-;; AGGREGATION AND UPDATE FUNCTION
-(defn update-aggregate-from-posts [bundle-id date]
-  (let [{:keys [clicks completions]} (first (jdbc/query db-spec
-                                                        ["SELECT SUM(clicks) AS clicks, SUM(completions) AS completions 
-                             FROM bundle_post_analytics 
-                             WHERE bundle_id = ? AND date = ?"
-                                                         bundle-id date]))
-        impressions (+ (* 2 completions) clicks)]
-    (jdbc/execute! db-spec
-                   ["UPDATE bundle_analytics 
-                     SET clicks = ?, views = ?, impressions = ? 
-                     WHERE bundle_id = ? AND date = ?"
-                    clicks completions impressions bundle-id date])))
-
-;; DATA GENERATORS
-(defn rand-post-analytics []
-  (let [clicks (+ 50 (rand-int 200))
-        completions (+ 10 (rand-int 100))
-        impressions (+ (* 2 completions) clicks)]
-    {:bundle_id (str "bundle-" (rand-int 5))
-     :clicks clicks
-     :post_id (str (java.util.UUID/randomUUID))
-     :date (today)
-     :trend (int (* 100 (/ clicks (max 1 impressions))))
-     :category (rand-nth ["news" "sports" "entertainment" "tech" "lifestyle"])
-     :completion_percentage (* 100 (rand))
-     :completions completions
-     :likes (rand-int 100)
-     :shared (rand-int 50)
-     :comments (rand-int 30)
-     :saves (rand-int 20)}))
-
-(defn rand-aggrigate []
-  {:bundle_id (str "bundle-" (rand-int 5))
-   :date (today)
-   :clicks 0
-   :impressions 0
-   :views 0
-   :influencer1 nil
-   :influencer2 nil
-   :influencer3 nil})
-
-;; POPULATE FUNCTIONS
-(defn populate-bundle-post-analytics [n]
-  (jdbc/with-db-transaction [t-con db-spec]
-    (run! #(jdbc/insert! t-con :bundle_post_analytics %)
-          (repeatedly n rand-post-analytics))))
-
-(defn populate-bundle-aggrigate [n]
-  (jdbc/with-db-transaction [t-con db-spec]
-    (run! #(jdbc/insert! t-con :bundle_analytics %)
-          (repeatedly n rand-aggrigate))))
 
 ;; SHORT HEURISTIC
 (defn short-heuristic [bundle-id]
@@ -137,46 +23,67 @@
                    (comp str :date))
              posts)))
 
-;; USAGE EXAMPLES
+(defn create-bundle-post-analytics-table []
+  (jdbc/execute! db/*ds* ["
+    CREATE TABLE IF NOT EXISTS bundle_post_analytics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bundle_id TEXT,
+      post_id TEXT,
+      likes INTEGER,
+      comments INTEGER,
+      clicks INTEGER
+    );"]))
+
+(defn create-bundle-aggregate-table []
+  (jdbc/execute! db/*ds* ["
+    CREATE TABLE IF NOT EXISTS bundle_aggregate (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bundle_id TEXT,
+      avg_clicks REAL,
+      avg_likes REAL,
+      avg_comments REAL
+    );"]))
+
+(defn insert-bundle-post-analytics [data]
+  (jdbc/execute! db/*ds*
+                 ["INSERT INTO bundle_post_analytics (bundle_id, post_id, likes, comments, clicks)
+      VALUES (?, ?, ?, ?, ?)"
+                  (:bundle_id data) (:post_id data) (:likes data) (:comments data) (:clicks data)]))
+
+(defn insert-bundle-aggregate [data]
+  (jdbc/execute! db/*ds*
+                 ["INSERT INTO bundle_aggregate (bundle_id, avg_clicks, avg_likes, avg_comments)
+      VALUES (?, ?, ?, ?)"
+                  (:bundle_id data) (:avg_clicks data) (:avg_likes data) (:avg_comments data)]))
+
+(defn update-bundle-post-analytics [id updates]
+  (jdbc/execute! db/*ds*
+                 ["UPDATE bundle_post_analytics SET clicks = ? WHERE id = ?"
+                  (:clicks updates) id]))
+
 (comment
-  ;; Create tables
-  (create-bundle_post_analytics-table)
+
+  ;; Create necessary tables
+  (create-bundle-post-analytics-table)
   (create-bundle-aggregate-table)
 
-  ;; Populate with dummy data
-  (populate-bundle-post-analytics 100)
-  (populate-bundle-aggrigate 10)
+  ;; Insert mock data
+  (insert-bundle-post-analytics {:bundle_id "test-1"
+                                 :post_id "p1"
+                                 :likes 10
+                                 :comments 5
+                                 :clicks 100})
 
-  ;; Insert example
-  (insert-bundle-post-analytics {:bundle_id "bundle-1"
-                                 :clicks 100
-                                 :post_id "post-abc"
-                                 :date (today)
-                                 :trend 3
-                                 :category "news"
-                                 :completion_percentage 75.5
-                                 :completions 80
-                                 :likes 45
-                                 :shared 20
-                                 :comments 15
-                                 :saves 10})
+  (insert-bundle-aggregate {:bundle_id "test-1"
+                            :avg_clicks 50
+                            :avg_likes 12
+                            :avg_comments 3})
 
-  (insert-bundle-aggrigate {:bundle_id "bundle-1"
-                            :date (today)
-                            :clicks 0
-                            :impressions 0
-                            :views 0
-                            :influencer1 nil
-                            :influencer2 nil
-                            :influencer3 nil})
+  ;; Update a row
+  (update-bundle-post-analytics 1 {:clicks 999})
 
-  ;; Update example
-  (update-bundle-post-analytics 1 {:likes 60})
-  (update-bundle-aggregate 1 {:clicks 200 :impressions 500})
+  ;; Fetch to see if update worked (just use your own query fn if available)
+  (jdbc/execute! db/*ds* ["SELECT * FROM bundle_post_analytics WHERE id = ?" 1])
 
-  ;; Delete example
-  (delete-bundle-post-analytics 1)
-  (delete-bundle-aggregate 1)
-
-  ;; Aggregate update
-  (update-aggregate-from-posts "bundle-1" (today)))
+  ;; Test short-heuristic with fake ID (shouldn't throw)
+  (short-heuristic "non-existent-bundle"))
