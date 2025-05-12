@@ -6,6 +6,13 @@
 
 (defonce ^:private *server (atom nil))
 
+
+
+
+
+
+
+
 (defn running? []
   (some? @*server))
 
