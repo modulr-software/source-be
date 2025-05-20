@@ -20,13 +20,11 @@
           (reset! *server (http/run-server
                            (->
                             routes/app
-                            (middle/wrap-middleware)
-                            )
+                            (middle/apply-generic))
                            {:port 3000}))
           (db/setup-db ds/ds))
         :else
-        (println "Server already running"))
-  )
+        (println "Server already running")))
 
 (defn stop-server []
   (println "Stopping server...")

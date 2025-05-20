@@ -1,16 +1,19 @@
 (ns source.middleware.core
-  (:require [source.middleware.auth :as auth]
+  (:require [source.middleware.auth.core :as auth]
             [source.middleware.content-type :as content-type]
             [source.middleware.json :as json]
             [ring.middleware.cookies :as cookies]))
 
-(defn wrap-middleware [app]
+(defn apply-generic [app]
   (-> app
       (content-type/wrap-content-type)
       (json/wrap-json)
       (cookies/wrap-cookies)))
 
-
-(defn wrap-auth-middlware [app]
+(defn apply-auth [app]
   (-> app
       (auth/wrap-auth)))
+
+(comment
+  (def app (apply-auth (fn [request] (println (:hello (:body request))))))
+  (app {:body {:hello "hello"} :authorization "sadfsdf"}))
