@@ -1,0 +1,4 @@
+SUPER_SECRET_KEY=;
+DATABASE_DIR=;
+clojure -M:nrepl;
+
