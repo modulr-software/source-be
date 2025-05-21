@@ -8,8 +8,8 @@
 
 (def home (GET "/" []
             {:status 200
-                       :body {:value "bye bitch"}
-                       :cookies {"test-session" {:value "test"}}}))
+             :body {:value "bye bitch"}
+             :cookies {"test-session" {:value "test"}}}))
 
 (def login
   (POST "/login" request
@@ -18,25 +18,23 @@
                 {:col "email"
                  :val (get-in request [:body :email])})
           password (get-in request [:body :password])]
-    (cond
-      (not (some? user))
-      {:status 401 :body {:message "Invalid username or password!"}}
+      (cond
+        (not (some? user))
+        {:status 401 :body {:message "Invalid username or password!"}}
 
-      (not (pw/verify-password password (:password user)))
-      {:status 401
-       :body {:message "Invalid username or password!"}}
+        (not (pw/verify-password password (:password user)))
+        {:status 401
+         :body {:message "Invalid username or password!"}}
 
-      :else
-      (let [payload (dissoc user :password)]
-        {:status 200
-         :body (merge
-                {:user payload}
-                (auth/create-session payload))}))
-      )))
+        :else
+        (let [payload (dissoc user :password)]
+          {:status 200
+           :body (merge
+                  {:user payload}
+                  (auth/create-session payload))})))))
 
 (def register
   (POST "/register" request
-    (println "in register")
     (let [user (users/user-by
                 con/ds
                 {:col "email"
@@ -51,21 +49,19 @@
 
         :else
         (let [new-user (get-in request [:body])]
-            (users/insert-user con/ds {:email (:email new-user)
-                                       :password (pw/hash-password password)
-                                       :sector-id 1
-                                       :firstname (:firstname new-user)
-                                       :lastname (:lastname new-user)
-                                       :business-name nil
-                                       :type (:type new-user)})
-            {:status 200 :body {:message "successfully created user"}})))))
+          (users/insert-user con/ds {:email (:email new-user)
+                                     :password (pw/hash-password password)
+                                     :sector-id 1
+                                     :firstname (:firstname new-user)
+                                     :lastname (:lastname new-user)
+                                     :business-name nil
+                                     :type (:type new-user)})
+          {:status 200 :body {:message "successfully created user"}})))))
 
 (def users
   (GET "/users" []
     {:status 200
-     :body {:users (users/users con/ds)}
-     }))
-
+     :body {:users (users/users con/ds)}}))
 
 (defroutes app
   home
