@@ -19,8 +19,7 @@
            (vector? val)) (assoc a k (vec (concat existing val)))
       (vector? existing) (assoc a k (vec (concat existing [val])))
       (vector? val) (assoc a k (vec (concat [existing] val)))
-      :else (assoc a k (vec (concat [existing] [val])))
-      )))
+      :else (assoc a k (vec (concat [existing] [val]))))))
 
 (comment
   (stack-item :tag nil nil)
@@ -33,12 +32,12 @@
   (stack-item :tag {:tag ["a"]} {:tag "b"})
   (stack-item :tag {:tag ["a"]} {:tag ["b"]})
   (stack-item :tag {:tag "a"} {:tag ["b"]})
-  (stack-item :tag {:tag "a"} {:tag "b"})
-  )
+  (stack-item :tag {:tag "a"} {:tag "b"}))
 
-(defn stack [a b]
+(defn stack
   "Stacks all keys on objects a and b, vectorizing any common key values
    in the process."
+  [a b]
   (cond
     (and (nil? a) (nil? b)) nil
     (nil? a) b
@@ -57,5 +56,4 @@
   (stack {:some ["a"]} {:some nil})
   (stack {:some nil} {:some ["b"]})
   (stack {:some ["a"]} {:some ["b"]})
-  (stack {:some ["a"]} {:some "b"})
-  )
+  (stack {:some ["a"]} {:some "b"}))
