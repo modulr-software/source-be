@@ -4,8 +4,12 @@
             [clojure.data.json :as json]
             [source.rss.util :as util]))
 
-
-(defn find-channel-id [url]
+(defn find-channel-id
+  "a rudimentary first implementation, we should probably consider using
+  clj-commons/etaoin for web scraping instead. pretty powerful way
+  to query html returns. This function basically just does a quick
+  regex find for the channel id."
+  [url]
   (let [page (slurp url)]
     (->
      (re-find #"\"externalId\":\"(UC[-_A-Za-z0-9]{22})\"" page)
@@ -17,6 +21,9 @@
   (find-channel-id "https://www.youtube.com/@CodingWithLewis"))
 
 (defn squash
+  "Needs a lot more support for different kinds of edge cases.
+  Preferrably i would want this to be updated to use something
+  like clojure walk. @kaidanTheron to investigate."
   ([item] (squash {} item))
   ([acc {:keys [content tag attrs] :as item}]
    (cond
@@ -34,15 +41,13 @@
                  new-acc (if (string? parsed-content)
                            (util/stack acc {tag parsed-content})
                            (util/stack acc {tag (merge new-item
-                                                  (dissoc parsed-content :tag :attrs :content)
-                                                  attrs)}))]
+                                                       (dissoc parsed-content :tag :attrs :content)
+                                                       attrs)}))]
              (dissoc (into {} new-acc) :tag :content :attrs)))))
 
 (comment
   (squash {:tag :link :attrs {:href "http://www.youtube.com"} :content nil})
-  (squash {:tag :title :attrs nil :content ["something"]})
-  )
-
+  (squash {:tag :title :attrs nil :content ["something"]}))
 
 (defn scrape-yt-channel [url]
   (->>
@@ -50,7 +55,6 @@
    (str "https://www.youtube.com/feeds/videos.xml?channel_id=")
    (xml/parse)
    (squash)))
-
 
 (comment
 
@@ -60,8 +64,7 @@
    (:rss)
    (:channel)
    (:item)
-   (first)
-   )
+   (first))
 
   (->
    (slurp "https://en.search.wordpress.com/?f=feed&q=Dallas%20Mavericks")
@@ -78,5 +81,4 @@
    (xml/parse "https://en.search.wordpress.com/?f=feed&q=Dallas%20Mavericks"))
   (xml/parse "https://archive.org/services/collection-rss.php?query=description:Dallas%20Mavericks")
   (->
-   (xml/parse "https://archive.org/services/collection-rss.php?query=description:Dallas%20Mavericks"))
-  )
+   (xml/parse "https://archive.org/services/collection-rss.php?query=description:Dallas%20Mavericks")))
