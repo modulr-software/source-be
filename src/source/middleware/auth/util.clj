@@ -2,7 +2,7 @@
   (:require [buddy.sign.jwt :as jwt]
             [source.config :as conf]))
 
-(def secret (:supersecretkey conf/config))
+(def secret (conf/read-value [:supersecretkey]))
 secret
 (defn sign-jwt [payload]
   (jwt/encrypt payload secret))

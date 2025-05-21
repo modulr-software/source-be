@@ -4,12 +4,10 @@
             [next.jdbc.result-set :as rs]))
 
 (def ^:private sqlite-config
-  {
-   :dbtype "sqlite"
-   })
+  {:dbtype "sqlite"})
 
 (defn db-path [dbname]
-  (str (:database-dir conf/config) "/" dbname))
+  (str (conf/read-value [:database-dir]) "/" dbname))
 
 (defn conn [dbname]
   (-> sqlite-config
