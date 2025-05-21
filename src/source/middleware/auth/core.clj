@@ -10,27 +10,29 @@
      :refresh-token (auth-util/sign-jwt payload)}))
 
 (defn validate-request [request]
-  (let [token (util/request->auth-token request)
-        decoded (auth-util/verify-jwt token)]
-    (some? decoded)))
+  (-> request
+      (util/request->auth-token)
+      (auth-util/verify-jwt)))
 
 (def unauthorized-response {:status 403
                             :body {:message "Unathorized"}})
 
 (defn wrap-auth [handler]
   (fn [request]
-    (if
+    (if-let [user (validate-request request)]
+      (-> request
+          (assoc :identity user)
+          (handler))
 
-     (validate-request request)
-      (handler request)
-
-      unauthorized-response)))
+      (handler request))))
 
 (comment
+  (validate-request {:headers {"Authorization" (str "Bearer " (auth-util/sign-jwt {:user "someone"}))}})
   (def test-request {:headers {"Content-Type" "application/json"
                                "Authorization" (str "Bearer " (auth-util/sign-jwt {:user "someone"}))}
                      :body {:data  "some super secret message"}})
   (defn test-handler [request]
+    (println "User: " (:identity request))
     {:status 200 :body {:message "this is a massage "}})
 
   (let [wrapped-handler (wrap-auth test-handler)]

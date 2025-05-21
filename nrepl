@@ -1,3 +1,0 @@
-SUPER_SECRET_KEY=supersecretkeeyysupersecretieeyy;
-DATABASE_DIR=.db;
-clojure -M:nrepl;
