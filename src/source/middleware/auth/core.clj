@@ -24,7 +24,7 @@
           (assoc :user user)
           (handler))
 
-      (handler request))))
+      unauthorized-response)))
 
 (comment
   (validate-request {:headers {"Authorization" (str "Bearer " (auth-util/sign-jwt {:user "someone"}))}})
