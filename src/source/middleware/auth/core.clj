@@ -21,7 +21,7 @@
   (fn [request]
     (if-let [user (validate-request request)]
       (-> request
-          (assoc :identity user)
+          (assoc :user user)
           (handler))
 
       (handler request))))
@@ -32,7 +32,7 @@
                                "Authorization" (str "Bearer " (auth-util/sign-jwt {:user "someone"}))}
                      :body {:data  "some super secret message"}})
   (defn test-handler [request]
-    (println "User: " (:identity request))
+    (println "User: " (:user request))
     {:status 200 :body {:message "this is a massage "}})
 
   (let [wrapped-handler (wrap-auth test-handler)]
