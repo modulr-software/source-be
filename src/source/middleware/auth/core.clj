@@ -27,13 +27,28 @@
       unauthorized-response)))
 
 (comment
-  (validate-request {:headers {"Authorization" (str "Bearer " (auth-util/sign-jwt {:user "someone"}))}})
-  (def test-request {:headers {"Content-Type" "application/json"
-                               "Authorization" (str "Bearer " (auth-util/sign-jwt {:user "someone"}))}
-                     :body {:data  "some super secret message"}})
-  (defn test-handler [request]
-    (println "User: " (:user request))
-    {:status 200 :body {:message "this is a massage "}})
-
-  (let [wrapped-handler (wrap-auth test-handler)]
-    (wrapped-handler test-request)))
+  (let [authed-request {:headers {"Authorization"
+                                  (str
+                                   "Bearer "
+                                   (auth-util/sign-jwt {:id 1 :role "admin"}))}}
+        unauthed-request {:headers {"Authorization"
+                                    (str
+                                     "Bearer "
+                                     "nonsense-token")}}
+        test-handler (-> (fn [request]
+                           request)
+                         (wrap-auth))]
+    (println
+     "Is unauthed request rejected"
+     (=
+      403
+      (-> unauthed-request
+          (test-handler)
+          (:status))))
+    (println
+     "Is user added to context of authed request"
+     (=
+      {:id 1 :role "admin"}
+      (-> authed-request
+          (test-handler)
+          (:user))))))
