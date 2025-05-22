@@ -24,6 +24,3 @@
   [ks]
   (-> (load-config)
       (get-in ks)))
-
-(comment
-  (load-config))
