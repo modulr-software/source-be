@@ -9,14 +9,16 @@
    [:supersecretkey [:string {:min 32}]]
    [:database-dir :string]])
 
+(aero/read-config "config.edn")
+
 (defn- load-config []
   (let [config (aero/read-config "config.edn")
         decoded (m/decode schema config mt/string-transformer)]
     (when-not (m/validate schema decoded)
-      (throw (ex-info "invalid config"
-                      (->> decoded
-                           (m/explain schema)
-                           (me/humanize)))))
+      (println (->> decoded
+                    (m/explain schema)
+                    (me/humanize)))
+      (throw (Exception. "Invalid Config")))
     decoded))
 
 (defn read-value
@@ -24,3 +26,5 @@
   [ks]
   (-> (load-config)
       (get-in ks)))
+
+(load-config)
