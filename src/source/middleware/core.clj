@@ -13,7 +13,3 @@
 (defn apply-auth [app]
   (-> app
       (auth/wrap-auth)))
-
-(comment
-  (def app (apply-auth (fn [request] (println (:hello (:body request))))))
-  (app {:body {:hello "hello"} :authorization "sadfsdf"}))
