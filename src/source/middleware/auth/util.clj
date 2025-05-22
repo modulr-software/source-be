@@ -11,5 +11,5 @@
   (try
     (jwt/decrypt token secret)
     (catch Exception e
-      (println e)
+      (println (.getMessage e))
       false)))
