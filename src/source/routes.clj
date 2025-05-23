@@ -13,8 +13,9 @@
 
 (def login
   (POST "/login" request
-    (let [user (users/user-by
-                con/ds
+    (let [ds (con/get-ds)
+          user (users/user-by
+                ds
                 {:col "email"
                  :val (get-in request [:body :email])})
           password (get-in request [:body :password])]
@@ -35,8 +36,9 @@
 
 (def register
   (POST "/register" request
-    (let [user (users/user-by
-                con/ds
+    (let [ds (con/get-ds)
+          user (users/user-by
+                ds
                 {:col "email"
                  :val (get-in request [:body :email])})
           {:keys [password confirm-password]} (:body request)]
@@ -49,19 +51,20 @@
 
         :else
         (let [new-user (get-in request [:body])]
-          (users/insert-user con/ds {:email (:email new-user)
-                                     :password (pw/hash-password password)
-                                     :sector-id 1
-                                     :firstname (:firstname new-user)
-                                     :lastname (:lastname new-user)
-                                     :business-name nil
-                                     :type (:type new-user)})
+          (users/insert-user ds {:email (:email new-user)
+                                 :password (pw/hash-password password)
+                                 :sector-id 1
+                                 :firstname (:firstname new-user)
+                                 :lastname (:lastname new-user)
+                                 :business-name nil
+                                 :type (:type new-user)})
           {:status 200 :body {:message "successfully created user"}})))))
 
 (def users
   (GET "/users" []
-    {:status 200
-     :body {:users (users/users con/ds)}}))
+    (let [ds (con/get-ds)]
+      {:status 200
+       :body {:users (users/users ds)}})))
 
 (defroutes app
   home
