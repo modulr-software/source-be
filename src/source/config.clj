@@ -9,8 +9,6 @@
    [:supersecretkey [:string {:min 32}]]
    [:database-dir :string]])
 
-(aero/read-config "config.edn")
-
 (defn- load-config []
   (let [config (aero/read-config "config.edn")
         decoded (m/decode schema config mt/string-transformer)]
@@ -26,5 +24,3 @@
   [ks]
   (-> (load-config)
       (get-in ks)))
-
-(load-config)

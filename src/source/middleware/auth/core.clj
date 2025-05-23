@@ -1,18 +1,17 @@
 (ns source.middleware.auth.core
   (:require
-   [source.util :as util]
-   [source.middleware.auth.util :as auth-util]))
+   [source.middleware.auth.util :as util]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
                  :role (:role user)}]
-    {:access-token (auth-util/sign-jwt payload)
-     :refresh-token (auth-util/sign-jwt payload)}))
+    {:access-token (util/sign-jwt payload)
+     :refresh-token (util/sign-jwt payload)}))
 
 (defn validate-request [request]
   (-> request
-      (util/request->auth-token)
-      (auth-util/verify-jwt)))
+      (util/auth-token)
+      (util/verify-jwt)))
 
 (def unauthorized-response {:status 403
                             :body {:message "Unathorized"}})
@@ -30,7 +29,7 @@
   (let [authed-request {:headers {"Authorization"
                                   (str
                                    "Bearer "
-                                   (auth-util/sign-jwt {:id 1 :role "admin"}))}}
+                                   (util/sign-jwt {:id 1 :role "admin"}))}}
         unauthed-request {:headers {"Authorization"
                                     (str
                                      "Bearer "
@@ -38,17 +37,18 @@
         test-handler (-> (fn [request]
                            request)
                          (wrap-auth))]
+    (println "Is unauthed request rejected")
+    (assert (=
+             403
+             (-> unauthed-request
+                 (test-handler)
+                 (:status))))
+    (println "Tests passed")
     (println
-     "Is unauthed request rejected"
-     (=
-      403
-      (-> unauthed-request
-          (test-handler)
-          (:status))))
-    (println
-     "Is user added to context of authed request"
-     (=
-      {:id 1 :role "admin"}
-      (-> authed-request
-          (test-handler)
-          (:user))))))
+     "Is user added to context of authed request")
+    (assert (=
+             {:id 1 :role "admin"}
+             (-> authed-request
+                 (test-handler)
+                 (:user))))
+    (println "Test passed")))
