@@ -37,17 +37,18 @@
         test-handler (-> (fn [request]
                            request)
                          (wrap-auth))]
+    (println "Is unauthed request rejected")
+    (assert (=
+             403
+             (-> unauthed-request
+                 (test-handler)
+                 (:status))))
+    (println "Tests passed")
     (println
-     "Is unauthed request rejected"
-     (=
-      403
-      (-> unauthed-request
-          (test-handler)
-          (:status))))
-    (println
-     "Is user added to context of authed request"
-     (=
-      {:id 1 :role "admin"}
-      (-> authed-request
-          (test-handler)
-          (:user))))))
+     "Is user added to context of authed request")
+    (assert (=
+             {:id 1 :role "admin"}
+             (-> authed-request
+                 (test-handler)
+                 (:user))))
+    (println "Test passed")))
