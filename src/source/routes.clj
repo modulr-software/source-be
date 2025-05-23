@@ -6,6 +6,10 @@
             [source.db.master.connection :as con]
             [source.password :as pw]))
 
+;; TODO
+;; These endpoints will be refactored to use the updated "get-ds" function which takes in a db name
+;; Will also make use of utility to genereate db-name if the db-name is not static
+
 (def home (GET "/" []
             {:status 200
              :body {:value "bye bitch"}
