@@ -11,7 +11,7 @@
 
 (defn validate-request [request]
   (-> request
-      (util/request->auth-token)
+      (util/auth-token)
       (auth-util/verify-jwt)))
 
 (def unauthorized-response {:status 403
