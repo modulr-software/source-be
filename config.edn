@@ -1,0 +1,4 @@
+{
+ :supersecretkey #env SUPER_SECRET_KEY
+ :database-dir #or [#env DATABASE_DIR ".db/"]
+ }

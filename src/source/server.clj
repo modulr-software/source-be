@@ -1,8 +1,12 @@
-(ns modulr.server
-  (:require [modulr.util :as util]
-            [org.httpkit.server :as http]
-            [ring.middleware.cookies :as cookies]
-            [modulr.routes :as routes]))
+(ns source.server
+  (:require
+   [org.httpkit.server :as http]
+   [ring.middleware.cookies :as cookies]
+   [source.routes :as routes]
+   [source.util :as util]
+   [source.middleware.core :as middle]
+   [source.db.master.core :as db]
+   [source.db.master.connection :as ds]))
 
 (defonce ^:private *server (atom nil))
 
@@ -16,11 +20,11 @@
           (reset! *server (http/run-server
                            (->
                             routes/app
-                            (util/wrap-json)
-                            (cookies/wrap-cookies)) {:port 3000})))
+                            (middle/apply-generic))
+                           {:port 3000}))
+          (db/setup-db (ds/get-ds)))
         :else
-        (println "Server already running"))
-  )
+        (println "Server already running")))
 
 (defn stop-server []
   (println "Stopping server...")

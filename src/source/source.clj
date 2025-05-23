@@ -1,4 +1,4 @@
-(ns modulr.source
+(ns source.source
   (:require [modulr.server :as server]
             [modulr.hooks :as hooks]))
 

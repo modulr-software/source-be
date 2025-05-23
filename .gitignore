@@ -7,3 +7,5 @@ source-users
 .cpcache/
 dev/dev.clj
 .nrepl-port
+
+.db

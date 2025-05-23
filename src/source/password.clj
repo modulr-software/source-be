@@ -1,4 +1,4 @@
-(ns modulr.password
+(ns source.password
   (:require [buddy.core.hash :as hash]
             [buddy.core.codecs :as codecs]))
 

@@ -1,4 +1,4 @@
-(ns modulr.hooks)
+(ns source.hooks)
 
 (defn add-shutdown-hook [f]
   (let [runtime (Runtime/getRuntime)]
