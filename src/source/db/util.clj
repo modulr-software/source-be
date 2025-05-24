@@ -7,7 +7,7 @@
   {:dbtype "sqlite"})
 
 (defn db-path [dbname]
-  (str (conf/read-value [:database-dir]) "/" dbname))
+  (str (conf/read-value :database-dir) "/" dbname))
 
 ;; TODO:
 ;; - introduce utility to generate dynamic db names

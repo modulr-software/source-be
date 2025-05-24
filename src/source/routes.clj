@@ -1,7 +1,7 @@
 (ns source.routes
   (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [source.auth :as auth]
+            [source.middleware.auth.core :as auth]
             [source.db.master.users :as users]
             [source.db.master.connection :as con]
             [source.password :as pw]))

@@ -1,5 +1,5 @@
 (ns source.db.master.core
-  (:require [source.db.master.connection :refer [ds] :as c]
+  (:require [source.db.util :as db.util]
             [hugsql.core :as hugsql]
             [hugsql.adapter.next-jdbc :as next-adapter]
             [source.db.master.users :as users]
@@ -88,6 +88,7 @@
           (recur (vec (rest tnames)))))))
 
 (comment
+  (def ds (db.util/conn "master"))
   (setup-db ds)
   (drop-tables ds)
   (drop-table ds {:table "users"})
