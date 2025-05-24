@@ -1,5 +1,5 @@
 (ns source.db.master.cadences
-  (:require [source.db.master.connection :refer [ds] :as c]
+  (:require [source.db.util :as db.util]
             [hugsql.core :as hugsql]
             [hugsql.adapter.next-jdbc :as next-adapter]))
 
@@ -13,6 +13,7 @@
   {:adapter (next-adapter/hugsql-adapter-next-jdbc)})
 
 (comment
+  (def ds (db.util/conn "master"))
   (create-cadences-table ds)
   (drop-cadences-table ds)
   (insert-cadence ds {:label "daily" :days 1})

@@ -1,5 +1,5 @@
 (ns source.db.master.users
-  (:require [source.db.master.connection :refer [ds] :as c]
+  (:require [source.db.util :as db.util]
             [hugsql.core :as hugsql]
             [hugsql.adapter.next-jdbc :as next-adapter]
             [source.password :as pw]))
@@ -16,7 +16,9 @@
 (hugsql/def-db-fns "source/db/master/sql/users.sql"
   {:adapter (next-adapter/hugsql-adapter-next-jdbc)})
 
+
 (comment
+  (def ds (db.util/conn "master"))
   (create-users-table ds)
   (drop-users-table ds)
   (users ds)
