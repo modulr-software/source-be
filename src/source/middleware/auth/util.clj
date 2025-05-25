@@ -17,14 +17,12 @@
         token)
       :else nil)))
 
-(def secret (conf/read-value [:supersecretkey]))
-
 (defn sign-jwt [payload]
-  (jwt/encrypt payload secret))
+  (jwt/encrypt payload (conf/read-value :supersecretkey)))
 
 (defn verify-jwt [token]
   (try
-    (jwt/decrypt token secret)
+    (jwt/decrypt token (conf/read-value :supersecretkey))
     (catch Exception e
       (println (.getMessage e))
       false)))
