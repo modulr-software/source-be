@@ -21,10 +21,12 @@
 
 (defn read-value
   "Loads in validated config and uses get-in with ks as an argument"
-  [ks]
+  [& ks]
   (-> (load-config)
       (get-in ks)))
 
 (comment 
+  (read-value :supersecretkey)
+  (read-value :database-dir)
   (load-config)
   )

@@ -7,13 +7,18 @@
   {:dbtype "sqlite"})
 
 (defn db-path [dbname]
-  (str (conf/read-value :database-dir) "/" dbname))
+  (str (conf/read-value :database-dir) dbname))
 
 ;; TODO:
 ;; - introduce utility to generate dynamic db names
 
 (defn conn [dbname]
   (-> sqlite-config
-      (merge {:dbname (db-path dbname)})
+      (merge {:dbname (db-path (name dbname))})
       (jdbc/get-connection)
       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
+
+(comment 
+  (db-path "master")
+  (conn :master)
+  )
