@@ -67,7 +67,7 @@
 
 (def users
   (GET "/users" []
-    (let [ds (db.util/conn "master")]
+    (let [ds (db.util/conn :master)]
       {:status 200
        :body {:users (users/users ds)}})))
 
