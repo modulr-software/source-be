@@ -1,4 +1,4 @@
-(ns source.db.master.outgoing-posts
+(ns source.db.bundle.outgoing-posts
   (:require
    [hugsql.core :as hugsql]
    [hugsql.adapter.next-jdbc :as next-adapter]))
@@ -11,5 +11,5 @@
 (declare count-outgoing-posts-by-content-type)
 (declare select-outgoing-post-by-id)
 (declare drop-outgoing-posts-table)
-(hugsql/def-db-fns "source/db/master/sql/outgoing_posts.sql"
+(hugsql/def-db-fns "source/db/bundle/sql/outgoing_posts.sql"
   {:adapter (next-adapter/hugsql-adapter-next-jdbc)})

@@ -2,11 +2,13 @@
   (:require [source.config :as conf]
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
-            [source.db.master.outgoing-posts :as oposts]
             [source.db.master.users :as users]
             [source.db.master.bundles :as bundles]
             [jsonista.core :as json]
-            [source.db.master.core :as master]))
+            [source.db.master.core :as master]
+            [malli.generator :as mg]
+            [source.db.bundle.outgoing-posts :as oposts]
+            [source.db.master.feeds-categories :as feeds-categories]))
 
 (def ^:private sqlite-config
   {:dbtype "sqlite"})
@@ -37,6 +39,9 @@
   ([type id]
    (str (name type) "_" id)))
 
+(defn generate-items [schema count]
+  (mg/generate [:vector {:gen/min count :gen/max count} schema]))
+
 (defn seed-data [type]
   (-> (slurp (str "resources/" (name type) ".json"))
       (json/read-value)))
@@ -56,6 +61,11 @@
     (master/seed-table ds {:table tname
                            :cols cols
                            :vals vals})))
+
+(defn get-post-categories [bundle-ds ds post-id]
+  (let [feed-id (-> (oposts/select-outgoing-post-by-id bundle-ds {:id post-id})
+                    (:feed_id))]
+    (feeds-categories/select-by-feed-id ds {:feed-id feed-id})))
 
 (comment
   (db-path "master")

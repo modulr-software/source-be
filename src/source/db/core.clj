@@ -9,7 +9,6 @@
 
 (defn log-event [{:keys [post-id bundle-id type]}]
   (let [ds (db.util/conn :master)
-        categories (master/get-post-categories ds post-id)
         timestamp (util/get-utc-timestamp-string)
         bundle-ds (->> bundle-id
                        (db.util/db-name :bundle)
@@ -17,7 +16,8 @@
         creator-ds (->> post-id
                         (db.util/creator-id ds)
                         (db.util/db-name :creator)
-                        (db.util/conn))]
+                        (db.util/conn))
+        categories (db.util/get-post-categories bundle-ds ds post-id)]
     (let [event-id (-> (ba/insert-event bundle-ds {:post_id post-id
                                                    :event_type type
                                                    :timestamp timestamp})
