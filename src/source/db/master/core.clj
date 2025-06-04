@@ -10,7 +10,6 @@
             [source.db.master.cadences :as cadences]
             [source.db.master.categories :as categories]
             [source.db.master.feeds-categories :as feeds-categories]
-            [source.db.master.outgoing-posts :as oposts]
             [source.db.master.feeds :as feeds]
             [source.db.master.bundles :as bundles]))
 
@@ -46,7 +45,6 @@
    {:name "baselines" :create baselines/create-baselines-table :seed true}
    {:name "sectors" :create sectors/create-sectors-table :seed true}
    {:name "categories" :create categories/create-table :seed true}
-   {:name "outgoing_posts" :create oposts/create-outgoing-posts-table :seed false}
    {:name "feeds" :create feeds/create-table :seed false}
    {:name "feeds_categories" :create feeds-categories/create-table :seed false}
    {:name "users" :create users/create-users-table :seed false}
@@ -69,11 +67,6 @@
            (keyword)
            (db.util/seed-data)
            (db.util/apply-seed ds name)))))
-
-(defn get-post-categories [ds post-id]
-  (let [feed-id (-> (oposts/select-outgoing-post-by-id ds {:id post-id})
-                    (:feed_id))]
-    (feeds-categories/select-by-feed-id ds {:feed-id feed-id})))
 
 (comment
   (def ds (db.util/conn "master"))
@@ -100,13 +93,6 @@
                            1
                            1
                            1]})
-  (oposts/insert-outgoing-post ds {:bundle-id 1
-                                   :title "A bloody title"
-                                   :subtitle "subtitle"
-                                   :stream-url "sdfsf"
-                                   :content-type "video"
-                                   :feed-id 1
-                                   :creator-id 1})
   (feeds-categories/insert-feeds-categories ds {:cols ["feed_id"
                                                        "category_id"]
                                                 :vals [1
@@ -124,8 +110,6 @@
   (bundles/select-all-bundles ds)
   (feeds/select-all ds)
   (feeds-categories/select-all ds)
-  (oposts/select-outgoing-post-by-id ds {:id 1})
-  (get-post-categories ds 1)
   (drop-tables ds)
   (drop-table ds {:table "users"})
   (table? ds "users")
