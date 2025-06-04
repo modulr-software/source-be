@@ -7,7 +7,10 @@
             [source.db.master.content-type :as content-types]
             [source.db.master.providers :as providers]
             [source.db.master.sectors :as sectors]
-            [source.db.master.cadences :as cadences]))
+            [source.db.master.cadences :as cadences]
+            [source.db.master.categories :as categories]
+            [source.db.master.feeds-categories :as feeds-categories]
+            [source.db.master.outgoing-posts :as oposts]))
 
 (declare table)
 (declare tables)
@@ -19,8 +22,7 @@
 
 (defn table-names [ds]
   (->> (tables ds)
-      (mapv #(:name %))))
-
+       (mapv #(:name %))))
 
 (defn table? [ds tname]
   (->
@@ -33,8 +35,7 @@
      (num-records ds {:table tname})
      (:count)
      (> 0))
-    false)
-  )
+    false))
 
 (defn setup-db [ds]
   (when-not (table? ds "users")
@@ -49,7 +50,7 @@
     (baselines/create-baselines-table ds))
   (when-not (table? ds "sectors")
     (sectors/create-sectors-table ds))
-  
+
   (when-not (records? ds "cadences")
     (seed-table ds {:table "cadences"
                     :cols ["label" "days"]
@@ -79,13 +80,17 @@
                            ["conservation ecology"]
                            ["recycling"]]})))
 
-
 (defn drop-tables [ds]
-    (loop [tnames (table-names ds)]
-      (let [tname (first tnames)]
-        (when (some? tname)
-          (drop-table ds {:table tname})
-          (recur (vec (rest tnames)))))))
+  (loop [tnames (table-names ds)]
+    (let [tname (first tnames)]
+      (when (some? tname)
+        (drop-table ds {:table tname})
+        (recur (vec (rest tnames)))))))
+
+(defn get-post-categories [ds post-id]
+  (let [feed-id (-> (oposts/select-outgoing-post-by-id ds {:id post-id})
+                    (:feed-id))]
+    (feeds-categories/select-by-feed-id ds {:feed-id feed-id})))
 
 (comment
   (def ds (db.util/conn "master"))
@@ -93,7 +98,7 @@
   (drop-tables ds)
   (drop-table ds {:table "users"})
   (table? ds "users")
-  (table ds {:name "bundles"})
+  (table ds {:name "categories"})
   (drop-tables ds)
   (->
    (table-names ds))
@@ -101,15 +106,14 @@
   (table? ds "users")
   (table ds {:table "users"})
 
-    (seed-table ds {:table "cadences"
-                    :cols ["label" "days"]
-                    :vals [["daily" 1]
-                           ["weekly" 7]
-                           ["biweekly" 14]
-                           ["monthly" 30]]})
+  (seed-table ds {:table "cadences"
+                  :cols ["label" "days"]
+                  :vals [["daily" 1]
+                         ["weekly" 7]
+                         ["biweekly" 14]
+                         ["monthly" 30]]})
   (cadences/cadences ds)
   (baselines/baselines ds)
   (sectors/sectors ds)
-  (users/users ds)
-  )
+  (users/users ds))
 
