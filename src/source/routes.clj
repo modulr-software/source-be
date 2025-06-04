@@ -3,7 +3,6 @@
             [compojure.route :as route]
             [source.middleware.auth.core :as auth]
             [source.db.master.users :as users]
-            [source.db.master.connection :as con]
             [source.db.util :as db.util]
             [source.password :as pw]))
 
