@@ -4,7 +4,9 @@
             [next.jdbc.result-set :as rs]
             [source.db.master.outgoing-posts :as oposts]
             [source.db.master.users :as users]
-            [source.db.master.bundles :as bundles]))
+            [source.db.master.bundles :as bundles]
+            [jsonista.core :as json]
+            [source.db.master.core :as master]))
 
 (def ^:private sqlite-config
   {:dbtype "sqlite"})
@@ -34,6 +36,26 @@
    (name type))
   ([type id]
    (str (name type) "_" id)))
+
+(defn seed-data [type]
+  (-> (slurp (str "resources/" (name type) ".json"))
+      (json/read-value)))
+
+(defn column-names [data]
+  (->> (mapv (fn [item] (mapv (fn [[key _]] (name key)) item)) data)
+       (flatten)
+       (apply hash-set)
+       (vec)))
+
+(defn records [columns data]
+  (mapv (fn [item] (mapv (fn [col] (get item (name col))) columns)) data))
+
+(defn apply-seed [ds tname data]
+  (let [cols (column-names data)
+        vals (records cols data)]
+    (master/seed-table ds {:table tname
+                           :cols cols
+                           :vals vals})))
 
 (comment
   (db-path "master")
