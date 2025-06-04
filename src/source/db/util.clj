@@ -18,7 +18,6 @@
       (jdbc/get-connection)
       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
 
-(comment 
+(comment
   (db-path "master")
-  (conn :master)
-  )
+  (conn :master))
