@@ -13,3 +13,8 @@
 (defn prr [value]
   (println value)
   value)
+
+(defn get-utc-timestamp-string []
+  (let [formatter (java.time.format.DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss'Z'")
+        utc-now (java.time.ZonedDateTime/now java.time.ZoneOffset/UTC)]
+    (.format formatter utc-now)))
