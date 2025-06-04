@@ -22,7 +22,7 @@
                             routes/app
                             (middle/apply-generic))
                            {:port 3000}))
-          (db/setup-db (ds/get-ds)))
+          (db/setup-db (ds/get-ds) db/seeders))
         :else
         (println "Server already running")))
 
