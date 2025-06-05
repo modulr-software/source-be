@@ -4,9 +4,15 @@
             [source.util :as util]
             [clj-oauth2.client :as oauth2]))
 
-;;TODO add the function to read atom and get access token and user data
-
 (def ^:private *auth-reqs (atom {}))
+
+;; todo: add a protocol implementation of the auth-request-cache (in a different namespace)
+;; and import it here and use it in these functions
+;; you probably want a set of interface functions (public functions) that
+;; are exported functions which use the actual private implementationsS
+
+;; when you write the test, you can test the implementation functions (the ones that start with "-")
+;; instead of the public functions
 
 (defn- google-user-email [access-token]
   (let [response (oauth2/get "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -31,5 +37,4 @@
 
 (comment
   (util/uuid)
-  (auth-uri)
-  )
+  (auth-uri))
