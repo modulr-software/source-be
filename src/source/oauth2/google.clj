@@ -30,4 +30,6 @@
     (google-user-email (:access-token result))))
 
 (comment
-  (util/uuid))
+  (util/uuid)
+  (auth-uri)
+  )

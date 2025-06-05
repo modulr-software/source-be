@@ -110,6 +110,7 @@
                                 :body (merge payload
                                              (auth/create-session payload))}))))))
 
+
 (defroutes app
   home
   login
@@ -120,3 +121,7 @@
   google-redirect
   google-login-success
   (route/not-found "Page not found"))
+
+
+(comment 
+  )
