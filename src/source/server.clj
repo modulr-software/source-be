@@ -5,8 +5,8 @@
    [source.routes :as routes]
    [source.util :as util]
    [source.middleware.core :as middle]
-   [source.db.master.core :as db]
-   [source.db.master.connection :as ds]))
+   [source.db.core :as db]
+   [source.db.util :as db.util]))
 
 (defonce ^:private *server (atom nil))
 
@@ -22,7 +22,7 @@
                             routes/app
                             (middle/apply-generic))
                            {:port 3000}))
-          (db/setup-db (ds/get-ds) db/seeders))
+          (db/setup-db (db.util/conn :master) {}))
         :else
         (println "Server already running")))
 

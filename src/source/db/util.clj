@@ -42,8 +42,8 @@
 (defn generate-items [schema count]
   (mg/generate [:vector {:gen/min count :gen/max count} schema]))
 
-(defn seed-data [type]
-  (-> (slurp (str "resources/" (name type) ".json"))
+(defn seed-data [path type]
+  (-> (slurp (or path (str "resources/" (name type) ".json")))
       (json/read-value)))
 
 (defn column-names [data]
