@@ -6,16 +6,16 @@
    [source.db.util :as db.util]))
 
 (def ^:private migrations
-  (loader.fs/load! "src/migrations"))
+  (loader.fs/load! "src/source/migrations"))
 
 (defn- create-context []
   (let [db (db.util/conn :master)]
-    {:db db}))
+    {:db-master db}))
 
 (defn run-migrations [args]
   (let [context (create-context)
         datastore (store/create-datastore
-                   {:db (:db context)
+                   {:db (:db-master context)
                     :table-name "migrations"})]
     (mallard/run {:context context
                   :store datastore
