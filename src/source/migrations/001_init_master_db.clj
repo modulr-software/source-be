@@ -1,6 +1,5 @@
 (ns source.migrations.001-init-master-db
-  (:require [next.jdbc :as jdbc]
-            [source.db.master.users :as users]
+  (:require [source.db.master.users :as users]
             [source.db.master.bundles :as bundles]
             [source.db.master.baselines :as baselines]
             [source.db.master.feeds :as feeds]
