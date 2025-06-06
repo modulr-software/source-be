@@ -1,4 +1,4 @@
-(ns migrate
+(ns source.migrate
   (:require
    [k16.mallard :as mallard]
    [k16.mallard.store.sqlite :as store]
