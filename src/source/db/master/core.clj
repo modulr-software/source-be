@@ -1,6 +1,5 @@
 (ns source.db.master.core
-  (:require [source.db.util :as db.util]
-            [hugsql.core :as hugsql]
+  (:require [hugsql.core :as hugsql]
             [hugsql.adapter.next-jdbc :as next-adapter]
             [source.db.master.users :as users]
             [source.db.master.baselines :as baselines]
@@ -38,18 +37,6 @@
      (> 0))
     false))
 
-(def seeders
-  [{:name "cadences" :create cadences/create-cadences-table :seed true}
-   {:name "content_types" :create content-types/create-content-types-table :seed true}
-   {:name "providers" :create providers/create-providers-table :seed true}
-   {:name "baselines" :create baselines/create-baselines-table :seed true}
-   {:name "sectors" :create sectors/create-sectors-table :seed true}
-   {:name "categories" :create categories/create-table :seed true}
-   {:name "feeds" :create feeds/create-table :seed false}
-   {:name "feeds_categories" :create feeds-categories/create-table :seed false}
-   {:name "users" :create users/create-users-table :seed false}
-   {:name "bundles" :create bundles/create-bundles-table :seed false}])
-
 (defn drop-tables [ds]
   (loop [tnames (table-names ds)]
     (let [tname (first tnames)]
@@ -57,20 +44,12 @@
         (drop-table ds {:table tname})
         (recur (vec (rest tnames)))))))
 
-(defn setup-db [ds seeders]
-  (drop-tables ds)
-  (doseq [{:keys [name create seed]} seeders]
-    (when-not (table? ds name)
-      (create ds))
-    (when (and seed (not (records? ds name)))
-      (->> name
-           (keyword)
-           (db.util/seed-data)
-           (db.util/apply-seed ds name)))))
-
 (comment
   (def ds (db.util/conn "master"))
-  (setup-db ds seeders)
+  ;; (setup-db ds {:table-names ["cadences"
+  ;;                             "baselines"]
+  ;;               :setup-data {:cadences {}
+  ;;                            :baselines {:seed-data "resources/baselines.json"}}})
   (users/insert-user ds {:email "merveillevaneck@gmail.com"
                          :password "test"
                          :firstname "merv"
@@ -108,6 +87,7 @@
                                                 :vals [1
                                                        3]})
   (bundles/select-all-bundles ds)
+  (baselines/baselines ds)
   (feeds/select-all ds)
   (feeds-categories/select-all ds)
   (drop-tables ds)
