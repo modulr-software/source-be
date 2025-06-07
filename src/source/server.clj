@@ -1,7 +1,6 @@
 (ns source.server
   (:require
    [org.httpkit.server :as http]
-   [ring.middleware.cookies :as cookies]
    [source.routes :as routes]
    [source.util :as util]
    [source.middleware.core :as middle]

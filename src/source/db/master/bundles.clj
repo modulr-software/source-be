@@ -1,7 +1,6 @@
 (ns source.db.master.bundles
   (:require [hugsql.core :as hugsql]
-            [hugsql.adapter.next-jdbc :as next-adapter]
-            [source.password :as pw]))
+            [hugsql.adapter.next-jdbc :as next-adapter]))
 
 (declare create-bundles-table)
 (declare drop-bundles-table)
