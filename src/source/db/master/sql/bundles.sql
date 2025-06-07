@@ -1,4 +1,4 @@
--- src/source/db/master/sql/bundle.sql
+-- src/source/db/master/sql/bundles.sql
 
 -- :name create-bundles-table :! :n
 -- :doc creates the bundles table
