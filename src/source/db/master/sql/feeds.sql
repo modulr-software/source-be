@@ -1,6 +1,6 @@
 -- src/source/db/master/sql/feeds.sql
 
--- :name create-table :! :n
+-- :name create-table! :! :n
 -- :doc creates the feeds table
 create table if not exists feeds (
     id integer primary key autoincrement,
@@ -24,7 +24,7 @@ create table if not exists feeds (
 		foreign key (content_type_id) references content_types(id)
 );
 
--- :name drop-table :! :n
+-- :name drop-table! :! :n
 -- :doc drops the whole feeds table
 drop table if exists feeds;
 
@@ -32,7 +32,7 @@ drop table if exists feeds;
 -- :doc gets all feeds from the feeds table
 select * from feeds;
 
--- :name insert :! :n
+-- :name insert-feed! :! :n
 -- :doc inserts a feed into the feeds table
 insert into feeds (:i*:cols) values (:v*:vals);
 
