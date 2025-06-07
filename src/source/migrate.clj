@@ -5,15 +5,19 @@
    [k16.mallard.loader.fs :as loader.fs]
    [source.db.util :as db.util]))
 
+;; This is our interface for running migrations.
+;;
+;; Migrations will do the following:
+;; - migrate or rollback updates on ALL affected dbs; when a migration is applied
+;;   we want all of the databases and the generated schemas to stay in sync with eachother.
+;; - seed the appropriate tables with data.
+;; - (TODO) generate malli schemas to match the affected db schemas 
+
 (def ^:private migrations
   (loader.fs/load! "src/source/migrations"))
 
-(defn- create-context []
-  (let [db (db.util/conn :master)]
-    {:db-master db}))
-
 (defn run-migrations [args]
-  (let [context (create-context)
+  (let [context {:db-master (db.util/conn :master)}
         datastore (store/create-datastore
                    {:db (:db-master context)
                     :table-name "migrations"})]
