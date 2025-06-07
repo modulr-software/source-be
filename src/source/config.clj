@@ -4,6 +4,8 @@
             [malli.transform :as mt]
             [malli.error :as me]))
 
+;;TODO update the malli schema to include oauth2 config
+
 (def ^:private schema
   [:map
    [:supersecretkey [:string {:min 32}]]
@@ -28,5 +30,6 @@
 (comment 
   (read-value :supersecretkey)
   (read-value :database-dir)
+  (read-value :oauth2 :google)
   (load-config)
   )
