@@ -3,9 +3,7 @@
    [org.httpkit.server :as http]
    [source.routes :as routes]
    [source.util :as util]
-   [source.middleware.core :as middle]
-   [source.db.core :as db]
-   [source.db.util :as db.util]))
+   [source.middleware.core :as middle]))
 
 (defonce ^:private *server (atom nil))
 
