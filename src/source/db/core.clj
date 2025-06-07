@@ -6,14 +6,6 @@
             [source.db.util :as db.util]
             [source.util :as util]))
 
-(defn setup-db [ds {:keys [table-names setup-data]}]
-  (run! (fn [table-name]
-          (when-let [data (get setup-data (keyword table-name))]
-            (->> (keyword table-name)
-                 (db.util/seed-data (:seed-data data))
-                 (db.util/apply-seed ds table-name))))
-        table-names))
-
 (defn log-event [{:keys [post-id bundle-id type]}]
   (let [ds (db.util/conn :master)
         timestamp (util/get-utc-timestamp-string)
