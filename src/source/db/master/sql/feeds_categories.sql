@@ -1,6 +1,6 @@
 -- src/source/db/master/sql/feeds_categories.sql
 
--- :name create-table :! :n
+-- :name create-table! :! :n
 -- :doc created the feeds_categories table
 create table if not exists feeds_categories (
 	id integer primary key autoincrement,
@@ -10,7 +10,7 @@ create table if not exists feeds_categories (
 	foreign key (category_id) references categories(id)
 )
 
--- :name drop-table :! :n
+-- :name drop-table! :! :n
 -- :doc drop the whole feeds_categories table
 drop table if exists feeds_categories
 
@@ -18,7 +18,7 @@ drop table if exists feeds_categories
 -- :doc gets all feeds_categories from the feeds_categories table
 select * from feeds_categories
 
--- :name insert-feeds-categories :! :n
+-- :name insert-feeds-categories! :! :n
 -- :doc insert a feed category record
 insert into feeds_categories (:i*:cols) values (:v*:vals)
 
