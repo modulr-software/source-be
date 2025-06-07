@@ -20,8 +20,7 @@
                            (->
                             routes/app
                             (middle/apply-generic))
-                           {:port 3000}))
-          (db/setup-db (db.util/conn :master) {}))
+                           {:port 3000})))
         :else
         (println "Server already running")))
 
