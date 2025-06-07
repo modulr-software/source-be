@@ -3,7 +3,6 @@
             [source.db.bundle.event-category :as bec]
             [source.db.creator.event-category :as cec]
             [source.db.creator.analytics :as ca]
-            [source.db.master.core :as master]
             [source.db.util :as db.util]
             [source.util :as util]))
 
@@ -38,18 +37,3 @@
                        (first))]
       (cec/insert-event-category creator-ds {:cols ["event_id" "category_id"]
                                              :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))))
-
-(comment
-  (def bundle-ds (->> 1
-                      (db.util/db-name :bundle)
-                      (db.util/conn)))
-  (def creator-ds (->> 1
-                       (db.util/db-name :creator)
-                       (db.util/conn)))
-  (ba/create-analytics-table bundle-ds)
-  (bec/create-event-category-join-table bundle-ds)
-  (master/setup-db bundle-ds [{:name "analytics" :create ba/create-analytics-table :seed false}
-                              {:name "event_category" :create bec/create-event-category-join-table :seed false}])
-  (master/setup-db creator-ds [{:name "analytics" :create ca/create-analytics-table :seed false}
-                               {:name "event_category" :create cec/create-event-category-join-table :seed false}])
-  (log-event {:post-id 1 :bundle-id 1 :type "impression"}))

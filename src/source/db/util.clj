@@ -2,8 +2,6 @@
   (:require [source.config :as conf]
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
-            [source.db.master.users :as users]
-            [source.db.master.bundles :as bundles]
             [jsonista.core :as json]
             [source.db.master.core :as master]
             [malli.generator :as mg]
@@ -66,29 +64,3 @@
   (let [feed-id (-> (oposts/select-outgoing-post-by-id bundle-ds {:id post-id})
                     (:feed_id))]
     (feeds-categories/select-by-feed-id ds {:feed-id feed-id})))
-
-(comment
-  (db-path "master")
-  (conn :master)
-  (let [ds (conn :master)]
-    (users/create-users-table ds)
-    (bundles/create-bundles-table ds)
-    (oposts/create-outgoing-posts-table ds)
-    (bundles/insert-bundle ds {:cols ["user_id" "hash"] :vals [1 "test"]})
-    (users/insert-user ds {:email "merveillevaneck@gmail.com"
-                           :password "test"
-                           :firstname "merv"
-                           :lastname "ilicious"
-                           :business-name "modulr"
-                           :type "creator"})
-    (oposts/insert-outgoing-post ds {:bundle-id 1
-                                     :title "Best Video"
-                                     :stream-url "sdfsfd"
-                                     :content-type "video"
-                                     :subtitle "Test Subtitle"
-                                     :creator-id 1})
-
-    (println (creator-id ds 1))
-    (users/drop-users-table ds)
-    (bundles/drop-bundles-table ds)
-    (oposts/drop-outgoing-posts-table ds)))
