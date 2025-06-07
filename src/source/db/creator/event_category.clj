@@ -1,9 +1,6 @@
 (ns source.db.creator.event-category
-  (:require [source.db.master.bundles :as bundles]
-            [hugsql.core :as hugsql]
-            [hugsql.adapter.next-jdbc :as next-adapter]
-            [source.password :as pw]
-            [source.db.util :as db.util]))
+  (:require [hugsql.core :as hugsql]
+            [hugsql.adapter.next-jdbc :as next-adapter]))
 
 (declare create-table!)
 (declare drop-table!)
