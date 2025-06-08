@@ -18,17 +18,18 @@
 
 (defn user-info [auth-request]
   (->
-    (oauth2/get
-       "https://www.googleapis.com/oauth2/v1/userinfo" 
-       auth-request)
-    (:body)))
+   (oauth2/get
+    "https://www.googleapis.com/oauth2/v1/userinfo"
+    auth-request)
+   (:body)))
 
 (defn google-user-email [access-token]
-    (-> access-token
-        (auth-request)
-        (user-info)
-        (json/read-str {:key-fn keyword})
-        (get  :email)))
+  (-> access-token
+      (auth-request)
+      (user-info)
+      (or "{}")
+      (json/read-json {:key-fn keyword})
+      (:email)))
 
 (defn -auth-uri [auth-reqs-service]
   (let [req (cache/add-item auth-reqs-service

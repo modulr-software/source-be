@@ -39,3 +39,5 @@
         (is (not (some? google-removed)))
         (is (not (some? email-removed)))))))
 
+
+(run-tests)

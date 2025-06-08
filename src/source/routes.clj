@@ -1,7 +1,7 @@
 (ns source.routes
   (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [source.oauth2.google :as google]
+            [source.oauth2.google.interface :as google]
             [ring.util.response :as response]
             [source.middleware.auth.core :as auth]
             [source.db.master.users :as users]
