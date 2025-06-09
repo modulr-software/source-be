@@ -4,12 +4,23 @@
             [malli.transform :as mt]
             [malli.error :as me]))
 
-;;TODO update the malli schema to include oauth2 config
+(def ^:private oauth2-provider-schema
+  [:map
+   [:authorization-uri :string]
+   [:access-token-uri :string]
+   [:redirect-uri :string]
+   [:client-id :string]
+   [:client-secret :string]
+   [:access-query-param :keyword]
+   [:scope [:vector {:min 1} :string]]
+   [:grant-type :string]])
 
 (def ^:private schema
   [:map
    [:supersecretkey [:string {:min 32}]]
-   [:database-dir :string]])
+   [:origin :string]
+   [:database-dir :string]
+   [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
 
 (defn- load-config []
   (let [config (aero/read-config "config.edn")
@@ -27,9 +38,9 @@
   (-> (load-config)
       (get-in ks)))
 
-(comment 
+(comment
   (read-value :supersecretkey)
   (read-value :database-dir)
   (read-value :oauth2 :google)
-  (load-config)
-  )
+  (read-value :origin)
+  (load-config))
