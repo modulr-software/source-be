@@ -57,5 +57,3 @@
             nil
             oauth2-get-access-token
             oauth2-get))))
-
-(run-tests)

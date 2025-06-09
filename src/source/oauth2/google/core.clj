@@ -5,14 +5,6 @@
             [clojure.data.json :as json]
             [clj-oauth2.client :as oauth2]))
 
-;; TODO: add a protocol implementation of the auth-request-cache (in a different namespace)
-;; and import it here and use it in these functions
-;; you probably want a set of interface functions (public functions) that
-;; are exported functions which use the actual private implementationsS
-
-;; when you write the test, you can test the implementation functions (the ones that start with "-")
-;; instead of the public functions
-
 (defn auth-request [access-token]
   {:headers {"Authorization" (str "Bearer " access-token)}})
 

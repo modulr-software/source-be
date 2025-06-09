@@ -67,24 +67,14 @@
                                  :type (:type new-user)})
           {:status 200 :body {:message "successfully created user"}})))))
 
-
 (def users
   (GET "/users" []
     (let [ds (db.util/conn :master)]
       {:status 200
        :body {:users (users/users ds)}})))
 
-(def google-login-success (GET "/gsuccess" req []
-                            (println (:session req))
-                            (let [tokens (-> req :oauth2/access-tokens :google)]
-                              {:status 200
-                               :body {"value" "henlo m8 this here is a successful login m8 lookin real noice no cap"}
-                               :headers {"Content-Type" "application/json"}})))
-
-
 (def google-launch (GET "/oauth2/google" []
                      (response/response (google/auth-uri))))
-
 
 (def google-redirect (GET "/oauth2/google/callback" req []
                        (let [{:keys [uuid uri]} (:body req)
@@ -93,14 +83,12 @@
                              user (users/user-by ds {:col "email"
                                                      :val email})]
 
-                         (cond
-                           (some? user)
+                         (if (some? user)
                            (let [payload (dissoc user :password)]
                              {:status 200
                               :body (merge payload
                                            (auth/create-session payload))})
 
-                           :else
                            (do
                              (users/insert-user ds {:email email})
                              (let [new-user (users/user-by ds {:col "email"
@@ -110,7 +98,6 @@
                                 :body (merge payload
                                              (auth/create-session payload))}))))))
 
-
 (defroutes app
   home
   login
@@ -119,9 +106,6 @@
 
   google-launch
   google-redirect
-  google-login-success
   (route/not-found "Page not found"))
 
-
-(comment 
-  )
+(comment)
