@@ -9,19 +9,19 @@
   {:headers {"Authorization" (str "Bearer " access-token)}})
 
 (defn user-info [auth-request]
-  (->
-   (oauth2/get
-    "https://www.googleapis.com/oauth2/v1/userinfo"
-    auth-request)
-   (:body)))
+  (let [body (->
+              (oauth2/get
+               "https://www.googleapis.com/oauth2/v1/userinfo"
+               auth-request)
+              (:body))]
+    (if body
+      (:email (json/read-json body {:key-fn keyword}))
+      nil)))
 
 (defn google-user-email [access-token]
   (-> access-token
       (auth-request)
-      (user-info)
-      (or "{}")
-      (json/read-json {:key-fn keyword})
-      (:email)))
+      (user-info)))
 
 (defn -auth-uri [auth-reqs-service]
   (let [req (cache/add-item auth-reqs-service
