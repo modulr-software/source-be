@@ -50,6 +50,10 @@
       (let [node (first (s/select selector htree))]
         (nth (:content node) idx)))))
 
+(defn collect-paths
+  ([root-node] (collect-paths root-node {} []))
+  ([root-node acc current-path]))
+
 (defn collect-leaf-paths
   "this function does a DFS on a hickory tree and generates a map where the key is the value
   and the value is the selector that will return that value when it is run on a hickory tree"
@@ -93,15 +97,10 @@
   (get-ast (get-xml)))
 
 (def other-one
-  (get-ast "<rss version=\"2.0\">
-  <channel lang=\"en\">
-    <title id=\"2\">Mini Feed</title>
-    <item id=\"1\">
-      <title>Post One</title>
-      <link>https://example.com/2</link>
-    </item>
-  </channel>
-</rss>"))
+  (get-ast "<items>
+    <item>Item 1</item>
+    <item>Item 2</item>
+</items>"))
 
 (def sample-feed
   "<rss version=\"2.0\" xmlns:yt=\"http://www.youtube.com/xml/schemas/2015\" xmlns:media=\"http://search.yahoo.com/mrss/\">
@@ -124,10 +123,16 @@
 (def ANOTHER-ONE
   (get-ast sample-feed))
 
-(s/select (s/child
-           (s/tag :channel)
-           (s/tag :item)
-           (s/attr :name)) ANOTHER-ONE)
+(def items (-> (s/select (s/tag :items) other-one)
+               (first)))
+items
+
+(def item (-> (s/select (s/tag :item) items)))
+item
+
+(def items (s/select (s/child
+                      (s/tag :items)
+                      (s/tag :item)) other-one))
 
 (def paths (collect-leaf-paths ANOTHER-ONE))
 paths
