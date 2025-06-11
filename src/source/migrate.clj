@@ -18,8 +18,9 @@
 
 (defn run-migrations [args]
   (let [context {:db-master (db.util/conn :master)}
+        db-migrate (db.util/conn :migrate)
         datastore (store/create-datastore
-                   {:db (:db-master context)
+                   {:db db-migrate
                     :table-name "migrations"})]
     (mallard/run {:context context
                   :store datastore

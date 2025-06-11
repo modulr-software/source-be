@@ -52,12 +52,4 @@
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
-    (users/drop-users-table ds-master)
-    (bundles/drop-bundles-table ds-master)
-    (baselines/drop-baselines-table ds-master)
-    (feeds/drop-table! ds-master)
-    (feeds-categories/drop-table! ds-master)
-    (providers/drop-providers-table ds-master)
-    (sectors/drop-sectors-table ds-master)
-    (categories/drop-table ds-master)
-    (content-types/drop-content-types-table ds-master)))
+    (master/drop-tables ds-master)))
