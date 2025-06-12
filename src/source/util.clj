@@ -1,4 +1,6 @@
-(ns source.util)
+(ns source.util
+  (:require [buddy.core.codecs :as codecs]
+            [buddy.core.nonce :as nonce]))
 
 (defn content-type [request]
   (or (get-in request [:headers "Content-Type"])
@@ -18,3 +20,8 @@
   (let [formatter (java.time.format.DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss'Z'")
         utc-now (java.time.ZonedDateTime/now java.time.ZoneOffset/UTC)]
     (.format formatter utc-now)))
+
+(defn uuid []
+  (->
+   (nonce/random-bytes 8)
+   (codecs/bytes->hex)))
