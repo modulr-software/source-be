@@ -16,7 +16,12 @@
   (println value)
   value)
 
-(defn uuid [] 
-  (-> 
-    (nonce/random-bytes 8)
-    (codecs/bytes->hex)))
+(defn get-utc-timestamp-string []
+  (let [formatter (java.time.format.DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss'Z'")
+        utc-now (java.time.ZonedDateTime/now java.time.ZoneOffset/UTC)]
+    (.format formatter utc-now)))
+
+(defn uuid []
+  (->
+   (nonce/random-bytes 8)
+   (codecs/bytes->hex)))

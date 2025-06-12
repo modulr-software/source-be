@@ -1,12 +1,9 @@
 (ns source.server
   (:require
    [org.httpkit.server :as http]
-   [ring.middleware.cookies :as cookies]
    [source.routes :as routes]
    [source.util :as util]
-   [source.middleware.core :as middle]
-   [source.db.master.core :as db]
-   [source.db.master.connection :as ds]))
+   [source.middleware.core :as middle]))
 
 (defonce ^:private *server (atom nil))
 
@@ -21,8 +18,7 @@
                            (->
                             routes/app
                             (middle/apply-generic))
-                           {:port 3000}))
-          (db/setup-db (ds/get-ds)))
+                           {:port 3000})))
         :else
         (println "Server already running")))
 
