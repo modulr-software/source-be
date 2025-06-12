@@ -1,8 +1,6 @@
 (ns source.db.master.users
-  (:require [source.db.util :as db.util]
-            [hugsql.core :as hugsql]
-            [hugsql.adapter.next-jdbc :as next-adapter]
-            [source.password :as pw]))
+  (:require [hugsql.core :as hugsql]
+            [hugsql.adapter.next-jdbc :as next-adapter]))
 
 (declare create-users-table)
 (declare drop-users-table)
@@ -15,18 +13,3 @@
 
 (hugsql/def-db-fns "source/db/master/sql/users.sql"
   {:adapter (next-adapter/hugsql-adapter-next-jdbc)})
-
-
-(comment
-  (def ds (db.util/conn "master"))
-  (create-users-table ds)
-  (drop-users-table ds)
-  (users ds)
-  (insert-user ds {:email "merveillevaneck@gmail.com"
-                           :password (pw/hash-password "test")
-                           :firstname "merv"
-                           :lastname "ilicious"
-                           :business-name "modulr"
-                           :type "creator" })
-  (user ds {:id 1})
-  (find-users-by-name ds {:name-like "%lici%"}))
