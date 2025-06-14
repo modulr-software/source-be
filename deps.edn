@@ -2,7 +2,8 @@
                   :extra-deps {io.github.cognitect-labs/test-runner
                                {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
                   :main-opts ["-m" "cognitect.test-runner"]
-                  :exec-fn cognitect.test-runner.api/test}}
+                  :exec-fn cognitect.test-runner.api/test}
+           :migrate {:main-opts ["-m" "source.migrate"]}}
  :paths ["src" "resources" "dev" "test"]
  :deps {http-kit/http-kit {:mvn/version "2.8.0"}
         compojure/compojure {:mvn/version "1.7.1"}
@@ -22,5 +23,4 @@
         metosin/malli {:mvn/version "0.18.0"}
         com.gfredericks/test.chuck {:mvn/version "0.2.14"}
         com.kepler16/mallard {:mvn/version "3.2.1"}
-        com.kepler16/mallard-sqlite-store {:mvn/version "3.2.1"}}
- :aliases {:migrate {:main-opts ["-m" "source.migrate"]}}}
+        com.kepler16/mallard-sqlite-store {:mvn/version "3.2.1"}}}
