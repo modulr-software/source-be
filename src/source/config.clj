@@ -2,7 +2,8 @@
   (:require [aero.core :as aero]
             [malli.core :as m]
             [malli.transform :as mt]
-            [malli.error :as me]))
+            [malli.error :as me]
+            [clojure.data.json :as json]))
 
 (def ^:private oauth2-provider-schema
   [:map
@@ -32,6 +33,9 @@
       (throw (Exception. "Invalid Config")))
     decoded))
 
+(defn read-admins []
+  (json/read-json (slurp "admins.json")))
+
 (defn read-value
   "Loads in validated config and uses get-in with ks as an argument"
   [& ks]
@@ -43,4 +47,6 @@
   (read-value :database-dir)
   (read-value :oauth2 :google)
   (read-value :origin)
+  (read-admins)
   (load-config))
+

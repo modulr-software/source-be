@@ -10,3 +10,6 @@
 (defn verify-password [password hashed-password]
   (let [nh (hash-password password)]
     (= nh hashed-password)))
+
+(comment 
+  (hash-password "Pa55w.rd"))
