@@ -1,5 +1,5 @@
 (ns source.routes
-  (:require [compojure.core :refer [defroutes GET POST PUT]]
+  (:require [compojure.core :refer [defroutes GET POST PATCH]]
             [compojure.route :as route]
             [source.oauth2.google.interface :as google]
             [ring.util.response :as response]
@@ -72,26 +72,15 @@
        :body {:users (users/users ds)}})))
 
 (def update-user
-  (PUT "/users/:id" req []
-    (let [userId (get-in req [:params :id])
-          {:keys [onboarded 
-                  address 
-                  firstname 
-                  lastname 
-                  mobile]} (:body req)
+  (PATCH "/users/:id" req []
+    (let [user-id (get-in req [:params :id])
+          cols (vec (map name (keys (:body req))))
+          values (vec (vals (:body req)))
           ds (db.util/conn :master)]
 
-      (users/update-user! ds {:id userId
-                             :cols ["onboarded" 
-                                    "address" 
-                                    "firstname"
-                                    "lastname"
-                                    "mobile"]
-                             :vals [onboarded
-                                    address
-                                    firstname
-                                    lastname
-                                    mobile]})
+      (users/update-user! ds {:id user-id
+                             :cols cols
+                             :vals values})
       {:status 200 
        :body {:message "successfully updated user"}})))
 

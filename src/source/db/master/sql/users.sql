@@ -34,7 +34,7 @@ insert into users (email, password, firstname, lastname, type) values (:email, :
 -- :doc Insert a given set of values into given columns
 insert into users (:i*:cols) values (:v*:vals)
 
--- :name update-user :! :n 
+-- :name update-user! :! :n 
 -- :doc update values in the users table
 update users 
 set (:i*:cols) = :tuple:vals
