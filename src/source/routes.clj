@@ -74,7 +74,7 @@
 (def update-user
   (PATCH "/users/:id" req []
     (let [user-id (get-in req [:params :id])
-          cols (vec (map name (keys (:body req))))
+          cols (mapv name (keys (:body req)))
           values (vec (vals (:body req)))
           ds (db.util/conn :master)]
 
