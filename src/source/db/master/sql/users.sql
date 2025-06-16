@@ -11,8 +11,7 @@ create table if not exists users (
     sector_id       integer default null,
     firstname       text,
     lastname        text,
-    business_name   text,
-    type            text,
+    type            text check(type in ('provider', 'distributor', 'admin')) not null default 'distributor',
     email_verified  integer default 0,
     onboarded       integer default 0,
     address         text default null,
@@ -29,11 +28,17 @@ drop table if exists users;
 
 -- :name insert-user :! :n
 -- :doc Insert a single character
-insert into users (email, password, firstname, lastname, business_name, type) values (:email, :password, :firstname, :lastname, :business-name, :type)
+insert into users (email, password, firstname, lastname, type) values (:email, :password, :firstname, :lastname, :type)
 
 -- :name insert-into-users :! :n
 -- :doc Insert a given set of values into given columns
 insert into users (:i*:cols) values (:v*:vals)
+
+-- :name update-user :! :n 
+-- :doc update values in the users table
+update users 
+set (:i*:cols) = :tuple:vals
+where id = :id
 
 -- :name user :? :1
 -- :doc query for a single user by id
@@ -46,7 +51,6 @@ select * from users where :i:col = :val
 -- :name users :? :*
 -- :doc get all users
 select * from users
-
 
 -- :name find-users-by-name :? :*
 -- :doc get all users with name like given name
