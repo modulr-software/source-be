@@ -12,4 +12,4 @@
     (= nh hashed-password)))
 
 (comment 
-  (hash-password "Pa55w.rd"))
+  (hash-password "123"))
