@@ -13,7 +13,9 @@
             [source.db.master.core :as master]
             [source.config :as conf]))
 
-(defn read-admins []
+(defn read-admins 
+  "reads admin user information from file"
+  []
   (try
     (-> :admins-path
         (conf/read-value)
