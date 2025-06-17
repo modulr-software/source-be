@@ -35,3 +35,5 @@
   (let [feed-id (-> (oposts/select-outgoing-post-by-id bundle-ds {:id post-id})
                     (:feed_id))]
     (feeds-categories/select-by-feed-id ds {:feed-id feed-id})))
+
+

@@ -9,9 +9,18 @@
             [source.db.master.sectors :as sectors]
             [source.db.master.categories :as categories]
             [source.db.master.content-type :as content-types]
-            [source.password :as pw]
+            [clojure.data.json :as json]
             [source.db.master.core :as master]
             [source.config :as conf]))
+
+(defn read-admins []
+  (try
+    (-> :admins-path
+        (conf/read-value)
+        (slurp)
+        (json/read-json))
+    (catch Exception e
+      (println (str "Couldn't read the admins file: " (.getMessage e))))))
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
@@ -53,7 +62,7 @@
                                          ["conservation ecology"]
                                          ["recycling"]]})
 
-    (doseq [{:keys [email password]} (conf/read-admins)]
+    (doseq [{:keys [email password]} (read-admins)]
       (master/seed-table ds-master {:table "users"
                                     :cols ["email" "password" "type"]
                                     :vals [[email password "admin"]]}))))
@@ -61,3 +70,6 @@
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
     (master/drop-tables ds-master)))
+
+(comment 
+  (read-admins))

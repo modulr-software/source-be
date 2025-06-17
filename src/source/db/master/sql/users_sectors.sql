@@ -18,11 +18,11 @@ drop table if exists users_sectors
 -- :doc gets all users_sectors from the users_sectors table
 select * from users_sectors
 
--- :name insert-feeds-sectors! :! :n
--- :doc insert a feed sector record
+-- :name insert-users-sectors! :! :n
+-- :doc insert a user sector record
 insert into users_sectors (:i*:cols) values (:v*:vals)
 
--- :name select-by-feed-id :? :*
--- :doc select all feeds sectors records with a given feed id
+-- :name select-by-user-id :? :*
+-- :doc select all users sectors records with a given user id
 select * from users_sectors where user_id = :user-id
 
