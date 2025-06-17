@@ -1,5 +1,6 @@
 {:supersecretkey #env SUPER_SECRET_KEY
- :origin #or [#env ORIGIN "http://localhost:8080"]
+ :admins-path #or [#env ADMINS_PATH "admins.json"]
+ :cors-origin #or [#env CORS_ORIGIN "http://localhost:8080"]
  :database-dir #or [#env DATABASE_DIR ".db/"]
  :oauth2 {:google {:authorization-uri   "https://accounts.google.com/o/oauth2/auth"
                    :access-token-uri    "https://oauth2.googleapis.com/token"
