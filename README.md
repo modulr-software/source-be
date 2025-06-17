@@ -1,0 +1,47 @@
+# Source Backend
+
+This is the backend for the Source platform. You can find documentation on setup for development below.
+
+## Development setup
+
+- Pull the project from GitHub.
+- Create a .env file containing the following required information:
+
+```.env
+SUPER_SECRET_KEY [string, 32 characters]
+GOOGLE_CLIENT_ID [string, from Google Console]
+GOOGLE_CLIENT_SECRET [string, from Google Console]
+```
+
+- Run the provided shell script with `./nrepl.sh` to start your nrepl server.
+- In order to start your server, evaluate the `server/start-server` function in `dev/dev.clj`. 
+When you have made changes, you can restart the server by evaluating `server/restart-server`.
+
+## Database Migration
+
+Database migration is handled using the provided migrate.sh shell script.
+The migration system makes use of the kepler/mallard library, take a look at their [docs](https://github.com/kepler16/mallard) to find out more on how it works.
+The datasource you will be operating on is passed in as context to the run-up and run-down functions.
+e.g. `./migrate.sh [argument]`
+The following command arguments are available:
+- `up`: Run all up migrations.
+- `down`: Undo all migrations. Executes in reverse order.
+- `redo`: Rerun the last applied migration (runs down then up).
+- `undo`: Undo the last applied migration.
+- `next`: Run the next unapplied migration. Same as up, but runs only 1.
+
+In order to make a new migration, create a migration.clj file to `src/source/migrations/` and implement the following functions:
+- `(defn run-up! [context])`: Run database actions to take place when running up. e.g. Create tables and seed data.
+- `(defn run-down! [context])`: Run database actions to take place when running down. e.g. Drop tables.
+
+## Database Seeding
+
+- Create a json file with the following structure to add admin accounts with which to seed the database.
+The default name is `admins.json`, this can be configured with the `ADMINS_PATH` environment variable.
+You will need to hash your chosen password by evaluating the `hash-password` function provided in `src/source/password.clj`:
+
+```json
+[
+    {"email": "johndoe@admin.com", "password": "hashedadminpassword"}
+]
+```
