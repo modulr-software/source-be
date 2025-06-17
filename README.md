@@ -49,3 +49,10 @@ You will need to hash your chosen password by evaluating the `hash-password` fun
     {"email": "johndoe@admin.com", "password": "hashedadminpassword"}
 ]
 ```
+
+## Testing
+
+We are making use of cognitect-labs/test-runner for running our tests. Run the provided shell script with `./test.sh` to run all the tests.
+Unit tests are written and placed in clj files in `tests/source-be/`. These files should have the `_test` postfix (e.g. google_auth_test.clj) and tests should be 
+written per namespace and cover all important functions.
+
