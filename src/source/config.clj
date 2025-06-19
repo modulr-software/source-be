@@ -2,7 +2,8 @@
   (:require [aero.core :as aero]
             [malli.core :as m]
             [malli.transform :as mt]
-            [malli.error :as me]))
+            [malli.error :as me]
+            [source.config :as conf]))
 
 (def ^:private oauth2-provider-schema
   [:map
@@ -18,7 +19,8 @@
 (def ^:private schema
   [:map
    [:supersecretkey [:string {:min 32}]]
-   [:origin :string]
+   [:admins-path :string]
+   [:cors-origin :string]
    [:database-dir :string]
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
 
@@ -42,5 +44,7 @@
   (read-value :supersecretkey)
   (read-value :database-dir)
   (read-value :oauth2 :google)
-  (read-value :origin)
+  (read-value :cors-origin)
+  (read-value :admins-path)
   (load-config))
+

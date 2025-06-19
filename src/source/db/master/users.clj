@@ -6,6 +6,7 @@
 (declare drop-users-table)
 (declare insert-into-users)
 (declare insert-user)
+(declare update-user!)
 (declare find-users-by-name)
 (declare users)
 (declare user)

@@ -11,7 +11,7 @@
 (defn apply-generic [app]
   (-> app
       (content-type/wrap-content-type)
-      (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :origin))]
+      (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :cors-origin))]
                  :access-control-allow-methods [:get :put :post :delete])
       (wrap-params)
       (wrap-defaults (assoc site-defaults :session false :security {:anti-forgery false}))

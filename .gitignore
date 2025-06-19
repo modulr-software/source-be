@@ -9,3 +9,4 @@ dev/dev.clj
 .nrepl-port
 
 .db
+admins.json
