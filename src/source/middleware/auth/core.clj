@@ -1,10 +1,11 @@
 (ns source.middleware.auth.core
   (:require
-   [source.middleware.auth.util :as util]))
+   [source.middleware.auth.util :as util]
+   [source.db.util :as db.util]
+   [source.db.master.users :as users]))
 
 (defn create-session [user]
-  (let [payload {:id (:id user)
-                 :role (:role user)}]
+  (let [payload {:id (:id user)}]
     {:access-token (util/sign-jwt payload)
      :refresh-token (util/sign-jwt payload)}))
 
@@ -14,7 +15,7 @@
       (util/verify-jwt)))
 
 (def unauthorized-response {:status 403
-                            :body {:message "Unathorized"}})
+                            :body {:message "Unauthorized"}})
 
 (defn wrap-auth [handler]
   (fn [request]
@@ -24,6 +25,26 @@
           (handler))
 
       unauthorized-response)))
+
+(defn user-type
+  "takes in a user type keyword and converts it to a string. throws if invalid user type"
+  [user-type]
+  (cond
+    (= user-type :admin) "admin"
+    (= user-type :creator) "creator"
+    (= user-type :distributor) "distributor"
+    :else (throw (Exception. "invalid user type"))))
+
+(defn wrap-type-validation [handler required-type]
+  (fn [request]
+    (let [ds (db.util/conn :master)
+          required-type (user-type required-type)
+          user-type (->> {:id (get-in request [:user :id])}
+                         (users/user ds)
+                         (:type))]
+      (if (= user-type required-type)
+        (handler request)
+        unauthorized-response))))
 
 (comment
   (let [authed-request {:headers {"Authorization"
