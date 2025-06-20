@@ -19,12 +19,8 @@
       (ring/wrap-json-body {:keywords? true})
       (cookies/wrap-cookies)))
 
-(defn apply-auth [app]
+(defn apply-auth [app & {:keys [required-type]}]
   (-> app
-      (auth/wrap-auth)))
-
-(defn apply-admin-auth [app]
-  (-> app
-      (auth/wrap-type-validation :admin)
+      (auth/wrap-auth-type {:required-type required-type})
       (auth/wrap-auth)))
 

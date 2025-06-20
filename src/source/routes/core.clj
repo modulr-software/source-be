@@ -34,7 +34,7 @@
     (->
      (routes
       (POST "/add-admin" req [] (admin/add-admin req)))
-     (mw/apply-admin-auth))
+     (mw/apply-auth {:required-type :admin}))
 
     (route/not-found "Page not found"))))
 

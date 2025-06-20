@@ -1,8 +1,8 @@
 (ns source.middleware.auth.core
-  (:require
-   [source.middleware.auth.util :as util]
-   [source.db.util :as db.util]
-   [source.db.master.users :as users]))
+  (:require [source.middleware.auth.util :as util]
+            [source.db.util :as db.util]
+            [source.db.master.users :as users]
+            [ring.util.response :as res]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)}]
@@ -14,37 +14,28 @@
       (util/auth-token)
       (util/verify-jwt)))
 
-(def unauthorized-response {:status 403
-                            :body {:message "Unauthorized"}})
-
 (defn wrap-auth [handler]
   (fn [request]
     (if-let [user (validate-request request)]
       (-> request
           (assoc :user user)
           (handler))
+      (->
+       (res/response {:body {:message "Unauthenticated"}})
+       (res/status 401)))))
 
-      unauthorized-response)))
-
-(defn user-type
-  "takes in a user type keyword and converts it to a string. throws if invalid user type"
-  [user-type]
-  (cond
-    (= user-type :admin) "admin"
-    (= user-type :creator) "creator"
-    (= user-type :distributor) "distributor"
-    :else (throw (Exception. "invalid user type"))))
-
-(defn wrap-type-validation [handler required-type]
+(defn wrap-auth-type [handler & {:keys [required-type]}]
   (fn [request]
     (let [ds (db.util/conn :master)
-          required-type (user-type required-type)
           user-type (->> {:id (get-in request [:user :id])}
                          (users/user ds)
                          (:type))]
-      (if (= user-type required-type)
-        (handler request)
-        unauthorized-response))))
+      (cond
+        (not (some? required-type)) (handler request)
+        (= user-type (name :admin)) (handler request)
+        :else (->
+               (res/response {:body {:message "Unauthorized"}})
+               (res/status 403))))))
 
 (comment
   (let [authed-request {:headers {"Authorization"

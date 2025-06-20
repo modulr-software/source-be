@@ -4,9 +4,6 @@
 (defn apply-generic [app]
   (mw/apply-generic app))
 
-(defn apply-auth [app]
-  (mw/apply-auth app))
-
-(defn apply-admin-auth [app]
-  (mw/apply-admin-auth app))
+(defn apply-auth [app & {:keys [required-type]}]
+  (mw/apply-auth app {:required-type required-type}))
 
