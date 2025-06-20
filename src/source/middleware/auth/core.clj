@@ -1,10 +1,11 @@
 (ns source.middleware.auth.core
-  (:require
-   [source.middleware.auth.util :as util]))
+  (:require [source.middleware.auth.util :as util]
+            [source.db.util :as db.util]
+            [source.db.master.users :as users]
+            [ring.util.response :as res]))
 
 (defn create-session [user]
-  (let [payload {:id (:id user)
-                 :role (:role user)}]
+  (let [payload {:id (:id user)}]
     {:access-token (util/sign-jwt payload)
      :refresh-token (util/sign-jwt payload)}))
 
@@ -13,17 +14,28 @@
       (util/auth-token)
       (util/verify-jwt)))
 
-(def unauthorized-response {:status 403
-                            :body {:message "Unathorized"}})
-
 (defn wrap-auth [handler]
   (fn [request]
     (if-let [user (validate-request request)]
       (-> request
           (assoc :user user)
           (handler))
+      (->
+       (res/response {:body {:message "Unauthenticated"}})
+       (res/status 401)))))
 
-      unauthorized-response)))
+(defn wrap-auth-type [handler & {:keys [required-type]}]
+  (fn [request]
+    (let [ds (db.util/conn :master)
+          user-type (->> {:id (get-in request [:user :id])}
+                         (users/user ds)
+                         (:type))]
+      (cond
+        (not (some? required-type)) (handler request)
+        (= user-type (name :admin)) (handler request)
+        :else (->
+               (res/response {:body {:message "Unauthorized"}})
+               (res/status 403))))))
 
 (comment
   (let [authed-request {:headers {"Authorization"

@@ -5,6 +5,7 @@
 
 (defn auth-header [request]
   (or (get-in request [:headers "Authorization"])
+      (get-in request [:headers "authorization"])
       (get-in request [:headers :Authorization])
       (get-in request [:headers :authorization])))
 
@@ -26,3 +27,4 @@
     (catch Exception e
       (println (.getMessage e))
       false)))
+
