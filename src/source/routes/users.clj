@@ -12,12 +12,9 @@
                :val (get-in req [:body :email])})
         password (get-in req [:body :password])]
     (cond
-      (not (some? user))
+      (or (not (pw/verify-password password (:password user)))
+          (not (some? user)))
       {:status 401 :body {:message "Invalid username or password!"}}
-
-      (not (pw/verify-password password (:password user)))
-      {:status 401
-       :body {:message "Invalid username or password!"}}
 
       :else
       (let [payload (dissoc user :password)]
@@ -43,11 +40,11 @@
       :else
       (let [new-user (get-in req [:body])]
         (db.users/insert-user ds {:email (:email new-user)
-                               :password (pw/hash-password password)
-                               :sector-id 1
-                               :firstname (:firstname new-user)
-                               :lastname (:lastname new-user)
-                               :type (:type new-user)})
+                                  :password (pw/hash-password password)
+                                  :sector-id 1
+                                  :firstname (:firstname new-user)
+                                  :lastname (:lastname new-user)
+                                  :type (:type new-user)})
         {:status 200 :body {:message "successfully created user"}}))))
 
 (defn users [_req]
@@ -62,8 +59,8 @@
         ds (db.util/conn :master)]
 
     (db.users/update-user! ds {:id user-id
-                            :cols cols
-                            :vals values})
+                               :cols cols
+                               :vals values})
     {:status 200
      :body {:message "successfully updated user"}}))
 
