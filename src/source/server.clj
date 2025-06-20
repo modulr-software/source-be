@@ -1,9 +1,8 @@
 (ns source.server
   (:require
    [org.httpkit.server :as http]
-   [source.routes :as routes]
-   [source.util :as util]
-   [source.middleware.core :as middle]))
+   [source.routes.core :as routes]
+   [source.util :as util]))
 
 (defonce ^:private *server (atom nil))
 
@@ -15,9 +14,7 @@
         (do
           (println "Starting server on port 3000")
           (reset! *server (http/run-server
-                           (->
-                            routes/app
-                            (middle/apply-generic))
+                           (routes/create-app)
                            {:port 3000})))
         :else
         (println "Server already running")))
@@ -38,3 +35,4 @@
   (test-wrapper {:status 200
                  :body "{\"value\":\"Hello, Source!\"}"
                  :headers {"Content-Type" "application/json"}}))
+
