@@ -21,7 +21,9 @@
    [:supersecretkey [:string {:min 32}]]
    [:admins-path :string]
    [:cors-origin :string]
-   [:database-dir :string]
+   [:database [:map
+               [:dir :string]
+               [:type :string]]]
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
 
 (defn- load-config []
@@ -42,7 +44,7 @@
 
 (comment
   (read-value :supersecretkey)
-  (read-value :database-dir)
+  (read-value :database :dir)
   (read-value :oauth2 :google)
   (read-value :cors-origin)
   (read-value :admins-path)

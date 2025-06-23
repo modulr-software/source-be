@@ -5,14 +5,11 @@
             [source.db.bundle.outgoing-posts :as oposts]
             [source.db.master.feeds-categories :as feeds-categories]))
 
-(def ^:private sqlite-config
-  {:dbtype "sqlite"})
-
 (defn db-path [dbname]
-  (str (conf/read-value :database-dir) dbname))
+  (str (conf/read-value :database :dir) dbname))
 
 (defn conn [dbname]
-  (-> sqlite-config
+  (-> {:dbtype (conf/read-value :database :type)}
       (merge {:dbname (db-path (name dbname))})
       (jdbc/get-connection)
       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
