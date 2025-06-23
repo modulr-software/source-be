@@ -24,4 +24,5 @@
         com.gfredericks/test.chuck {:mvn/version "0.2.14"}
         com.kepler16/mallard {:mvn/version "3.2.1"}
         com.kepler16/mallard-sqlite-store {:mvn/version "3.2.1"}
-        com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}}}
+        com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}
+        metosin/reitit {:mvn/version "0.9.1"}}}
