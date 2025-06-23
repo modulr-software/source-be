@@ -1,6 +1,8 @@
 (ns source.middleware.auth.core
   (:require [source.middleware.auth.util :as util]
-            [ring.util.response :as res]))
+            [source.db.util :as db.util]
+            [ring.util.response :as res]
+            [source.db.master.users :as users]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -23,12 +25,18 @@
        (res/response {:message "Unauthorized"})
        (res/status 401)))))
 
-(defn wrap-auth-type [handler & {:keys [required-type]}]
+(defn wrap-auth-user-type 
+  "returns an unauthorized response if the user's type is not the required user type (provider | distributor | admin)"
+  [handler & {:keys [required-type]}]
   (fn [request]
-    (let [user-type (get-in request [:user :type])]
+    (let [ds (db.util/conn :master)
+          user-type (get-in request [:user :type])
+          expected-type (->> {:id (get-in request [:user :id])}
+                         (users/user ds)
+                         (:type))]
       (cond
         (not (some? required-type)) (handler request)
-        (= user-type (name :admin)) (handler request)
+        (and (= user-type (name :admin)) (= user-type expected-type)) (handler request)
         :else (->
                (res/response {:message "Unauthorized"})
                (res/status 403))))))

@@ -2,8 +2,7 @@
   (:require [source.middleware.auth.core :as auth]
             [source.db.master.users :as db.users]
             [source.db.util :as db.util]
-            [source.password :as pw]
-            [source.routes.core :as routes]))
+            [source.password :as pw]))
 
 (defn login [req]
   (let [ds (db.util/conn :master)

@@ -21,6 +21,6 @@
 
 (defn apply-auth [app & {:keys [required-type]}]
   (-> app
-      (auth/wrap-auth-type {:required-type required-type})
+      (auth/wrap-auth-user-type {:required-type required-type})
       (auth/wrap-auth)))
 
