@@ -13,7 +13,8 @@
         email (google/google-session-user uuid (:params req))
         ds (db.util/conn :master)
         user (db.users/user-by ds {:col "email"
-                                   :val email})]
+                                   :val email})
+        user-type (get-in req [:cookies "user_type" :value])]
 
     (if (some? user)
       (let [payload (dissoc user :password)]
@@ -22,7 +23,8 @@
                       (auth/create-session payload))})
 
       (do
-        (db.users/insert-user ds {:email email})
+        (db.users/insert-user ds {:email email
+                                  :type user-type})
         (let [new-user (db.users/user-by ds {:col "email"
                                              :val email})
               payload (dissoc new-user :password)]
