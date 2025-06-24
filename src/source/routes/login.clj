@@ -1,21 +1,15 @@
 (ns source.routes.login
-  (:require [source.services.login :as login]))
+  (:require [source.services.auth :as auth]
+            [ring.util.response :as res]
+            [source.services.users :as users]
+            [source.password :as pw]))
 
-(defn login [{:keys [ds] :as _request}]
-  (let [ds (db.util/conn :master)
-        user (db.users/user-by
-              ds
-              {:col "email"
-               :val (get-in req [:body :email])})
-        password (get-in req [:body :password])]
+(defn handler [{:keys [ds body] :as _request}]
+  (let [{:keys [email password]} body
+        user (users/user ds {:where [:= :email email]})]
     (cond
       (or (not (pw/verify-password password (:password user)))
           (not (some? user)))
       {:status 401 :body {:message "Invalid username or password!"}}
 
-      :else
-      (let [payload (dissoc user :password)]
-        {:status 200
-         :body (merge
-                {:user payload}
-                (auth/create-session payload))}))))
+      :else (res/response (auth/login ds user)))))
