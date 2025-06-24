@@ -12,7 +12,9 @@
       [["/" {:middleware [[mw/apply-generic :ds ds]]}
         ["" (fn [request] {:status 200 :body {:message "success"}})]
         ["users" routes/users]
-        ["user" routes/user]]]))))
+        ["user" routes/user]
+        ["login" routes/login]
+        ["register" routes/register]]]))))
 
 (comment
 
