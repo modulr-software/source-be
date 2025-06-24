@@ -1,6 +1,6 @@
 (ns source.routes.authorized)
 
-(defn handler [req]
+(defn get [{:keys [user]} :as _request]
   {:status 200
-   :body (:user req)})
+   :body {:user user}})
 
