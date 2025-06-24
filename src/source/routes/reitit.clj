@@ -3,33 +3,76 @@
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
-            [source.routes.interface :as routes]))
+            [source.routes.user :as user]
+            [source.routes.users :as users]
+            [source.routes.login :as login]
+            [source.routes.register :as register]
+            [source.routes.admin :as admin]
+            [source.routes.authorized :as authorized]))
 
 (defn create-app []
   (let [ds (db/ds :master)]
     (ring/ring-handler
      (ring/router
       [["/" {:middleware [[mw/apply-generic :ds ds]]}
-        ["" (fn [request] {:status 200 :body {:message "success"}})]
-        ["users" routes/users]
-        ["user" routes/user]
-        ["login" routes/login]
-        ["register" routes/register]]]))))
+        ["" (fn [_request] {:status 200 :body {:message "success"}})]
+        ["users"
+         ["" users/handler]
+         ["/:id" {:get user/get
+                  :patch user/patch}]]
+        ["login" {:post login/post}]
+        ["register" {:post register/post}]
+        ["protected" {:middleware [[mw/apply-auth]]}
+         ["/authorized" {:get authorized/get}]]
+        ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
+         ["/add-admin" {:post admin/post}]]]]))))
 
 (comment
+  (require '[source.middleware.auth.util :as auth.util])
 
   (let [app (create-app)
         request {:uri "/users" :request-method :get}]
     (-> request
         app
         :body
-        (json/read-str {:key-fn keyword})))
+        (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        request {:uri "/user" :request-method :get}]
+        request {:uri "/users/5" :request-method :get}]
     (-> request
         app
         :body
-        (json/read-str {:key-fn keyword})))
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/users/5"
+                 :request-method :patch
+                 :body {:firstname "kiigan"
+                        :lastname "korinzu"}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/protected/authorized"
+                 :request-method :get
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 5 :type "distributor"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/admin/add-admin"
+                 :request-method :post
+                 :body {:email "test@test.com"
+                        :password "test"
+                        :confirm-password "test"}
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
 
   ())
