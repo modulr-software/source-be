@@ -3,7 +3,12 @@
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
-            [source.routes.interface :as routes]))
+            [source.routes.user :as user]
+            [source.routes.users :as users]
+            [source.routes.login :as login]
+            [source.routes.register :as register]
+            [source.routes.admin :as admin]
+            [source.routes.authorized :as authorized]))
 
 (defn create-app []
   (let [ds (db/ds :master)]
@@ -12,15 +17,15 @@
       [["/" {:middleware [[mw/apply-generic :ds ds]]}
         ["" (fn [_request] {:status 200 :body {:message "success"}})]
         ["users"
-         ["" routes/users]
-         ["/:id" {:get routes/user
-                  :patch routes/update-user}]]
-        ["login" {:post routes/login}]
-        ["register" routes/register]
+         ["" users/handler]
+         ["/:id" {:get user/get
+                  :patch user/patch}]]
+        ["login" {:post login/post}]
+        ["register" {:post register/post}]
         ["protected" {:middleware [[mw/apply-auth]]}
-         ["/authorized" routes/authorized]]
+         ["/authorized" {:get authorized/get}]]
         ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["/add-admin" {:post routes/add-admin}]]]]))))
+         ["/add-admin" {:post admin/post}]]]]))))
 
 (comment
   (require '[source.middleware.auth.util :as auth.util])
@@ -33,7 +38,7 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        request {:uri "/users/2" :request-method :get}]
+        request {:uri "/users/5" :request-method :get}]
     (-> request
         app
         :body
