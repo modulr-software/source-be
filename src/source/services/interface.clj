@@ -11,7 +11,7 @@
   (users/user ds opts))
 
 (defn insert-user! [ds {:keys [id] :as opts}]
-  (users/delete-user! ds opts))
+  (users/insert-user! ds opts))
 
 (defn login [ds {:keys [email] :as opts}]
   (auth/login ds opts))

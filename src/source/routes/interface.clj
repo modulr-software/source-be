@@ -8,10 +8,10 @@
   (users/handler request))
 
 (defn user [request]
-  (users/handler request))
+  (user/handler request))
 
 (defn login [request]
   (login/handler request))
 
-(defn registe [request]
+(defn register [request]
   (register/handler request))
