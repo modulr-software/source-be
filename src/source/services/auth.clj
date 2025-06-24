@@ -20,5 +20,5 @@
 
 (comment
   (require '[source.db.interface :as db])
-  (login (db/ds :master) {:email "merveillevaneck@gmail.com" :type "admin"})
+  (login (db/ds :master) {:user {:email "merveillevaneck@gmail.com" :type "admin"}})
   ())

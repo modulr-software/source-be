@@ -1,8 +1,8 @@
-(ns source.routes.register
+(ns source.routes.add-admin
   (:require [source.services.interface :as services]
             [ring.util.response :as res]))
 
-(defn post [{:keys [ds body] :as _request}]
+(defn handler [{:keys [ds body] :as _request}]
   ;;TODO: needs schema validation here
   (let [{:keys [email password confirm-password]} body
         existing-user (services/user ds {:where [:= :email email]})]
@@ -15,13 +15,5 @@
       (-> (res/response {:error "an account for this email already exists!"}))
 
       :else
-      (-> (services/register ds body)
+      (-> (services/register ds (merge body {:type "admin"}))
           (res/response)))))
-
-(comment
-  (require '[source.db.interface :as db])
-  (post {:ds (db/ds :master) :body {:email "test@test.com"
-                                    :password "test"
-                                    :type "distributor"
-                                    :confirm-password "test"}})
-  ())
