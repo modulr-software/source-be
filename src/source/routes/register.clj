@@ -2,7 +2,7 @@
   (:require [source.services.interface :as services]
             [ring.util.response :as res]))
 
-(defn handler [{:keys [ds body] :as _request}]
+(defn post [{:keys [ds body] :as _request}]
   ;;TODO: needs schema validation here
   (let [{:keys [email password confirm-password]} body
         existing-user (services/user ds {:where [:= :email email]})]
@@ -18,10 +18,10 @@
       (-> (services/register ds body)
           (res/response)))))
 
-(comment 
+(comment
   (require '[source.db.interface :as db])
-  (handler {:ds (db/ds :master) :body {:email "test@test.com" 
-                                       :password "test"
-                                       :type "distributor"
-                                       :confirm-password "test"}})
+  (post {:ds (db/ds :master) :body {:email "test@test.com"
+                                    :password "test"
+                                    :type "distributor"
+                                    :confirm-password "test"}})
   ())
