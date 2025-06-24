@@ -2,9 +2,9 @@
   (:require [source.services.interface :as services]
             [ring.util.response :as res]))
 
-(defn handler [{:keys [ds user] :as _Request}]
-  ;;todo: needs scehma validation here
-  (let [{:keys [email password confirm-password]} user
+(defn handler [{:keys [ds body] :as _request}]
+  ;;TODO: needs schema validation here
+  (let [{:keys [email password confirm-password]} body
         existing-user (services/user ds {:where [:= :email email]})]
     (cond
       (not (= password confirm-password))
@@ -15,5 +15,13 @@
       (-> (res/response {:error "an account for this email already exists!"}))
 
       :else
-      (-> (services/register ds user)
+      (-> (services/register ds body)
           (res/response)))))
+
+(comment 
+  (require '[source.db.interface :as db])
+  (handler {:ds (db/ds :master) :body {:email "test@test.com" 
+                                       :password "test"
+                                       :type "distributor"
+                                       :confirm-password "test"}})
+  ())

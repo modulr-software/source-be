@@ -7,9 +7,14 @@
 (defn handler [{:keys [ds body] :as _request}]
   (let [{:keys [email password]} body
         user (users/user ds {:where [:= :email email]})]
-    (cond
+    (if
       (or (not (pw/verify-password password (:password user)))
           (not (some? user)))
       {:status 401 :body {:message "Invalid username or password!"}}
 
-      :else (res/response (auth/login ds user)))))
+      (res/response (auth/login ds {:user user})))))
+
+(comment 
+  (require '[source.db.interface :as db])
+  (handler {:ds (db/ds :master) :body {:email "toast@toast.com" :password "poop"}})
+  ())
