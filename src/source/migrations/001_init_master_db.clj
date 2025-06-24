@@ -11,9 +11,11 @@
             [source.db.master.content-type :as content-types]
             [clojure.data.json :as json]
             [source.db.master.core :as master]
-            [source.config :as conf]))
+            [source.db.master :as master-test]
+            [source.config :as conf]
+            [source.db.tables :as tables]))
 
-(defn read-admins 
+(defn read-admins
   "reads admin user information from file"
   []
   (try
@@ -26,7 +28,12 @@
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
-    (users/create-users-table ds-master)
+    ;;example swap
+    ;;(users/create-users-table ds-master)
+    (tables/create-tables! ds-master :source.db.master [:users]) ;;yes you can use multiple table names
+    ;;end example swap
+
+    ;;TODO: fix the rest of these
     (bundles/create-bundles-table ds-master)
     (baselines/create-baselines-table ds-master)
     (cadences/create-cadences-table ds-master)
@@ -73,5 +80,5 @@
   (let [ds-master (:db-master context)]
     (master/drop-tables ds-master)))
 
-(comment 
+(comment
   (read-admins))
