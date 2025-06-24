@@ -1,6 +1,6 @@
 (ns source.routes.interface
-  (:require [source.routes.users :as users]
-            [source.routes.user :as user]
+  (:require [source.routes.user :as user]
+            [source.routes.users :as users]
             [source.routes.login :as login]
             [source.routes.register :as register]))
 
@@ -8,10 +8,13 @@
   (users/handler request))
 
 (defn user [request]
-  (users/handler request))
+  (user/get-handler request))
+
+(defn update-user [request]
+  (user/patch-handler request))
 
 (defn login [request]
   (login/handler request))
 
-(defn registe [request]
+(defn register [request]
   (register/handler request))

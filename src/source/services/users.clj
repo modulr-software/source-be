@@ -30,6 +30,13 @@
        (merge opts)
        (db/delete! ds)))
 
+(defn update-user! [ds {:keys [id values where] :as opts}]
+  (->> {:tname :users
+        :values values
+        :where (if (some? id) [:= :id id] where)}
+       (merge opts)
+       (db/update! ds)))
+
 (comment
   (users (db/ds :master))
   (insert-user! (db/ds :master) {:email "merveillevaneck@gmail.com"
@@ -38,4 +45,8 @@
                                  :firstname "merv"
                                  :lastname "vaneck"
                                  :type "admin"})
+  (user (db/ds :master) {:id 5})
+  (update-user! (db/ds :master) {:id 5
+                                 :values {:firstname "kiigan"
+                                          :lastname "korinzu"}})
   ())

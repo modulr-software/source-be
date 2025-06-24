@@ -10,10 +10,13 @@
 (defn user [ds {:keys [_id] :as opts}]
   (users/user ds opts))
 
-(defn insert-user! [ds {:keys [id] :as opts}]
-  (users/delete-user! ds opts))
+(defn insert-user! [ds {:keys [_id] :as opts}]
+  (users/insert-user! ds opts))
 
-(defn login [ds {:keys [email] :as opts}]
+(defn update-user! [ds {:keys [_id _values _where] :as opts}]
+  (users/update-user! ds opts))
+
+(defn login [ds {:keys [_email] :as opts}]
   (auth/login ds opts))
 
 (defn register [ds user]
@@ -21,6 +24,6 @@
 
 (comment
   (users (db/ds :master))
-  (user (db/ds :master) {:id 1})
+  (user (db/ds :master) {:id 2})
   (login (db/ds :master) {:email "merveillevaneck@gmail.com"})
   ())
