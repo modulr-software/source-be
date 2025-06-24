@@ -10,8 +10,14 @@
 (defn user [ds {:keys [_id] :as opts}]
   (users/user ds opts))
 
+(defn insert-user! [ds {:keys [id] :as opts}]
+  (users/delete-user! ds opts))
+
 (defn login [ds {:keys [email] :as opts}]
   (auth/login ds opts))
+
+(defn register [ds user]
+  (auth/register ds user))
 
 (comment
   (users (db/ds :master))

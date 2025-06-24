@@ -1,5 +1,6 @@
 (ns source.services.users
-  (:require [source.db.interface :as db]))
+  (:require [source.db.interface :as db]
+            [source.password :as pw]))
 
 (defn users
   ([ds] (users ds {}))
@@ -18,6 +19,23 @@
        (merge opts)
        (db/find ds)))
 
+(defn insert-user! [ds user]
+  (->> {:tname :users
+        :data user}
+       (db/insert! ds)))
+
+(defn delete-user! [ds {:keys [id where] :as opts}]
+  (->> {:tname :users
+        :where (if (some? id) [:= :id id] where)}
+       (merge opts)
+       (db/delete! ds)))
+
 (comment
   (users (db/ds :master))
+  (insert-user! (db/ds :master) {:email "merveillevaneck@gmail.com"
+                                 :password (pw/hash-password "test")
+                                 :sector-id 1
+                                 :firstname "merv"
+                                 :lastname "vaneck"
+                                 :type "admin"})
   ())
