@@ -6,8 +6,8 @@
 create table if not exists analytics (
     id integer primary key autoincrement,
     post_id integer not null,
-		event_type text not null,
-		timestamp text not null
+	event_type text not null,
+	timestamp text not null
 )
 
 -- :name drop-table! :! :n

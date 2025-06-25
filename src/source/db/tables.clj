@@ -1,7 +1,6 @@
 (ns source.db.tables
   (:require [source.db.honey :as hon]
-            [honey.sql.helpers :as hsql]
-            [source.db.util :as db.util]))
+            [honey.sql.helpers :as hsql]))
 
 (defn create-table-sql
   "returns a honey data DSL structure for creating a table tname
@@ -106,8 +105,18 @@
   (with-redefs [hon/execute! (fn [_ sql] sql)]
     (create-tables! nil :source.db.master [:users]))
 
-  (create-tables! (db.util/conn :master) :source.db.master [:users :cadences])
-  (drop-tables! (db.util/conn :master) [:users :cadences])
+  (create-tables!
+   (db.util/conn :master)
+   :source.db.master
+   [:users
+    :cadences
+    :businesses])
+
+  (drop-tables!
+   (db.util/conn :master)
+   [:users
+    :cadences])
+
   (drop-all-tables! (db.util/conn :master))
 
   (require '[honey.sql :as sql])
