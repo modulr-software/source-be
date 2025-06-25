@@ -2,9 +2,9 @@
   (:require [source.db.tables :as tables]
             [honey.sql :as sql]))
 
-(def event-category
+(def event-categories
   (tables/create-table-sql
-    :event-category
+    :event-categories
     (tables/table-id)
     [:event-id :integer :not nil]
     [:category-id :text :not nil]
@@ -32,7 +32,7 @@
     [:timestamp :text :not nil]))
 
 (comment
-  (sql/format event-category)
+  (sql/format event-categories)
   (sql/format outgoing-posts)
   (sql/format analytics)
   ())

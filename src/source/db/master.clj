@@ -85,9 +85,9 @@
    (tables/foreign-key :baseline-id :baselines :id)
    (tables/foreign-key :content-type-id :content-types :id)))
 
-(def feeds-categories
+(def feed-categories
   (tables/create-table-sql
-   :feeds-categories
+   :feed-categories
    (tables/table-id)
    [:feed-id :integer :not nil]
    [:category-id :integer :not nil]
@@ -141,7 +141,7 @@
   (sql/format baselines)
   (sql/format bundles)
   (sql/format feeds)
-  (sql/format feeds-categories)
+  (sql/format feed-categories)
   (sql/format providers)
   (sql/format businesses)
   (sql/format user-sectors)
