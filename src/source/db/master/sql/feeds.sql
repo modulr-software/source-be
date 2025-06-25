@@ -21,7 +21,7 @@ create table if not exists feeds (
     foreign key (provider_id) references providers(id),
     foreign key (cadence_id) references cadences(id),
     foreign key (baseline_id) references baselines(id),
-		foreign key (content_type_id) references content_types(id)
+	foreign key (content_type_id) references content_types(id)
 );
 
 -- :name drop-table! :! :n
