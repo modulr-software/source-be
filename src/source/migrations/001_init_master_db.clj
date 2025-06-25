@@ -1,9 +1,7 @@
 (ns source.migrations.001-init-master-db
   (:require [clojure.data.json :as json]
-            [source.db.master.core :as master]
             [source.db.master]
             [source.db.honey :as db]
-            [source.db.master :as master-test]
             [source.config :as conf]
             [source.db.tables :as tables]))
 
@@ -33,7 +31,10 @@
       :bundles
       :feeds
       :feeds-categories
-      :providers])
+      :providers
+      :businesses
+      :user-sectors
+      :feed-sectors])
 
     (db/insert! ds-master {:tname :baselines
                            :data [{:label "0-1000"

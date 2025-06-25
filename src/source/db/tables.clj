@@ -89,7 +89,7 @@
 (defn drop-all-tables!
   "drops all the tables in the provided sqlite datasource"
   [ds]
-  (drop-tables! ds (map keyword (table-names ds))))
+  (drop-tables! ds (mapv keyword (table-names ds))))
 
 (defn foreign-key
   "for a column c, foreign table name ft and foreign column name fc,

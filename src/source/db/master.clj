@@ -1,12 +1,6 @@
 (ns source.db.master
-  (:require [source.db.honey :as hon]
-            [honey.sql :as sql]
-            [honey.sql.helpers :as hsql]
-            [source.db.tables :as tables]
-            [source.db.master.users-sectors :as users-sectors]
-            [source.db.master.feeds-sectors :as feeds-sectors]))
+  (:require [source.db.tables :as tables]))
 
-;;PUT ALL YO TABLE DEFINITIONS HERE SO MIGRATIONS CAN REFERENCE THEM
 (def users
   (tables/create-table-sql
    :users
@@ -118,25 +112,27 @@
    [:sector-id :integer [:default nil]]
    (tables/foreign-key :sector-id :sectors :id)))
 
-(def users-sectors
+(def user-sectors
   (tables/create-table-sql
-    :users-sectors
-    (tables/table-id)
-    [:user-id :integer :not nil]
-    [:sector-id :integer :not nil]
-    (tables/foreign-key :user-id :users :id)
-    (tables/foreign-key :sector-id :sectors :id)))
+   :users-sectors
+   (tables/table-id)
+   [:user-id :integer :not nil]
+   [:sector-id :integer :not nil]
+   (tables/foreign-key :user-id :users :id)
+   (tables/foreign-key :sector-id :sectors :id)))
 
-(def feeds-sectors
+(def feed-sectors
   (tables/create-table-sql
-    :feeds-sectors
-    (tables/table-id)
-    [:feed-id :integer :not nil]
-    [:sector-id :integer :not nil]
-    (tables/foreign-key :feed-id :feeds :id)
-    (tables/foreign-key :sector-id :sectors :id)))
+   :feeds-sectors
+   (tables/table-id)
+   [:feed-id :integer :not nil]
+   [:sector-id :integer :not nil]
+   (tables/foreign-key :feed-id :feeds :id)
+   (tables/foreign-key :sector-id :sectors :id)))
 
 (comment
+  (require '[honey.sql :as sql])
+
   (sql/format users)
   (sql/format sectors)
   (sql/format content-types)
@@ -148,6 +144,6 @@
   (sql/format feeds-categories)
   (sql/format providers)
   (sql/format businesses)
-  (sql/format users-sectors)
-  (sql/format feeds-sectors)
+  (sql/format user-sectors)
+  (sql/format feed-sectors)
   ())
