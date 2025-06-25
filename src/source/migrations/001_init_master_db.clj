@@ -1,16 +1,8 @@
 (ns source.migrations.001-init-master-db
-  (:require [source.db.master.users :as users]
-            [source.db.master.bundles :as bundles]
-            [source.db.master.baselines :as baselines]
-            [source.db.master.cadences :as cadences]
-            [source.db.master.feeds :as feeds]
-            [source.db.master.feeds-categories :as feeds-categories]
-            [source.db.master.providers :as providers]
-            [source.db.master.sectors :as sectors]
-            [source.db.master.categories :as categories]
-            [source.db.master.content-type :as content-types]
-            [clojure.data.json :as json]
+  (:require [clojure.data.json :as json]
             [source.db.master.core :as master]
+            [source.db.master]
+            [source.db.honey :as db]
             [source.db.master :as master-test]
             [source.config :as conf]
             [source.db.tables :as tables]))
@@ -28,57 +20,75 @@
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
-    ;;example swap
-    ;;(users/create-users-table ds-master)
-    (tables/create-tables! ds-master :source.db.master [:users]) ;;yes you can use multiple table names
-    ;;end example swap
 
-    ;;TODO: fix the rest of these
-    (bundles/create-bundles-table ds-master)
-    (baselines/create-baselines-table ds-master)
-    (cadences/create-cadences-table ds-master)
-    (feeds/create-table! ds-master)
-    (feeds-categories/create-table! ds-master)
-    (providers/create-providers-table ds-master)
-    (sectors/create-sectors-table ds-master)
-    (categories/create-table ds-master)
-    (content-types/create-content-types-table ds-master)
-    (master/seed-table ds-master {:table "baselines"
-                                  :cols ["label" "min" "max"]
-                                  :vals [["0-1000" 0 1000]
-                                         ["1000-10000" 1000 10000]
-                                         ["10000-100000" 10000 100000]
-                                         ["100000-1000000" 100000 1000000]]})
-    (master/seed-table ds-master {:table "cadences"
-                                  :cols ["label" "days"]
-                                  :vals [["daily" 1]
-                                         ["weekly" 7]
-                                         ["biweekly" 14]
-                                         ["monthly" 30]]})
-    (master/seed-table ds-master {:table "content_types"
-                                  :cols ["name"]
-                                  :vals [["video"]
-                                         ["podcast"]
-                                         ["blog"]]})
-    (master/seed-table ds-master {:table "providers"
-                                  :cols ["name" "domain" "content_type_id"]
-                                  :vals [["youtube" "www.youtube.com" 1]
-                                         ["spotify" "www.spotify.com" 2]
-                                         ["medium" "www.medium.com" 3]]})
-    (master/seed-table ds-master {:table "sectors"
-                                  :cols ["name"]
-                                  :vals [["renewable energy"]
-                                         ["conservation ecology"]
-                                         ["recycling"]]})
+    (tables/create-tables!
+     ds-master
+     :source.db.master
+     [:users
+      :sectors
+      :categories
+      :content-types
+      :cadences
+      :baselines
+      :bundles
+      :feeds
+      :feeds-categories
+      :providers])
+
+    (db/insert! ds-master {:tname :baselines
+                           :data [{:label "0-1000"
+                                   :min 0
+                                   :max 1000}
+                                  {:label "1000-10000"
+                                   :min 1000
+                                   :max 10000}
+                                  {:label "10000-100000"
+                                   :min 10000
+                                   :max 100000}
+                                  {:label "100000-1000000"
+                                   :min 100000
+                                   :max 1000000}]})
+
+    (db/insert! ds-master {:tname :cadences
+                           :data [{:label "daily"
+                                   :days 1}
+                                  {:label "weekly"
+                                   :days 7}
+                                  {:label "biweekly"
+                                   :days 14}
+                                  {:label "monthly"
+                                   :days 30}]})
+
+    (db/insert! ds-master {:tname :content-types
+                           :data [{:name "video"}
+                                  {:name "podcast"}
+                                  {:name "blog"}]})
+
+    (db/insert! ds-master {:tname :providers
+                           :data [{:name "youtube"
+                                   :domain "www.youtube.com"
+                                   :content-type-id 1}
+                                  {:name "spotify"
+                                   :domain "www.spotify.com"
+                                   :content-type-id 2}
+                                  {:name "medium"
+                                   :domain "www.medium.com"
+                                   :content-type-id 3}]})
+
+    (db/insert! ds-master {:tname :sectors
+                           :data [{:name "renewable energy"}
+                                  {:name "conservation ecology"}
+                                  {:name "recycling"}]})
 
     (doseq [{:keys [email password]} (read-admins)]
-      (master/seed-table ds-master {:table "users"
-                                    :cols ["email" "password" "type"]
-                                    :vals [[email password "admin"]]}))))
+      (db/insert! ds-master {:tname :users
+                             :data {:email email
+                                    :password password
+                                    :type "admin"}}))))
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
-    (master/drop-tables ds-master)))
+    (tables/drop-all-tables! ds-master)))
 
 (comment
   (read-admins))
