@@ -11,7 +11,6 @@ create table if not exists outgoing_posts (
 		feed_id integer,
 		creator_id integer,
     foreign key (creator_id) references users(id),
-    foreign key (bundle_id) references bundles(id)
 		foreign key (feed_id) references feeds(id)
 )
 
