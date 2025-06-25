@@ -1,15 +1,11 @@
 (ns source.routes
-  (:require [compojure.core :refer [defroutes GET POST PATCH]]
+  (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [source.oauth2.google.interface :as google]
-            [ring.util.response :as response]
             [source.middleware.auth.core :as auth]
             [source.db.master.users :as users]
+            [source.db.master.connection :as con]
             [source.db.util :as db.util]
-            [source.password :as pw]
-            [clojure.data.json :as json]
-            [source.rss.core :as rss]
-            [clojure.pprint :as pp]))
+            [source.password :as pw]))
 
 ;; TODO
 ;; These endpoints will be refactored to use the updated "get-ds" function which takes in a db name
@@ -65,6 +61,7 @@
                                  :sector-id 1
                                  :firstname (:firstname new-user)
                                  :lastname (:lastname new-user)
+                                 :business-name nil
                                  :type (:type new-user)})
           {:status 200 :body {:message "successfully created user"}})))))
 
@@ -74,53 +71,9 @@
       {:status 200
        :body {:users (users/users ds)}})))
 
-(def update-user
-  (PATCH "/users/:id" req []
-    (let [user-id (get-in req [:params :id])
-          cols (mapv name (keys (:body req)))
-          values (vec (vals (:body req)))
-          ds (db.util/conn :master)]
-
-      (users/update-user! ds {:id user-id
-                              :cols cols
-                              :vals values})
-      {:status 200
-       :body {:message "successfully updated user"}})))
-
-(def google-launch (GET "/oauth2/google" []
-                     (response/response (google/auth-uri))))
-
-(def google-redirect (GET "/oauth2/google/callback" req []
-                       (let [{:keys [uuid uri]} (:body req)
-                             email (google/google-session-user uuid (:params req))
-                             ds (db.util/conn :master)
-                             user (users/user-by ds {:col "email"
-                                                     :val email})]
-
-                         (if (some? user)
-                           (let [payload (dissoc user :password)]
-                             {:status 200
-                              :body (merge payload
-                                           (auth/create-session payload))})
-
-                           (do
-                             (users/insert-user ds {:email email})
-                             (let [new-user (users/user-by ds {:col "email"
-                                                               :val email})
-                                   payload (dissoc new-user :password)]
-                               {:status 200
-                                :body (merge payload
-                                             (auth/create-session payload))}))))))
-
 (defroutes app
   home
   login
   users
   register
-  update-user
-
-  google-launch
-  google-redirect
   (route/not-found "Page not found"))
-
-(comment)
