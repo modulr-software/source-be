@@ -1,6 +1,7 @@
 (ns source.db.tables
   (:require [source.db.honey :as hon]
-            [honey.sql.helpers :as hsql]))
+            [honey.sql.helpers :as hsql]
+            [source.db.util :as db.util]))
 
 (defn create-table-sql
   "returns a honey data DSL structure for creating a table tname
@@ -79,11 +80,17 @@
   (->> (drop-table-sql tname)
        (hon/execute! ds)))
 
+(defn drop-tables!
+  "this function is similar to drop-table!, except it can drop 
+  multiple tables provided as a vector of table names"
+  [ds tnames]
+  (doseq [table-name tnames]
+    (drop-table! ds table-name)))
+
 (defn drop-all-tables!
   "drops all the tables in the provided sqlite datasource"
   [ds]
-  (doseq [table-name (map keyword (table-names ds))]
-    (drop-table! ds table-name)))
+  (drop-tables! ds (map keyword (table-names ds))))
 
 (defn foreign-key
   "for a column c, foreign table name ft and foreign column name fc,
@@ -98,6 +105,10 @@
   (table-names (db.util/conn :master))
   (with-redefs [hon/execute! (fn [_ sql] sql)]
     (create-tables! nil :source.db.master [:users]))
+
+  (create-tables! (db.util/conn :master) :source.db.master [:users :cadences])
+  (drop-tables! (db.util/conn :master) [:users :cadences])
+  (drop-all-tables! (db.util/conn :master))
 
   (require '[honey.sql :as sql])
   (->
