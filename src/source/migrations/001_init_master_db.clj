@@ -92,15 +92,17 @@
     (db/insert! ds-master providers-seed)
     (db/insert! ds-master sectors-seed)
 
-    (doseq [{:keys [email password]} (read-admins)]
-      (db/insert! ds-master {:tname :users
-                             :data {:email email
-                                    :password password
-                                    :type "admin"}}))))
+    (run!
+     #(db/insert! ds-master {:tname :users
+                             :data {:email (:email %)
+                                    :password (:password %)
+                                    :type "admin"}})
+     (read-admins))))
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
     (tables/drop-all-tables! ds-master)))
 
 (comment
-  (read-admins))
+  (read-admins)
+  ())
