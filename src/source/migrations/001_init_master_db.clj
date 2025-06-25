@@ -80,7 +80,7 @@
       :baselines
       :bundles
       :feeds
-      :feeds-categories
+      :feed-categories
       :providers
       :businesses
       :user-sectors
