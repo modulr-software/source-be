@@ -48,39 +48,46 @@
             (s/tag root)
             (rest ts))))
 
+(defn split
+  "splits path segment into [namespace name]"
+  [path-segment]
+  (let [path-keyword (keyword path-segment)]
+    (mapv
+     #(keyword %)
+     [(namespace path-keyword)
+      (name path-keyword)])))
+
 (defn extract-data
   "Recursively extracts data from a hickory xml tree according to the selection schema."
-  [schema htree]
+  [schema ast]
   (reduce-kv
    (fn [result field {:keys [type path schema]}]
-     (let [is-attr-path? (and (seq path) (string/starts-with? (last path) "attr/"))
-           attr-key (when is-attr-path?
-                      (keyword (subs (last path) (count "attr/"))))
-           selector-path (if is-attr-path? (butlast path) path)
+     (let [[nmspc nm] (split (last path))
+           selector-path (if (= :attr nm) (butlast path) path)
            selector (build-child-selector selector-path)]
 
        (cond
-         (and (= type "string") is-attr-path?)
+         (= nmspc :attr)
          (assoc result field
-                (-> (s/select selector htree)
+                (-> (s/select selector ast)
                     first
                     :attrs
-                    (get attr-key)))
+                    (get nm)))
 
          (= type "string")
          (assoc result field
-                (-> (s/select selector htree)
+                (-> (s/select selector ast)
                     first
                     :content
                     first))
 
          (= type "map")
-         (let [child-node (first (s/select selector htree))]
+         (let [child-node (first (s/select selector ast))]
            (assoc result field
                   (extract-data schema child-node)))
 
          (= type "vector")
-         (let [child-nodes (s/select selector htree)]
+         (let [child-nodes (s/select selector ast)]
            (assoc result field
                   (mapv #(extract-data schema %) child-nodes)))
 
