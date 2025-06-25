@@ -114,7 +114,7 @@
 
 (def user-sectors
   (tables/create-table-sql
-   :users-sectors
+   :user-sectors
    (tables/table-id)
    [:user-id :integer :not nil]
    [:sector-id :integer :not nil]
@@ -123,7 +123,7 @@
 
 (def feed-sectors
   (tables/create-table-sql
-   :feeds-sectors
+   :feed-sectors
    (tables/table-id)
    [:feed-id :integer :not nil]
    [:sector-id :integer :not nil]
