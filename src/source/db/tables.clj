@@ -27,7 +27,7 @@
   @(resolve (qualify ns tname)))
 
 (defn create-table!
-  "Given a keywords ns and table, parses the keywords into a
+  "Given keywords ns and table, parses the keywords into a
   resolvable keyword, resolves the symbol to retrieve defined
   sql create table honey statements, prepares jdbc statements from them,
   and executes with next.jdbc, returning the result of the execution."
@@ -66,6 +66,24 @@
   with (create-table-sql) to simplify creating table ids."
   []
   [:id :integer [:primary-key] :autoincrement])
+
+(defn drop-table-sql
+  "returns a honey data DSL structure for dropping a table tname"
+  [tname]
+  (hsql/drop-table tname))
+
+(defn drop-table!
+  "given a table tname, this function drops the table tname from 
+  the provided datasource"
+  [ds tname]
+  (->> (drop-table-sql tname)
+       (hon/execute! ds)))
+
+(defn drop-all-tables!
+  "drops all the tables in the provided sqlite datasource"
+  [ds]
+  (doseq [table-name (map keyword (table-names ds))]
+    (drop-table! ds table-name)))
 
 (defn foreign-key
   "for a column c, foreign table name ft and foreign column name fc,
