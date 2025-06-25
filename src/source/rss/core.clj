@@ -6,16 +6,10 @@
             [clojure.string :as string]
             [clojure.pprint :as pprint]))
 
-(defn get-url []
-  (->> "https://www.youtube.com/@ThePrimeTimeagen"
-       (yt/find-channel-id)
-       (str "https://www.youtube.com/feeds/videos.xml?channel_id=")))
+(defn get-ast
+  "Constructs a hickory tree representation from an xml string."
 
-(defn get-xml []
-  (let [rss-url (get-url)]
-    (slurp rss-url)))
-
-(defn get-ast [xml]
+  [xml]
   (-> xml h/parse h/as-hickory))
 
 (defn collect-leaf-paths
@@ -94,21 +88,3 @@
          result)))
    {}
    schema))
-
-(extract-data schema-parsed (get-ast (get-xml)))
-
-(defn extract [])
-
-(defn collect-paths
-  ([root-node] (collect-paths root-node {} []))
-  ([root-node acc current-path]))
-
-(defn run-attr-extractors [extractor-map htree]
-  (reduce-kv
-   (fn [acc _ extractor-fn]
-     (conj acc (extractor-fn htree)))
-   []
-   extractor-map))
-
-(def xml-ast
-  (get-ast (get-xml)))

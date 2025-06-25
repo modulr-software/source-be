@@ -112,38 +112,12 @@
                                 :body (merge payload
                                              (auth/create-session payload))}))))))
 
-(def output-schema (GET "/output-schema" []
-                     {:status 200
-                      :body (json/write-str {:title {:type "string" :required true}
-                                             :url {:type "string" :required true}
-                                             :posts {:type "vector"
-                                                     :required true
-                                                     :schema {:title {:type "string" :required true}
-                                                              :stream-url {:type "string" :required true}
-                                                              :description {:type "string" :required false}
-                                                              :posted-at {:type "string" :required false}}}})}))
-
-(def selection-schema (POST "/selection-schema" req []
-                        (->
-                         (:body req)
-                         (slurp)
-                         (json/read-str {:key-fn keyword})
-                         (rss/extract-data rss/xml-ast)
-                         (clojure.pprint/pprint))))
-
-(def get-xml (GET "/xml" []
-               {:status 200
-                :body (json/write-str (rss/collect-leaf-paths rss/xml-ast))}))
-
 (defroutes app
   home
   login
   users
   register
   update-user
-  get-xml
-  output-schema
-  selection-schema
 
   google-launch
   google-redirect
