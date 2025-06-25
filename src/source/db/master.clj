@@ -3,7 +3,8 @@
             [honey.sql :as sql]
             [honey.sql.helpers :as hsql]
             [source.db.tables :as tables]
-            [source.db.master.providers :as providers]))
+            [source.db.master.users-sectors :as users-sectors]
+            [source.db.master.feeds-sectors :as feeds-sectors]))
 
 ;;PUT ALL YO TABLE DEFINITIONS HERE SO MIGRATIONS CAN REFERENCE THEM
 (def users
@@ -56,59 +57,86 @@
    [:min :integer]
    [:max :integer]))
 
-(def bundles 
+(def bundles
   (tables/create-table-sql
-    :bundles
-    (tables/table-id)
-    [:user-id :integer]
-    [:video :integer :not :null [:default 0]]
-    [:podcast :integer :not :null [:default 0]]
-    [:blog :integer :not :null [:default 0]]
-    [:hash :text]
-    (tables/foreign-key :user-id :users :id)))
+   :bundles
+   (tables/table-id)
+   [:user-id :integer]
+   [:video :integer :not nil [:default 0]]
+   [:podcast :integer :not nil [:default 0]]
+   [:blog :integer :not nil [:default 0]]
+   [:hash :text]
+   (tables/foreign-key :user-id :users :id)))
 
-(def feeds 
+(def feeds
   (tables/create-table-sql
-    :feeds
-    (tables/table-id)
-    [:title :text :not :null]
-    [:display-picture :text]
-    [:url :text]
-    [:rss-url :text :not :null]
-    [:user-id :integer]
-    [:provider-id :integer]
-    [:created-at :datetime :not :null]
-    [:updated-at :datetime]
-    [:content-type-id :integer :not :null]
-    [:cadence-id :integer :not :null]
-    [:baseline-id :integer :not :null]
-    [:ts-and-cs :text]
-    [:state :text]
-    (tables/foreign-key :user-id :users :id)
-    (tables/foreign-key :provider-id :providers :id)
-    (tables/foreign-key :cadence-id :cadences :id)
-    (tables/foreign-key :baseline-id :baselines :id)
-    (tables/foreign-key :content-type-id :content-types :id)))
+   :feeds
+   (tables/table-id)
+   [:title :text :not nil]
+   [:display-picture :text]
+   [:url :text]
+   [:rss-url :text :not nil]
+   [:user-id :integer]
+   [:provider-id :integer]
+   [:created-at :datetime :not nil]
+   [:updated-at :datetime]
+   [:content-type-id :integer :not nil]
+   [:cadence-id :integer :not nil]
+   [:baseline-id :integer :not nil]
+   [:ts-and-cs :text]
+   [:state :text]
+   (tables/foreign-key :user-id :users :id)
+   (tables/foreign-key :provider-id :providers :id)
+   (tables/foreign-key :cadence-id :cadences :id)
+   (tables/foreign-key :baseline-id :baselines :id)
+   (tables/foreign-key :content-type-id :content-types :id)))
 
 (def feeds-categories
   (tables/create-table-sql
-    :feeds-categories
-    (tables/table-id)
-    [:feed-id :integer :not :null]
-    [:category-id :integer :not :null]
-    (tables/foreign-key :feed-id :feeds :id)
-    (tables/foreign-key :category-id :categories :id)))
+   :feeds-categories
+   (tables/table-id)
+   [:feed-id :integer :not nil]
+   [:category-id :integer :not nil]
+   (tables/foreign-key :feed-id :feeds :id)
+   (tables/foreign-key :category-id :categories :id)))
 
 (def providers
   (tables/create-table-sql
-    :providers
-    (tables/table-id)
-    [:name :text]
-    [:domain :text]
-    [:content-type-id :integer]
-    (tables/foreign-key :content-type-id :content-types :id)))
+   :providers
+   (tables/table-id)
+   [:name :text]
+   [:domain :text]
+   [:content-type-id :integer]
+   (tables/foreign-key :content-type-id :content-types :id)))
 
-(comment 
+(def businesses
+  (tables/create-table-sql
+   :businesses
+   (tables/table-id)
+   [:name :text]
+   [:url :text [:default nil]]
+   [:sector-id :integer [:default nil]]
+   (tables/foreign-key :sector-id :sectors :id)))
+
+(def users-sectors
+  (tables/create-table-sql
+    :users-sectors
+    (tables/table-id)
+    [:user-id :integer :not nil]
+    [:sector-id :integer :not nil]
+    (tables/foreign-key :user-id :users :id)
+    (tables/foreign-key :sector-id :sectors :id)))
+
+(def feeds-sectors
+  (tables/create-table-sql
+    :feeds-sectors
+    (tables/table-id)
+    [:feed-id :integer :not nil]
+    [:sector-id :integer :not nil]
+    (tables/foreign-key :feed-id :feeds :id)
+    (tables/foreign-key :sector-id :sectors :id)))
+
+(comment
   (sql/format users)
   (sql/format sectors)
   (sql/format content-types)
@@ -119,4 +147,7 @@
   (sql/format feeds)
   (sql/format feeds-categories)
   (sql/format providers)
+  (sql/format businesses)
+  (sql/format users-sectors)
+  (sql/format feeds-sectors)
   ())
