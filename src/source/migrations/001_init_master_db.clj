@@ -16,6 +16,56 @@
     (catch Exception e
       (println (str "Couldn't read the admins file: " (.getMessage e))))))
 
+(def baselines-seed
+  {:tname :baselines
+   :data [{:label "0-1000"
+           :min 0
+           :max 1000}
+          {:label "1000-10000"
+           :min 1000
+           :max 10000}
+          {:label "10000-100000"
+           :min 10000
+           :max 100000}
+          {:label "100000-1000000"
+           :min 100000
+           :max 1000000}]})
+
+(def cadences-seed
+  {:tname :cadences
+   :data [{:label "daily"
+           :days 1}
+          {:label "weekly"
+           :days 7}
+          {:label "biweekly"
+           :days 14}
+          {:label "monthly"
+           :days 30}]})
+
+(def content-types-seed
+  {:tname :content-types
+   :data [{:name "video"}
+          {:name "podcast"}
+          {:name "blog"}]})
+
+(def providers-seed
+  {:tname :providers
+   :data [{:name "youtube"
+           :domain "www.youtube.com"
+           :content-type-id 1}
+          {:name "spotify"
+           :domain "www.spotify.com"
+           :content-type-id 2}
+          {:name "medium"
+           :domain "www.medium.com"
+           :content-type-id 3}]})
+
+(def sectors-seed
+  {:tname :sectors
+   :data [{:name "renewable energy"}
+          {:name "conservation ecology"}
+          {:name "recycling"}]})
+
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
 
@@ -36,50 +86,11 @@
       :user-sectors
       :feed-sectors])
 
-    (db/insert! ds-master {:tname :baselines
-                           :data [{:label "0-1000"
-                                   :min 0
-                                   :max 1000}
-                                  {:label "1000-10000"
-                                   :min 1000
-                                   :max 10000}
-                                  {:label "10000-100000"
-                                   :min 10000
-                                   :max 100000}
-                                  {:label "100000-1000000"
-                                   :min 100000
-                                   :max 1000000}]})
-
-    (db/insert! ds-master {:tname :cadences
-                           :data [{:label "daily"
-                                   :days 1}
-                                  {:label "weekly"
-                                   :days 7}
-                                  {:label "biweekly"
-                                   :days 14}
-                                  {:label "monthly"
-                                   :days 30}]})
-
-    (db/insert! ds-master {:tname :content-types
-                           :data [{:name "video"}
-                                  {:name "podcast"}
-                                  {:name "blog"}]})
-
-    (db/insert! ds-master {:tname :providers
-                           :data [{:name "youtube"
-                                   :domain "www.youtube.com"
-                                   :content-type-id 1}
-                                  {:name "spotify"
-                                   :domain "www.spotify.com"
-                                   :content-type-id 2}
-                                  {:name "medium"
-                                   :domain "www.medium.com"
-                                   :content-type-id 3}]})
-
-    (db/insert! ds-master {:tname :sectors
-                           :data [{:name "renewable energy"}
-                                  {:name "conservation ecology"}
-                                  {:name "recycling"}]})
+    (db/insert! ds-master baselines-seed)
+    (db/insert! ds-master cadences-seed)
+    (db/insert! ds-master content-types-seed)
+    (db/insert! ds-master providers-seed)
+    (db/insert! ds-master sectors-seed)
 
     (doseq [{:keys [email password]} (read-admins)]
       (db/insert! ds-master {:tname :users
