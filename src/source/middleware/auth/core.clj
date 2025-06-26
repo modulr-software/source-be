@@ -2,7 +2,7 @@
   (:require [source.middleware.auth.util :as util]
             [source.db.util :as db.util]
             [ring.util.response :as res]
-            [source.db.master.users :as users]))
+            [source.services.users :as users]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -55,7 +55,7 @@
                          (wrap-auth))]
     (println "Is unauthed request rejected")
     (assert (=
-             403
+             401
              (-> unauthed-request
                  (test-handler)
                  (:status))))

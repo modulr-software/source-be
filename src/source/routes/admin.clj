@@ -1,14 +1,13 @@
 (ns source.routes.admin
-  (:require [source.db.master.users :as db.users]
+  (:require [source.services.users :as users]
             [source.db.util :as db.util]
             [source.password :as pw]))
 
 (defn post [request]
   (let [ds (db.util/conn :master)
-        user (db.users/user-by
+        user (users/user
               ds
-              {:col "email"
-               :val (get-in request [:body :email])})
+              {:where [:= :email (get-in request [:body :email])]})
         {:keys [password confirm-password]} (:body request)]
     (cond
       (not (= password confirm-password))
@@ -19,10 +18,10 @@
 
       :else
       (let [new-user (get-in request [:body])]
-        (db.users/insert-user ds {:email (:email new-user)
-                                  :password (pw/hash-password password)
-                                  :firstname (:firstname new-user)
-                                  :lastname (:lastname new-user)
-                                  :type "admin"})
+        (users/insert-user! ds {:email (:email new-user)
+                                :password (pw/hash-password password)
+                                :firstname (:firstname new-user)
+                                :lastname (:lastname new-user)
+                                :type "admin"})
         {:status 200 :body {:message "successfully created user"}}))))
 
