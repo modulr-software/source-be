@@ -4,7 +4,6 @@
 
 (defn get-ast
   "Constructs a hickory tree representation from an xml string."
-
   [xml]
   (-> xml h/parse h/as-hickory))
 
@@ -61,7 +60,7 @@
     (or (= seg-type :content) (= seg-type :attr))))
 
 (defn extract-leaf
-  "Get's the content from a leaf node"
+  "Get's the content from a leaf node using the leaf path segment."
   [node kw-path-seg]
   (let [[seg-type seg-val] kw-path-seg]
     (if (= seg-type :attr)
@@ -73,7 +72,7 @@
 
 (defn extract-data
   "Recursively extracts data from a hickory xml tree according to the input selection schema.
-  
+
   The input selection schema contains paths to each field in the schema. These paths are relative to their parent node
   with any number of tag/tag-name segments and end with a attr/attribute-name or content/n-th segment if the field is a string."
   [schema ast]
