@@ -4,29 +4,23 @@
             [source.services.outgoing-posts :as outgoing-posts]
             [source.services.feed-categories :as feed-categories]
             [source.db.util :as db.util]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.db.honey :as db]))
 
 (defn get-post-categories [bundle-ds ds post-id]
   (let [feed-id (-> (outgoing-posts/outgoing-post bundle-ds {:id post-id})
                     (:feed-id))]
     (feed-categories/category-id ds {:feed-id feed-id})))
 
-(defn creator-id
-  ([post-id]
-   (-> (db.util/conn :master)
-       (creator-id post-id)))
-  ([ds post-id]
-   (-> (outgoing-posts/outgoing-post ds {:id post-id})
-       (:creator-id))))
-
-(defn log [{:keys [post-id bundle-id type]}]
+(defn log! [{:keys [post-id bundle-id type]}]
   (let [ds (db.util/conn :master)
         timestamp (util/get-utc-timestamp-string)
         bundle-ds (->> bundle-id
                        (db.util/db-name :bundle)
                        (db.util/conn))
-        creator-ds (->> post-id
-                        (creator-id ds)
+        creator-ds (->> {:post-id post-id}
+                        (db/find ds)
+                        (:creator-id)
                         (db.util/db-name :creator)
                         (db.util/conn))
         categories (get-post-categories bundle-ds ds post-id)]

@@ -3,12 +3,12 @@
             [source.db.util :as db.util]
             [source.password :as pw]))
 
-(defn post [request]
+(defn post [{:keys [body] :as _request}]
   (let [ds (db.util/conn :master)
         user (users/user
               ds
-              {:where [:= :email (get-in request [:body :email])]})
-        {:keys [password confirm-password]} (:body request)]
+              {:where [:= :email (:email body)]})
+        {:keys [password confirm-password]} body]
     (cond
       (not (= password confirm-password))
       {:status 400 :body {:message "passwords do not match!"}}
@@ -17,11 +17,11 @@
       {:status 400 :body {:message "an account for this email already exists!"}}
 
       :else
-      (let [new-user (get-in request [:body])]
-        (users/insert-user! ds {:email (:email new-user)
-                                :password (pw/hash-password password)
-                                :firstname (:firstname new-user)
-                                :lastname (:lastname new-user)
-                                :type "admin"})
+      (let [pw (pw/hash-password password)
+            new-user (-> (assoc body
+                            :password pw
+                            :type "admin")
+                         (dissoc :confirm-password))]
+        (users/insert-user! ds new-user)
         {:status 200 :body {:message "successfully created user"}}))))
 

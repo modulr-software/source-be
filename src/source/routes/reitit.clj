@@ -1,4 +1,4 @@
-(ns source.routes.core
+(ns source.routes.reitit
   (:require [reitit.ring :as ring]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]

@@ -12,9 +12,6 @@
       (jdbc/get-connection)
       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
 
-; moved creator-id and get-post-categories to source.db.event due to cyclic dependencies
-; get-post-categories shouldn't have been here anyway
-
 (defn db-name
   ([type]
    (name type))

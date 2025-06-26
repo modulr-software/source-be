@@ -14,6 +14,10 @@
 (defn find [ds opts]
   (hon/find ds opts))
 
+(defn find-id 
+  ([id target-id]
+   (find-id (db.util/conn :master))))
+
 (defn update! [ds opts]
   (hon/update! ds opts))
 
