@@ -1,10 +1,23 @@
 (ns source.db.event
-  (:require [source.db.bundle.analytics :as ba]
-            [source.db.bundle.event-category :as bec]
-            [source.db.creator.event-category :as cec]
-            [source.db.creator.analytics :as ca]
+  (:require [source.services.event-categories :as ec]
+            [source.services.analytics :as analytics]
+            [source.services.outgoing-posts :as outgoing-posts]
+            [source.services.feed-categories :as feed-categories]
             [source.db.util :as db.util]
             [source.util :as util]))
+
+(defn get-post-categories [bundle-ds ds post-id]
+  (let [feed-id (-> (outgoing-posts/outgoing-post bundle-ds {:id post-id})
+                    (:feed-id))]
+    (feed-categories/category-id ds {:feed-id feed-id})))
+
+(defn creator-id
+  ([post-id]
+   (-> (db.util/conn :master)
+       (creator-id post-id)))
+  ([ds post-id]
+   (-> (outgoing-posts/outgoing-post ds {:id post-id})
+       (:creator-id))))
 
 (defn log [{:keys [post-id bundle-id type]}]
   (let [ds (db.util/conn :master)
@@ -13,19 +26,19 @@
                        (db.util/db-name :bundle)
                        (db.util/conn))
         creator-ds (->> post-id
-                        (db.util/creator-id ds)
+                        (creator-id ds)
                         (db.util/db-name :creator)
                         (db.util/conn))
-        categories (db.util/get-post-categories bundle-ds ds post-id)]
-    (let [event-id (-> (ba/insert-event! bundle-ds {:post_id post-id
-                                                    :event_type type
-                                                    :timestamp timestamp})
+        categories (get-post-categories bundle-ds ds post-id)]
+    (let [event-id (-> (analytics/insert-event! bundle-ds {:post_id post-id
+                                                           :event_type type
+                                                           :timestamp timestamp})
                        (first))]
-      (bec/insert-event-category! bundle-ds {:cols ["event_id" "category_id"]
-                                             :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))
-    (let [event-id (-> (ca/insert-event! creator-ds {:post_id post-id
-                                                     :event_type type
-                                                     :timestamp timestamp})
+      (ec/insert-event-category! bundle-ds {:cols ["event_id" "category_id"]
+                                            :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))
+    (let [event-id (-> (analytics/insert-event! creator-ds {:post_id post-id
+                                                            :event_type type
+                                                            :timestamp timestamp})
                        (first))]
-      (cec/insert-event-category! creator-ds {:cols ["event_id" "category_id"]
-                                              :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))))
+      (ec/insert-event-category! creator-ds {:cols ["event_id" "category_id"]
+                                             :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))))
