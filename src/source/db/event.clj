@@ -34,13 +34,11 @@
                                                            :event_type type
                                                            :timestamp timestamp})
                        (first))]
-      ; TODO: update this function call's data to match the new schema
-      (ec/insert-event-category! bundle-ds {:cols ["event_id" "category_id"]
-                                            :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))
+      (ec/insert-event-category! bundle-ds {:event-id event-id
+                                            :category-id (:category-id categories)}))
     (let [event-id (-> (analytics/insert-event! creator-ds {:post_id post-id
                                                             :event_type type
                                                             :timestamp timestamp})
                        (first))]
-      ; TODO: update this function call's data to match the new schema
-      (ec/insert-event-category! creator-ds {:cols ["event_id" "category_id"]
-                                             :vals (mapv (fn [cat-record] [event-id (:category_id cat-record)]) categories)}))))
+      (ec/insert-event-category! creator-ds {:event-id event-id
+                                             :category-id (:category-id categories)}))))
