@@ -7,6 +7,8 @@
             [source.routes.users :as users]
             [source.routes.login :as login]
             [source.routes.register :as register]
+            [source.routes.google-launch :as google-launch]
+            [source.routes.google-redirect :as google-redirect]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]))
 
@@ -22,6 +24,10 @@
                   :patch user/patch}]]
         ["login" {:post login/post}]
         ["register" {:post register/post}]
+        ["oauth2"
+         ["/google"
+          ["" {:get google-launch/get}]
+          ["/callback" {:get google-redirect/get}]]]
         ["protected" {:middleware [[mw/apply-auth]]}
          ["/authorized" {:get authorized/get}]]
         ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
@@ -38,17 +44,17 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        request {:uri "/users/5" :request-method :get}]
+        request {:uri "/users/3" :request-method :get}]
     (-> request
         app
         :body
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        request {:uri "/users/5"
+        request {:uri "/users/3"
                  :request-method :patch
-                 :body {:firstname "kiigan"
-                        :lastname "korinzu"}}]
+                 :body {:firstname "Keagan"
+                        :lastname "Collins"}}]
     (-> request
         app
         :body
@@ -73,6 +79,14 @@
     (-> request
         app
         :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/oauth2/google"
+                 :request-method :get}]
+    (-> request
+        app 
+        :body 
         (json/read-json {:key-fn keyword})))
 
   ())

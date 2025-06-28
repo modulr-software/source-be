@@ -1,7 +1,7 @@
 (ns source.server
   (:require
    [org.httpkit.server :as http]
-   [source.routes.core :as routes]
+   [source.routes.interface :as routes]
    [source.util :as util]))
 
 (defonce ^:private *server (atom nil))

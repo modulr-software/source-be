@@ -5,9 +5,6 @@
 (defn ds [dbname]
   (db.util/conn dbname))
 
-(defn creator-id [& args]
-  (apply db.util/creator-id args))
-
 (defn db-name [& args]
   (apply db.util/db-name args))
 
@@ -16,6 +13,10 @@
 
 (defn find [ds opts]
   (hon/find ds opts))
+
+(defn find-id 
+  ([id target-id]
+   (find-id (db.util/conn :master))))
 
 (defn update! [ds opts]
   (hon/update! ds opts))
