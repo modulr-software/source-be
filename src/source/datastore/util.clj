@@ -21,3 +21,9 @@
   "Close a connection to a datalevin store"
   [conn]
   (d/close-kv conn))
+
+(defn store-name
+  ([type]
+   (name type))
+  ([type id]
+   (str (name type) "_" id)))

@@ -2,7 +2,7 @@
   (:require  [source.services.users :as users]
              [source.db.interface :as db]
              [source.services.auth :as auth]
-             [source.services.xml :as xml]))
+             [source.services.xml-schemas :as xml]))
 
 (defn users
   [& args]
@@ -23,14 +23,8 @@
 (defn register [ds user]
   (auth/register ds user))
 
-(defn selection-schemas [ds]
-  (xml/get-all ds {:tname :selection-schema}))
-
-(defn output-schemas [ds]
-  (xml/get-all ds {:tname :output-schema}))
-
-(defn insert-output-schema! [ds {:keys [key value]}]
-  (xml/add-output-schema! ds {:data [[key value]]}))
+(defn add-selection-schema! [store db {:keys [schema record] :as opts}]
+  (xml/add-selection-schema! store db opts))
 
 (comment
   (users (db/ds :master))

@@ -11,7 +11,7 @@
             [source.routes.google-redirect :as google-redirect]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]
-            [source.routes.rss :as rss]))
+            [source.routes.selection-schema :as selection-schema]))
 
 (defn create-app []
   (let [ds (db/ds :master)]
@@ -33,11 +33,12 @@
          ["/authorized" {:get authorized/get}]]
         ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
          ["/add-admin" {:post admin/post}]
-         ["/selection-schemas" {:get rss/selection-schemas}]
-         ["/output-schemas" {:get rss/output-schemas}]]]]))))
+         ["/selection-schema" {:post selection-schema/post}]]]]))))
 
 (comment
-  (require '[source.middleware.auth.util :as auth.util])
+  (require '[source.middleware.auth.util :as auth.util]
+           '[source.datastore.util :as store.util]
+           '[datalevin.core :as dl])
 
   (let [app (create-app)
         request {:uri "/users" :request-method :get}]
@@ -88,8 +89,23 @@
         request {:uri "/oauth2/google"
                  :request-method :get}]
     (-> request
-        app 
-        :body 
+        app
+        :body
         (json/read-json {:key-fn keyword})))
 
+  (let [app (create-app)
+        store (store.util/conn "datalevin")
+        ;; open table before operation
+        thing (dl/open-dbi store "selection-schemas")
+        request {:uri "/admin/selection-schema"
+                 :request-method :post
+                 :store store
+                 :body {:record {:provider-id 1
+                                 :output-schema-id 1}
+                        :schema {:hi "hello"}}
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
   ())

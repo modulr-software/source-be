@@ -42,10 +42,14 @@
   "inserts a single record or a set of records into a table. records passed in map form where the keys can be snake-case keywords. all keys are converted to snake_case strings before executing prepared statements."
   [ds {:keys [tname data]}]
   (let [multi? (vector? data)
-        values (if multi? data [data])]
-    (execute! ds
-              (-> (hsql/insert-into (csk/->snake_case_keyword tname))
-                  (hsql/values values)))))
+        values (if multi? data [data])
+        result (execute! ds
+                         (-> (hsql/insert-into (csk/->snake_case_keyword tname))
+                             (hsql/values values)
+                             (hsql/returning :*)))]
+    (if multi?
+      result
+      (first result))))
 
 (defn delete!
   "deletes a record or set of records that match a predicate where clause. the where

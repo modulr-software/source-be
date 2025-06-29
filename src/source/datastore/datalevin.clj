@@ -1,24 +1,66 @@
 (ns source.datastore.datalevin
-  (:require [datalevin.core :as d]))
+  (:require [datalevin.core :as d]
+            [source.util :as util]))
 
-;; Something to consider (async transactions) https://cljdoc.org/d/datalevin/datalevin/0.9.22/doc/transaction#asynchronous-transaction
+;; If we want to have higher write speed in future we can use transact-kv-async
 
-(defn get-value [ds {:keys [tname key]}]
+;; TODO:
+;; - when operations on kv store are done the relevant tables need to be opened beforehand
+;;   using (datalevin.core/open-dbi "table-name")
+;; - we need a nice way of opening and closing a connection to the datastore before and after
+;;  an operation is performed. Closing a connection to the datastore will also close the tables
+;;  in that datastore. Although it isn't documented as far as I could see in the datalevin or
+;;  LMDB docs, I think we should avoid opening the same table multiple times. So we need to figure
+;;  out a way to open a connection once (both on a datastore level and a datastore level), reuse it
+;;  where required, and then close it.
+;;
+;;  A possible solution here is to open up the kv-store and the tables we use on server start and
+;;  pass the kv-store connection around. As you might notice from the implementation, we don't need
+;;  to "def" a table connection and pass it around, only the store connection. As long as you call
+;;  (datalevin.core/open-dbi "table-name"). Refer to the comment block below.
+
+(defn find [ds {:keys [tname key]}]
   (d/get-value ds (name tname) key))
 
-(defn delete! [ds {:keys [tname keys]}]
-  (->> (mapv (fn [key] [:del (name tname) key]) keys)
-       (d/transact-kv ds)))
+(defn exists? [ds opts]
+  (-> (find ds opts)
+      (some?)))
 
-(defn put! [ds {:keys [tname data]}]
-  (->> (mapv (fn [item] [:put (name tname) (first item) (last item)]) data)
-       (d/transact-kv ds)))
+(defn delete!
+  "Removes one or multiple keys from kv store."
+  [ds {:keys [tname keys]}]
+  (->> (mapv (fn [key] [:del key]) keys)
+       (d/transact-kv ds (name tname))))
+
+(defn insert!
+  "Inserts kv's into store. Skips keys that already exist.
+  Returns the key-value pairs that were inserted."
+  [ds {:keys [tname data]}]
+  (let [multi? (util/vectors? data)
+        input-kvs (if multi? data [data])
+        kvs-to-insert (->> input-kvs
+                           (filterv (fn [[k _]]
+                                      (not (exists? ds {:tname tname :key k})))))]
+    (->> kvs-to-insert
+         (mapv (fn [[k v]] [:put k v]))
+         (d/transact-kv ds (name tname)))
+    kvs-to-insert))
+
+(defn update!
+  "Replaces values for keys in store. Skips keys that don't exist"
+  [ds {:keys [tname data]}]
+  (let [transducer (comp
+                    (filter (fn [[k _]]
+                              (exists? ds {:tname tname :key k})))
+                    (map (fn [[k v]]
+                           [:put k v])))]
+    (->> data
+         (into [] transducer)
+         (d/transact-kv ds (name tname)))))
 
 (defn get-all
   [ds {:keys [tname]}]
-  (let [tn (name tname)]
-    (mapv (fn [[k v]] [k v])
-          (d/entries ds tn))))
+  (d/get-range ds (name tname) [:all]))
 
 (comment
   (require '[source.datastore.util :as ds.util])
@@ -28,16 +70,19 @@
         tname :some-table]
     (println "Putting a value")
     (d/open-dbi ds (name tname))
-    (put! ds {:tname tname
-              :data [[key value]]})
+    (insert! ds {:tname tname
+                 :data [key value]})
     (assert (= value
-               (get-value ds {:tname tname
-                              :key key})))
+               (find ds {:tname tname
+                         :key key})))
+    (insert! ds {:tname tname
+                 :data [key value]})
     (println "Test passed")
     (println "Deleting a value")
     (delete! ds {:tname tname
                  :keys [key]})
     (assert (= nil
-               (get-value ds {:tname tname
-                              :key key})))
+               (find ds {:tname tname
+                         :key key})))
+    (println "Test passed")
     (ds.util/close ds)))
