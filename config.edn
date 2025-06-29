@@ -1,8 +1,12 @@
 {:supersecretkey #env SUPER_SECRET_KEY
  :admins-path #or [#env ADMINS_PATH "admins.json"]
  :cors-origin #or [#env CORS_ORIGIN "http://localhost:8080"]
+<<<<<<< HEAD
  :database {:dir #or [#env DATABASE_DIR ".db/"]
             :type "sqlite"}
+=======
+ :database-dir #or [#env DATABASE_DIR ".db/"]
+>>>>>>> ba43b5f (Merge main into feat/xml-parse)
  :oauth2 {:google {:authorization-uri   "https://accounts.google.com/o/oauth2/auth"
                    :access-token-uri    "https://oauth2.googleapis.com/token"
                    :redirect-uri        #or [#env GOOGLE_REDIRECT_URI "http://localhost:3000/oauth2/google/callback"]

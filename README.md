@@ -2,6 +2,7 @@
 
 This is the backend for the Source platform. You can find documentation on setup for development below.
 
+<<<<<<< HEAD
 ## Dependencies
 
 
@@ -13,6 +14,8 @@ If you are on MacOS you can run:
 brew install libomp llvm openjdk@17
 ```
 
+=======
+>>>>>>> ba43b5f (Merge main into feat/xml-parse)
 ## Development setup
 
 - Pull the project from GitHub.

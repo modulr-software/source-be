@@ -21,9 +21,13 @@
    [:supersecretkey [:string {:min 32}]]
    [:admins-path :string]
    [:cors-origin :string]
+<<<<<<< HEAD
    [:database [:map
                [:dir :string]
                [:type :string]]]
+=======
+   [:database-dir :string]
+>>>>>>> ba43b5f (Merge main into feat/xml-parse)
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
 
 (defn- load-config []

@@ -1,7 +1,8 @@
 (ns source.rss.core
   (:require [source.rss.youtube :as yt]
             [hickory.core :as h]
-            [hickory.select :as s]))
+            [hickory.select :as s]
+            [clojure.data.json :as json]))
 
 (defn get-url []
   (->> "https://www.youtube.com/@ThePrimeTimeagen"
@@ -10,11 +11,35 @@
 
 (defn get-xml []
   (let [rss-url (get-url)]
-    (println rss-url)
     (slurp rss-url)))
 
 (defn get-ast [xml]
   (-> xml h/parse h/as-hickory))
+
+(defn collect-leaf-paths
+  "This function does a DFS on a hickory tree and assigns paths to each node relative to the root and
+  then returns the ast with paths.
+  
+  Paths are made up of a sequence of tag names."
+  ([root-node]
+   (collect-leaf-paths root-node []))
+  ([node current-path]
+   (if (= (type node) java.lang.String)
+     node
+
+     (let [{:keys [tag content]} node
+           new-path (if tag
+                      (conj current-path tag)
+                      current-path)
+           content-with-paths (when content
+                                (let [nodes (if (> (count content) 1)
+                                              (filterv #(not= (type %) java.lang.String) content)
+                                              content)]
+                                  (mapv #(collect-leaf-paths % new-path) nodes)))]
+       (-> node
+           (assoc :path new-path)
+           (dissoc :content)
+           (assoc :content content-with-paths))))))
 
 (defn build-child-selector
   "given a sequence of tag keywords this will return a hickory selector
@@ -54,38 +79,6 @@
   ([root-node] (collect-paths root-node {} []))
   ([root-node acc current-path]))
 
-(defn collect-leaf-paths
-  "this function does a DFS on a hickory tree and generates a map where the key is the value
-  and the value is the selector that will return that value when it is run on a hickory tree"
-  ([root-node]
-   (collect-leaf-paths root-node [] (array-map)))
-  ([node current-path acc]
-   (let [{:keys [tag attrs content]} node
-         new-path (if tag
-                    (conj current-path tag)
-                    current-path)
-         acc-with-attrs (reduce (fn [result-map [attr-name attr-val]]
-                                  (assoc result-map
-                                         attr-val
-                                         (make-attr-extractor new-path (keyword attr-name))))
-                                acc
-                                attrs)
-         acc-with-content (reduce-kv (fn [result-map idx slot]
-                                       (cond
-                                         (string? slot)
-                                         (assoc result-map
-                                                slot
-                                                (make-content-extractor new-path idx))
-
-                                         (map? slot)
-                                         (collect-leaf-paths slot new-path result-map)
-
-                                         :else
-                                         result-map))
-                                     acc-with-attrs
-                                     content)]
-     acc-with-content)))
-
 (defn run-attr-extractors [extractor-map htree]
   (reduce-kv
    (fn [acc _ extractor-fn]
@@ -98,9 +91,16 @@
 
 (def other-one
   (get-ast "<items>
-    <item>Item 1</item>
+    <item id=1>
+           <link href=www.youtube.com></link>
+           <thing>Thing 1</thing>
+    </item>
     <item>Item 2</item>
 </items>"))
+
+(def stuff (json/write-str (collect-leaf-paths other-one)))
+
+(spit "test.json" stuff)
 
 (def sample-feed
   "<rss version=\"2.0\" xmlns:yt=\"http://www.youtube.com/xml/schemas/2015\" xmlns:media=\"http://search.yahoo.com/mrss/\">
@@ -136,38 +136,7 @@ item
 
 (def paths (collect-leaf-paths ANOTHER-ONE))
 paths
-; {"https://www.youtube.com/channel/UC1234567890"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "yt:video:VID2"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "\n      "
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "http://www.youtube.com/xml/schemas/2015"
-;  #function[source.rss.core/make-attr-extractor/extract-attr--11136],
-;  "false"
-;  #function[source.rss.core/make-attr-extractor/extract-attr--11136],
-;  "\n    "
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "Video One"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "Video Two"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "yt:video:VID1"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "2.0"
-;  #function[source.rss.core/make-attr-extractor/extract-attr--11136],
-;  "\n  "
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "https://www.youtube.com/watch?v=VID1"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "http://search.yahoo.com/mrss/"
-;  #function[source.rss.core/make-attr-extractor/extract-attr--11136],
-;  "\n"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "ExampleChannel"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139],
-;  "https://www.youtube.com/watch?v=VID2"
-;  #function[source.rss.core/make-content-extractor/extract-content--11139]}
+
 (def FUCK (second (first paths)))
 (FUCK ANOTHER-ONE)
 

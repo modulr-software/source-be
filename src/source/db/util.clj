@@ -18,3 +18,12 @@
   ([type id]
    (str (name type) "_" id)))
 
+<<<<<<< HEAD
+=======
+(defn get-post-categories [bundle-ds ds post-id]
+  (let [feed-id (-> (oposts/select-outgoing-post-by-id bundle-ds {:id post-id})
+                    (:feed_id))]
+    (feeds-categories/select-by-feed-id ds {:feed-id feed-id})))
+
+
+>>>>>>> ba43b5f (Merge main into feat/xml-parse)
