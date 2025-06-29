@@ -26,4 +26,5 @@
         com.kepler16/mallard-sqlite-store {:mvn/version "3.2.1"}
         com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}
         metosin/reitit {:mvn/version "0.9.1"}
-        datalevin/datalevin {:mvn/version "0.9.22"}}}
+        datalevin/datalevin {:mvn/version "0.9.22"}
+        hickory/hickory {:mvn/version "0.7.1"}}}
