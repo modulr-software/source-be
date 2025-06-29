@@ -8,8 +8,19 @@
             [ring.middleware.json :as ring]
             [ring.middleware.cookies :as cookies]))
 
-(defn apply-generic [app]
+(defn wrap-ds [handler ds]
+  (fn [request]
+    (-> request
+        (assoc :ds ds)
+        (handler))))
+
+(defn apply-ds [app ds]
   (-> app
+      (wrap-ds ds)))
+
+(defn apply-generic [app & {:keys [ds]}]
+  (-> app
+      (apply-ds ds)
       (content-type/wrap-content-type)
       (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :cors-origin))]
                  :access-control-allow-methods [:get :put :post :delete])
