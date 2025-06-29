@@ -1,7 +1,8 @@
 (ns source.services.interface
   (:require  [source.services.users :as users]
              [source.db.interface :as db]
-             [source.services.auth :as auth]))
+             [source.services.auth :as auth]
+             [source.services.xml-schemas :as xml]))
 
 (defn users
   [& args]
@@ -21,6 +22,9 @@
 
 (defn register [ds user]
   (auth/register ds user))
+
+(defn add-selection-schema! [store db {:keys [schema record] :as opts}]
+  (xml/add-selection-schema! store db opts))
 
 (comment
   (users (db/ds :master))
