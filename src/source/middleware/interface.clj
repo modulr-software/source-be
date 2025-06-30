@@ -9,3 +9,6 @@
   [app & {:keys [required-type]}]
   (mw/apply-auth app {:required-type required-type}))
 
+(defn apply-bundle [app]
+  (mw/apply-bundle app))
+
