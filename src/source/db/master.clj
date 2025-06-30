@@ -130,6 +130,14 @@
    (tables/foreign-key :feed-id :feeds :id)
    (tables/foreign-key :sector-id :sectors :id)))
 
+(def selection-schemas
+  (tables/create-table-sql
+   :selection-schemas
+   (tables/table-id)
+   [:output-schema-id :integer :not nil]
+   [:provider-id :integer :not nil]
+   (tables/foreign-key :provider-id :providers :id)))
+
 (comment
   (require '[honey.sql :as sql])
 
