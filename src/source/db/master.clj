@@ -55,6 +55,7 @@
   (tables/create-table-sql
    :bundles
    (tables/table-id)
+   [:uuid :text]
    [:user-id :integer]
    [:video :integer :not nil [:default 0]]
    [:podcast :integer :not nil [:default 0]]
