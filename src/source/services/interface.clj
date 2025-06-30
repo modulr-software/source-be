@@ -23,8 +23,11 @@
 (defn register [ds user]
   (auth/register ds user))
 
-(defn add-selection-schema! [store db {:keys [schema record] :as opts}]
+(defn add-selection-schema! [store db {:keys [_schema _record] :as opts}]
   (xml/add-selection-schema! store db opts))
+
+(defn selection-schema [ds {:keys [_id] :as opts}]
+  (xml/selection-schema ds opts))
 
 (comment
   (users (db/ds :master))

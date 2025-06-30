@@ -3,6 +3,11 @@
             [ring.util.response :as res]))
 
 (defn post [{:keys [store ds body] :as _request}]
-  (let [{:keys [schema record] :as opts} body]
+  (let [{:keys [_schema _record] :as opts} body]
     (-> (services/add-selection-schema! store ds opts)
         (res/response))))
+
+(defn get [{:keys [ds path-params] :as _request}]
+  (->> path-params
+       (services/selection-schema ds)
+       (res/response)))
