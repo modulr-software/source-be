@@ -25,3 +25,6 @@
 
 (defn delete! [ds opts]
   (dl/delete! ds opts))
+
+(defn entries [ds opts]
+  (dl/entries ds opts))

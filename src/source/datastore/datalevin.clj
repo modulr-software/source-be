@@ -19,12 +19,21 @@
 ;;  to "def" a table connection and pass it around, only the store connection. As long as you call
 ;;  (datalevin.core/open-dbi "table-name"). Refer to the comment block below.
 
-(defn find [ds {:keys [tname key]}]
+(defn find
+  "Returns the value for a key in the kv-store"
+  [ds {:keys [tname key]}]
   (d/get-value ds (name tname) key))
 
-(defn exists? [ds opts]
+(defn exists?
+  "Returns true if value exists for key in kv-store"
+  [ds opts]
   (-> (find ds opts)
       (some?)))
+
+(defn entries
+  "Get the number of entries in a table"
+  [ds {:keys [tname]}]
+  (d/entries ds tname))
 
 (defn delete!
   "Removes one or multiple keys from kv store."
@@ -59,12 +68,13 @@
          (d/transact-kv ds (name tname)))))
 
 (defn get-all
+  "Returns all key value pairs in table in kv-store."
   [ds {:keys [tname]}]
   (d/get-range ds (name tname) [:all]))
 
 (comment
   (require '[source.datastore.util :as ds.util])
-  (let [ds (ds.util/conn "store")
+  (let [ds (ds.util/conn "datalevin")
         key "somekey"
         value "somestringvalue"
         tname :some-table]
@@ -85,4 +95,5 @@
                (find ds {:tname tname
                          :key key})))
     (println "Test passed")
+    ()
     (ds.util/close ds)))
