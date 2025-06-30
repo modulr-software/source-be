@@ -31,7 +31,11 @@
         ["protected" {:middleware [[mw/apply-auth]]}
          ["/authorized" {:get authorized/get}]]
         ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["/add-admin" {:post admin/post}]]]]))))
+         ["/add-admin" {:post admin/post}]]
+        ["bundle" {:middleware [[mw/apply-bundle]]}
+         ["/test-interaction" {:get (fn [req]
+                                      {:status 200
+                                       :body {:value (:bundle-id req)}})}]]]]))))
 
 (comment
   (require '[source.middleware.auth.util :as auth.util])
@@ -85,8 +89,17 @@
         request {:uri "/oauth2/google"
                  :request-method :get}]
     (-> request
-        app 
-        :body 
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/bundle/test-interaction"
+                 :query-params {"uuid" "7eff22ca788cd1df"}
+                 :request-method :get}]
+    (-> request
+        app
+        :body
         (json/read-json {:key-fn keyword})))
 
   ())
