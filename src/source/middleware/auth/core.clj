@@ -48,13 +48,11 @@
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
-          bundle-id (get-in request [:query-params "uuid"])
-          bundle (bundles/bundle ds {:where [:= :uuid bundle-id]})]
+          bundle-uuid (get-in request [:query-params "uuid"])
+          bundle (bundles/bundle ds {:where [:= :uuid bundle-uuid]})]
+
       (if bundle
-        (->>
-         (:id bundle)
-         (assoc request :bundle-id)
-         (handler))
+         (handler request)
 
         (->
          (res/response {:message "Unauthorized"})
