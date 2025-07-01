@@ -22,6 +22,6 @@
   (require '[source.db.interface :as db])
   (post {:ds (db/ds :master) :body {:email "test@test.com"
                                     :password "test"
-                                    :type "distributor"
+                                    :type "partner"
                                     :confirm-password "test"}})
   ())

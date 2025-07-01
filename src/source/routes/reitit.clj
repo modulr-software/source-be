@@ -72,7 +72,7 @@
   (let [app (create-app)
         request {:uri "/protected/authorized"
                  :request-method :get
-                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 5 :type "distributor"}))}}]
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 5 :type "partner"}))}}]
     (-> request
         app
         :body
