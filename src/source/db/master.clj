@@ -7,7 +7,6 @@
    (tables/table-id)
    [:email :text]
    [:password :text]
-   [:sector-id :integer [:default nil]]
    [:firstname :text]
    [:lastname :text]
    [:type :text [:check [:in :type ["provider" "distributor" "admin"]]]]
@@ -15,8 +14,7 @@
    [:onboarded :integer [:default 0]]
    [:address :text]
    [:mobile :text]
-   [:profile-image :text]
-   (tables/foreign-key :sector-id :sectors :id)))
+   [:profile-image :text]))
 
 (def sectors
   (tables/create-table-sql
@@ -110,8 +108,8 @@
    (tables/table-id)
    [:name :text]
    [:url :text [:default nil]]
-   [:sector-id :integer [:default nil]]
-   (tables/foreign-key :sector-id :sectors :id)))
+   [:linkedin :text [:default nil]]
+   [:twitter :text [:default nil]]))
 
 (def user-sectors
   (tables/create-table-sql
