@@ -3,6 +3,9 @@
    [k16.mallard :as mallard]
    [k16.mallard.store.sqlite :as store]
    [k16.mallard.loader.fs :as loader.fs]
+   [source.config :as conf]
+   [next.jdbc :as jdbc]
+   [next.jdbc.result-set :as rs]
    [source.db.util :as db.util]))
 
 ;; This is our interface for running migrations.
@@ -16,9 +19,15 @@
 (def ^:private migrations
   (loader.fs/load! "src/source/migrations"))
 
+(defn- -conn [dbname]
+  (-> {:dbtype (conf/read-value :database :type)}
+       (merge {:dbname (db.util/db-path (name dbname))})
+       (jdbc/get-connection)
+       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
+
 (defn run-migrations [args]
-  (let [context {:db-master (db.util/conn :master)}
-        db-migrate (db.util/conn :migrate)
+  (let [context {:db-master (-conn :master)}
+        db-migrate (-conn :migrate)
         datastore (store/create-datastore
                    {:db db-migrate
                     :table-name "migrations"})]
