@@ -35,3 +35,7 @@
       (auth/wrap-auth-user-type {:required-type required-type})
       (auth/wrap-auth)))
 
+(defn apply-bundle [app]
+  (-> app
+      (auth/wrap-bundle-id)))
+

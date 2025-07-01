@@ -1,7 +1,8 @@
 (ns source.services.interface
   (:require  [source.services.users :as users]
              [source.db.interface :as db]
-             [source.services.auth :as auth]))
+             [source.services.auth :as auth]
+             [source.services.bundles :as bundles]))
 
 (defn users
   [& args]
@@ -21,6 +22,9 @@
 
 (defn register [ds user]
   (auth/register ds user))
+
+(defn bundle [ds {:keys [_id _where] :as opts}]
+  (bundles/bundle ds opts))
 
 (comment
   (users (db/ds :master))

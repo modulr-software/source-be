@@ -1,9 +1,9 @@
 (ns source.routes.users
   (:require [ring.util.response :as res]
-            [source.services.interface :as services]))
+            [source.services.users :as users]))
 
 (defn handler [{:keys [ds] :as _request}]
-  (res/response {:users (services/users ds)}))
+  (res/response {:users (users/users ds)}))
 
 (comment
   (require '[source.db.interface :as db])

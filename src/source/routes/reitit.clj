@@ -85,8 +85,17 @@
         request {:uri "/oauth2/google"
                  :request-method :get}]
     (-> request
-        app 
-        :body 
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/bundle/test-interaction"
+                 :query-params {"uuid" "7eff22ca788cd1df"}
+                 :request-method :get}]
+    (-> request
+        app
+        :body
         (json/read-json {:key-fn keyword})))
 
   ())

@@ -38,6 +38,11 @@
                      [])))
             :ret ret))
 
+(defn find-one [ds opts]
+  (->> {:ret :1}
+       (merge opts)
+       (find ds)))
+
 (defn insert!
   "inserts a single record or a set of records into a table. records passed in map form where the keys can be snake-case keywords. all keys are converted to snake_case strings before executing prepared statements."
   [ds {:keys [tname data]}]
@@ -57,6 +62,11 @@
                  (or (cske/transform-keys
                       csk/->snake_case_keyword where)
                      [])))))
+
+(defn exists? [ds opts]
+  (->> opts
+       (find-one ds)
+       (some?)))
 
 (defn update!
   "updates a record or set of records that match a predicate where clause. the where
