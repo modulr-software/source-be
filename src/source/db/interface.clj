@@ -14,6 +14,9 @@
 (defn find [ds opts]
   (hon/find ds opts))
 
+(defn find-one [ds opts]
+  (hon/find-one ds opts))
+
 (defn update! [ds opts]
   (hon/update! ds opts))
 
@@ -22,4 +25,7 @@
 
 (defn insert! [ds opts]
   (hon/insert! ds opts))
+
+(defn exists? [ds opts]
+  (hon/exists? ds opts))
 
