@@ -1,0 +1,21 @@
+(ns source.services.businesses
+  (:require [source.db.interface :as db]))
+
+(defn businesses
+  ([ds] (businesses ds {}))
+  ([ds opts]
+   (->> {:tname :businesses}
+        (merge opts)
+        (db/find ds))))
+
+(defn insert-business! [ds business]
+  (->> {:tname :businesses
+        :data business}
+       (db/insert! ds)))
+
+(defn update-business! [ds {:keys [id values where] :as opts}]
+  (->> {:tname :businesses
+        :values values
+        :where (if (some? id) [:= :id id] where)}
+       (merge opts)
+       (db/update! ds)))
