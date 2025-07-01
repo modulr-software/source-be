@@ -12,7 +12,7 @@
   ([type id]
    (str (name type) "_" id)))
 
-(defn db-conn [dbname]
+(defn- -conn [dbname]
   (-> {:dbtype (conf/read-value :database :type)}
        (merge {:dbname (db-path dbname)})
        (jdbc/get-connection)
@@ -23,8 +23,8 @@
    (conn :master))
   ([db-type]
    (assert (= db-type :master))
-   (db-conn (db-name db-type)))
+   (-conn (db-name db-type)))
   ([db-type id]
-   (assert (not (= db-type :master)))
-   (db-conn (db-name db-type id))))
+   (assert (or (= db-type :bundle) (= db-type :creator)))
+   (-conn (db-name db-type id))))
 

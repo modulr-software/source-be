@@ -3,7 +3,8 @@
             [source.db.util :as db.util]
             [ring.util.response :as res]
             [source.services.users :as users]
-            [source.services.bundles :as bundles]))
+            [source.services.bundles :as bundles]
+            [source.db.honey :as db]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -48,10 +49,10 @@
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
-          bundle-uuid (get-in request [:query-params "uuid"])
-          bundle (bundles/bundle ds {:where [:= :uuid bundle-uuid]})]
+          bundle-uuid (get-in request [:query-params "uuid"])]
 
-      (if bundle
+      (if (db/exists? ds {:tname :bundles
+                          :where [:= :uuid bundle-uuid]})
          (handler request)
 
         (->

@@ -31,11 +31,7 @@
         ["protected" {:middleware [[mw/apply-auth]]}
          ["/authorized" {:get authorized/get}]]
         ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["/add-admin" {:post admin/post}]]
-        ["bundle" {:middleware [[mw/apply-bundle]]}
-         ["/test-interaction" {:get (fn [req]
-                                      {:status 200
-                                       :body {:value (:bundle-id req)}})}]]]]))))
+         ["/add-admin" {:post admin/post}]]]]))))
 
 (comment
   (require '[source.middleware.auth.util :as auth.util])
