@@ -1,7 +1,6 @@
 (ns source.routes.business
   (:require [source.services.businesses :as businesses]
-            [ring.util.response :as res]
-            [source.db.util :as db.util]))
+            [ring.util.response :as res]))
 
 (defn post [{:keys [ds body] :as _request}]
   (businesses/insert-business! ds body)
@@ -12,7 +11,3 @@
                                    :values body})
   (res/response {:message "successfully updated business"}))
 
-(comment
-  (require '[source.db.util :as db.util])
-  (get {:ds (db.util/conn)})
-  ())
