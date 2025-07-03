@@ -3,7 +3,7 @@
             [ring.util.response :as res]))
 
 (defn post [{:keys [ds body] :as _request}]
-  (businesses/insert-business! ds body)
+  (businesses/insert-business! ds {:data body})
   (res/response {:message "successfully added business"}))
 
 (defn patch [{:keys [ds body path-params] :as _request}]

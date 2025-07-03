@@ -109,8 +109,8 @@
   (let [app (create-app)
         request {:uri "/businesses"
                  :request-method :post
-                 :body {:name "modulr"
-                        :url "https://modulr.com"}}]
+                 :body {:name "beep"
+                        :url "https://beep.com"}}]
     (-> request
         app
         :body

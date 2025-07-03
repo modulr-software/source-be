@@ -19,9 +19,9 @@
        (merge opts)
        (db/find ds)))
 
-(defn insert-user! [ds user]
-  (->> {:tname :users
-        :data user}
+(defn insert-user! [ds {:keys [_values _ret] :as opts}]
+  (->> {:tname :users}
+       (merge opts)
        (db/insert! ds)))
 
 (defn delete-user! [ds {:keys [id where] :as opts}]
@@ -39,12 +39,12 @@
 
 (comment
   (users (db/ds :master))
-  (insert-user! (db/ds :master) {:email "merveillevaneck@gmail.com"
-                                 :password (pw/hash-password "test")
-                                 :sector-id 1
-                                 :firstname "merv"
-                                 :lastname "vaneck"
-                                 :type "admin"})
+  (insert-user! (db/ds :master) {:data {:email "chonkin@bonkin.com"
+                                        :password (pw/hash-password "test")
+                                        :firstname "merv"
+                                        :lastname "vaneck"
+                                        :type "creator"}
+                                 :ret :*})
   (user (db/ds :master) {:id 5})
   (update-user! (db/ds :master) {:id 5
                                  :values {:firstname "kiigan"

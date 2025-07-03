@@ -53,7 +53,7 @@
 
       (if (db/exists? ds {:tname :bundles
                           :where [:= :uuid bundle-uuid]})
-         (handler request)
+        (handler request)
 
         (->
          (res/response {:message "Unauthorized"})
@@ -95,21 +95,21 @@
                            request)
                          (wrap-bundle-id))]
 
-    (bundles/insert-bundle! (db.util/conn :master) {:uuid uuid
-                                                    :video 0
-                                                    :podcast 0
-                                                    :blog 0})
+    (bundles/insert-bundle! (db.util/conn :master) {:data {:uuid uuid
+                                                           :video 0
+                                                           :podcast 0
+                                                           :blog 0}})
     (assert (=
              403
              (-> garbage-request
                  (test-handler)
                  (:status))))
     (println "garbage uuid rejected")
-    
+
     (assert (some?
-              (-> bundle-request
-                  (test-handler)
-                  (:bundle-id))))
+             (-> bundle-request
+                 (test-handler)
+                 (:bundle-id))))
     (println "tests passed"))
   ())
 

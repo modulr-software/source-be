@@ -8,9 +8,9 @@
         (merge opts)
         (db/find ds))))
 
-(defn insert-business! [ds business]
-  (->> {:tname :businesses
-        :data business}
+(defn insert-business! [ds {:keys [_values _ret] :as opts}]
+  (->> {:tname :businesses}
+       (merge opts)
        (db/insert! ds)))
 
 (defn update-business! [ds {:keys [id values where] :as opts}]

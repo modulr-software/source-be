@@ -10,9 +10,9 @@
        (merge opts)
        (db/find ds)))
 
-(defn insert-bundle! [ds bundle]
-  (->> {:tname :bundles
-        :data bundle}
+(defn insert-bundle! [ds {:keys [_values _ret] :as opts}]
+  (->> {:tname :bundles}
+       (merge opts)
        (db/insert! ds)))
 
 (comment 

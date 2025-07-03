@@ -18,8 +18,8 @@
             {:keys [access-token]} (auth/create-session payload)]
         (res/redirect (str (conf/read-value :cors-origin) "/api/oauth/google?token=" access-token)))
       (do
-        (users/insert-user! ds {:email email
-                                :type user-type})
+        (users/insert-user! ds {:data {:email email
+                                       :type user-type}})
         (let [new-user (users/user ds {:where [:= :email email]})
               payload (dissoc new-user :password)
               {:keys [access-token]} (auth/create-session payload)]
