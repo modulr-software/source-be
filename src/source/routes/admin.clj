@@ -22,6 +22,6 @@
                             :password pw
                             :type "admin")
                          (dissoc :confirm-password))]
-        (users/insert-user! ds new-user)
+        (users/insert-user! ds {:data new-user})
         {:status 200 :body {:message "successfully created user"}}))))
 

@@ -8,11 +8,10 @@
         existing-user (services/user ds {:where [:= :email email]})]
     (cond
       (not (= password confirm-password))
-      (-> (res/response {:error "passwords do not match"})
-          (res/status 401))
+      (-> (res/response {:error "Passwords do not match!"}))
 
       (some? existing-user)
-      (-> (res/response {:error "an account for this email already exists!"}))
+      (-> (res/response {:error "An account for this email already exists!"}))
 
       :else
       (-> (services/register ds body)
