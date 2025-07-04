@@ -4,7 +4,8 @@
 (defn businesses
   ([ds] (businesses ds {}))
   ([ds opts]
-   (->> {:tname :businesses}
+   (->> {:tname :businesses
+         :ret :*}
         (merge opts)
         (db/find ds))))
 

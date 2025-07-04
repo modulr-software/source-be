@@ -5,7 +5,8 @@
 (defn users
   ([ds] (users ds {}))
   ([ds opts]
-   (->> {:tname :users}
+   (->> {:tname :users
+         :ret :*}
         (merge opts)
         (db/find ds)
         (mapv #(dissoc % :password)))))

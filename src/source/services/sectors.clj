@@ -4,6 +4,7 @@
 (defn sectors
   ([ds] (sectors ds {}))
   ([ds opts]
-   (->> {:tname :sectors}
+   (->> {:tname :sectors
+         :ret :*}
         (merge opts)
         (db/find ds))))
