@@ -3,7 +3,7 @@
             [malli.core :as m]
             [malli.transform :as mt]
             [malli.error :as me]
-            [source.config :as conf]))
+            [clojure.java.io :as io]))
 
 (def ^:private oauth2-provider-schema
   [:map
@@ -27,7 +27,7 @@
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
 
 (defn- load-config []
-  (let [config (aero/read-config "config.edn")
+  (let [config (aero/read-config (io/resource "config.edn"))
         decoded (m/decode schema config mt/string-transformer)]
     (when-not (m/validate schema decoded)
       (println (->> decoded
