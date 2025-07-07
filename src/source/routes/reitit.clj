@@ -10,7 +10,10 @@
             [source.routes.google-launch :as google-launch]
             [source.routes.google-redirect :as google-redirect]
             [source.routes.admin :as admin]
-            [source.routes.authorized :as authorized]))
+            [source.routes.authorized :as authorized]
+            [source.routes.business :as business]
+            [source.routes.businesses :as businesses]
+            [source.routes.sectors :as sectors]))
 
 (defn create-app []
   (let [ds (db/ds :master)]
@@ -19,9 +22,15 @@
       [["/" {:middleware [[mw/apply-generic :ds ds]]}
         ["" (fn [_request] {:status 200 :body {:message "success"}})]
         ["users"
-         ["" users/handler]
+         ["" {:get users/get}]
          ["/:id" {:get user/get
                   :patch user/patch}]]
+        ["businesses"
+         ["" {:get businesses/get
+              :post business/post}]
+         ["/:id" {:patch business/patch}]]
+        ["sectors"
+         ["" {:get sectors/get}]]
         ["login" {:post login/post}]
         ["register" {:post register/post}]
         ["oauth2"
@@ -90,8 +99,35 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        request {:uri "/bundle/test-interaction"
-                 :query-params {"uuid" "7eff22ca788cd1df"}
+        request {:uri "/businesses"
+                 :request-method :get}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/businesses"
+                 :request-method :post
+                 :body {:name "beep"
+                        :url "https://beep.com"}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/businesses/1"
+                 :request-method :patch
+                 :body {:name "thebest"
+                        :url "http://thebest.com"}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/sectors"
                  :request-method :get}]
     (-> request
         app

@@ -24,15 +24,17 @@
                         (db.util/db-name :creator)
                         (db.util/conn))
         categories (get-post-categories bundle-ds ds post-id)]
-    (let [event-id (-> (analytics/insert-event! bundle-ds {:post_id post-id
-                                                           :event_type type
-                                                           :timestamp timestamp})
+    (let [event-id (-> (analytics/insert-event! bundle-ds {:data {:post_id post-id
+                                                                  :event_type type
+                                                                  :timestamp timestamp}
+                                                           :ret :*})
                        (first))]
-      (ec/insert-event-category! bundle-ds {:event-id event-id
-                                            :category-id (:category-id categories)}))
-    (let [event-id (-> (analytics/insert-event! creator-ds {:post_id post-id
-                                                            :event_type type
-                                                            :timestamp timestamp})
+      (ec/insert-event-category! bundle-ds {:data {:event-id event-id
+                                                   :category-id (:category-id categories)}}))
+    (let [event-id (-> (analytics/insert-event! creator-ds {:data {:post_id post-id
+                                                                   :event_type type
+                                                                   :timestamp timestamp}
+                                                            :ret :*})
                        (first))]
-      (ec/insert-event-category! creator-ds {:event-id event-id
-                                             :category-id (:category-id categories)}))))
+      (ec/insert-event-category! creator-ds {:data {:event-id event-id
+                                                    :category-id (:category-id categories)}}))))

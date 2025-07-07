@@ -9,7 +9,7 @@
    [:password :text]
    [:firstname :text]
    [:lastname :text]
-   [:type :text [:check [:in :type ["provider" "distributor" "admin"]]]]
+   [:type :text [:check [:in :type ["creator" "distributor" "admin"]]]]
    [:email-verified :integer [:default 0]]
    [:onboarded :integer [:default 0]]
    [:address :text]
