@@ -1,5 +1,5 @@
 {:supersecretkey #env SUPER_SECRET_KEY
- :admins-path #env ADMINS_PATH
+ :admins-path "resources/admins.json"
  :admins-encrypted-path "resources/admins_encrypted.json"
  :cors-origin #or [#env CORS_ORIGIN "http://localhost:8080"]
  :env #or [#env ENV "dev"]
