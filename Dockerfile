@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN mkdir .db/
+#RUN mkdir .db/
 
 EXPOSE 3000
 
