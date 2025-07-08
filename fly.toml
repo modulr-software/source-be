@@ -20,3 +20,8 @@ primary_region = 'jnb'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[env]
+  GOOGLE_CLIENT_ID = "449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com"
+  CORS_ORIGIN = "http://localhost:3001"
+  ENV = "prod"

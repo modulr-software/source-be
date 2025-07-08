@@ -19,8 +19,10 @@
 (def ^:private schema
   [:map
    [:supersecretkey [:string {:min 32}]]
-   [:admins-path :string]
+   [:admins-path {:optional true} :string]
+   [:admins-encrypted-path :string]
    [:cors-origin :string]
+   [:env :string]
    [:database [:map
                [:dir :string]
                [:type :string]]]

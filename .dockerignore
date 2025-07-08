@@ -10,5 +10,5 @@
 **/.nrepl-port
 
 **/.db
-**/admins.json
+#**/admins.json
 fly.toml
