@@ -12,12 +12,12 @@ primary_region = 'jnb'
   CORS_ORIGIN = 'http://localhost:3001'
   ENV = 'prod'
   GOOGLE_CLIENT_ID = '449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com'
+  DATABASE_DIR = '/data'
 
 [http_service]
   internal_port = 3000
   force_https = true
   auto_stop_machines = 'stop'
-  auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
 
@@ -25,3 +25,9 @@ primary_region = 'jnb'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[mounts]
+  source = 'source_storage_staging'
+  destination = '/data'
+  processes = ['app']
+  initial_size = '50gb'
