@@ -3,7 +3,7 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'source-be-ancient-sunset-437'
+app = 'source-be'
 primary_region = 'jnb'
 
 [build]
