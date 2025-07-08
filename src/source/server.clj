@@ -12,12 +12,12 @@
 (defn start-server []
   (cond (not (some? @*server))
         (do
-          (println "Starting server on port 3000")
+          (println "Starting server on port 3000...")
           (reset! *server (http/run-server
                            (routes/create-app)
                            {:port 3000})))
         :else
-        (println "Server already running")))
+        (println "Server already running!")))
 
 (defn stop-server []
   (println "Stopping server...")

@@ -1,20 +1,9 @@
 (ns source.migrations.001-init-master-db
-  (:require [clojure.data.json :as json]
+  (:require [source.admins :as admins]
             [source.db.master]
             [source.db.honey :as db]
-            [source.config :as conf]
-            [source.db.tables :as tables]))
-
-(defn read-admins
-  "reads admin user information from file"
-  []
-  (try
-    (-> :admins-path
-        (conf/read-value)
-        (slurp)
-        (json/read-json))
-    (catch Exception e
-      (println (str "Couldn't read the admins file: " (.getMessage e))))))
+            [source.db.tables :as tables]
+            [source.config :as conf]))
 
 (def baselines-seed
   {:tname :baselines
@@ -92,17 +81,22 @@
     (db/insert! ds-master providers-seed)
     (db/insert! ds-master sectors-seed)
 
-    (run!
-     #(db/insert! ds-master {:tname :users
-                             :data {:email (:email %)
-                                    :password (:password %)
-                                    :type "admin"}})
-     (read-admins))))
+    (when (= (conf/read-value :env) "dev")
+      (admins/encrypt!))
+
+    (let [admins (admins/read)]
+      (when (not (empty? admins))
+        (run!
+         #(db/insert! ds-master {:tname :users
+                                 :data {:email (:email %)
+                                        :password (:password %)
+                                        :type "admin"}})
+         admins)))))
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
     (tables/drop-all-tables! ds-master)))
 
 (comment
-  (read-admins)
+  (admins/read)
   ())
