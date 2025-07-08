@@ -21,7 +21,7 @@
      (ring/router
       [["/" {:middleware [[mw/apply-generic :ds ds]]}
         ["" (fn [_request] {:status 200 :body {:message "success"}})]
-        ["users"
+        ["users" {:middleware [[mw/apply-auth {:required-type :admin}]]}
          ["" {:get users/get}]
          ["/:id" {:get user/get
                   :patch user/patch}]]
