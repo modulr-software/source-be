@@ -144,50 +144,50 @@
                                              [:id :int]
                                              [:name :string]]]]}}
                    :handler sectors/get}}]]
-       ["/login" {:tags #{"auth"}}
-        {:post {:summary "get user data and access token provided valid login credentials"
-                :parameters {:body [:map
-                                    [:email :string]
-                                    [:password :string]]}
-                :responses {200 {:body [:map
-                                        [:user
-                                         [:map
-                                          [:id :int]
-                                          [:address {:optional true} :string]
-                                          [:profile-image {:optional true} :string]
-                                          [:email :string]
-                                          [:firstname {:optional true} :string]
-                                          [:lastname {:optional true} :string]
-                                          [:type [:enum "creator" "distributor" "admin"]]
-                                          [:email-verified {:optional true} :int]
-                                          [:onboarded {:optional true} :int]
-                                          [:mobile {:optional true} :string]]]
-                                        [:access-token :string]
-                                        [:refresh-token :string]]}
-                            401 {:body [:map [:message :string]]}}
-                :handler login/post}}]
-       ["/register" {:tags #{"auth"}}
-        {:post {:summary "register a new user"
-                :parameters {:body [:map
-                                    [:email :string]
-                                    [:password :string]
-                                    [:confirm-password :string]]}
-                :responses {200 {:body [:map
-                                        [:user
-                                         [:map
-                                          [:id :int]
-                                          [:address {:optional true} :string]
-                                          [:profile-image {:optional true} :string]
-                                          [:email :string]
-                                          [:firstname {:optional true} :string]
-                                          [:lastname {:optional true} :string]
-                                          [:type [:enum "creator" "distributor" "admin"]]
-                                          [:email-verified {:optional true} :int]
-                                          [:onboarded {:optional true} :int]
-                                          [:mobile {:optional true} :string]]]
-                                        [:access-token :string]
-                                        [:refresh-token :string]]}}
-                :handler register/post}}]
+       ["/login" {:tags #{"auth"}
+                  :post {:summary "get user data and access token provided valid login credentials"
+                         :parameters {:body [:map
+                                             [:email :string]
+                                             [:password :string]]}
+                         :responses {200 {:body [:map
+                                                 [:user
+                                                  [:map
+                                                   [:id :int]
+                                                   [:address {:optional true} :string]
+                                                   [:profile-image {:optional true} :string]
+                                                   [:email :string]
+                                                   [:firstname {:optional true} :string]
+                                                   [:lastname {:optional true} :string]
+                                                   [:type [:enum "creator" "distributor" "admin"]]
+                                                   [:email-verified {:optional true} :int]
+                                                   [:onboarded {:optional true} :int]
+                                                   [:mobile {:optional true} :string]]]
+                                                 [:access-token :string]
+                                                 [:refresh-token :string]]}
+                                     401 {:body [:map [:message :string]]}}
+                         :handler login/post}}]
+       ["/register" {:tags #{"auth"}
+                     :post {:summary "register a new user"
+                            :parameters {:body [:map
+                                                [:email :string]
+                                                [:password :string]
+                                                [:confirm-password :string]]}
+                            :responses {200 {:body [:map
+                                                    [:user
+                                                     [:map
+                                                      [:id :int]
+                                                      [:address {:optional true} :string]
+                                                      [:profile-image {:optional true} :string]
+                                                      [:email :string]
+                                                      [:firstname {:optional true} :string]
+                                                      [:lastname {:optional true} :string]
+                                                      [:type [:enum "creator" "distributor" "admin"]]
+                                                      [:email-verified {:optional true} :int]
+                                                      [:onboarded {:optional true} :int]
+                                                      [:mobile {:optional true} :string]]]
+                                                    [:access-token :string]
+                                                    [:refresh-token :string]]}}
+                            :handler register/post}}]
        ["/oauth2" {:no-doc true}
         ["/google"
          ["" {:get google-launch/get}]
