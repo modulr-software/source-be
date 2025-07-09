@@ -4,8 +4,6 @@
             [reitit.swagger-ui :as swagger-ui]
             [reitit.coercion.malli]
             [reitit.ring.malli]
-            [malli.util :as mu]
-            [muuntaja.core :as muuntaja]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
@@ -217,14 +215,7 @@
                                           403 {:body [:map [:message :string]]}}
                               :handler admin/post}}]]]
 
-      {:data {:coercion (reitit.coercion.malli/create
-                         {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
-                          :compile mu/closed-schema
-                          :strip-extra-keys true
-                          :default-values true
-                          :options nil})
-              :muuntaja muuntaja/instance
-              :middleware [[mw/apply-generic :ds ds]]}})
+      {:data {:middleware [[mw/apply-generic :ds ds]]}})
      (ring/routes
       (swagger-ui/create-swagger-ui-handler {:path "/"})
       (ring/create-default-handler)))))
