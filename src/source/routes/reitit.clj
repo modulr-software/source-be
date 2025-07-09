@@ -28,9 +28,12 @@
       [["/swagger.json"
         {:get {:no-doc true
                :swagger {:info {:title "source-api"
-                                :description "swagger docs for source api with malli and reitit-ring"}}
+                                :description "swagger docs for source api with malli and reitit-ring"}
+                         :securityDefinitions {"auth" {:type :bearer}}}
                :handler (swagger/create-swagger-handler)}}]
-       ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]}
+       ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                  :tags #{"admin-only"}
+                  :swagger {:security [{"auth" []}]}}
         ["" {:get {:summary "get all users"
                    :responses {200 {:body [:map
                                            [:users
@@ -185,7 +188,9 @@
         ["/google"
          ["" {:get google-launch/get}]
          ["/callback" {:get google-redirect/get}]]]
-       ["/protected" {:middleware [[mw/apply-auth]]}
+       ["/protected" {:middleware [[mw/apply-auth]]
+                      :tags #{"protected"}
+                      :swagger {:security [{"auth" []}]}}
         ["/authorized" {:get {:summary "checks if authenticated"
                               :responses {200 {:body [:map
                                                       [:user
@@ -193,7 +198,9 @@
                                                         [:id :int]
                                                         [:type [:enum "creator" "distributor" "admin"]]]]]}}
                               :handler authorized/get}}]]
-       ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
+       ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                  :tags #{"admin-only"}
+                  :swagger {:security [{"auth" []}]}}
         ["/add-admin" {:post {:summary "registers an admin user [admins only]"
                               :parameters {:body [:map
                                                   [:email :string]
