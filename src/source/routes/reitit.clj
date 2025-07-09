@@ -46,8 +46,8 @@
                                               [:firstname {:optional true} :string]
                                               [:lastname {:optional true} :string]
                                               [:type [:enum "creator" "distributor" "admin"]]
-                                              [:email-verified :int]
-                                              [:onboarded :int]
+                                              [:email-verified {:optional true} :int]
+                                              [:onboarded {:optional true} :int]
                                               [:mobile {:optional true} :string]]]]]}
                                401 {:body [:map [:message :string]]}
                                403 {:body [:map [:message :string]]}}
@@ -65,8 +65,8 @@
                                                  [:firstname {:optional true} :string]
                                                  [:lastname {:optional true} :string]
                                                  [:type [:enum "creator" "distributor" "admin"]]
-                                                 [:email-verified :int]
-                                                 [:onboarded :int]
+                                                 [:email-verified {:optional true} :int]
+                                                 [:onboarded {:optional true} :int]
                                                  [:mobile {:optional true} :string]]]]}
                                    401 {:body [:map [:message :string]]}
                                    403 {:body [:map [:message :string]]}}
@@ -81,8 +81,8 @@
                                              [:firstname {:optional true} :string]
                                              [:lastname {:optional true} :string]
                                              [:type [:enum "creator" "distributor" "admin"]]
-                                             [:email-verified :int]
-                                             [:onboarded :int]
+                                             [:email-verified {:optional true} :int]
+                                             [:onboarded {:optional true} :int]
                                              [:mobile {:optional true} :string]]}
                          :responses {200 {:body [:map
                                                  [:user
@@ -94,8 +94,8 @@
                                                    [:firstname {:optional true} :string]
                                                    [:lastname {:optional true} :string]
                                                    [:type [:enum "creator" "distributor" "admin"]]
-                                                   [:email-verified :int]
-                                                   [:onboarded :int]
+                                                   [:email-verified {:optional true} :int]
+                                                   [:onboarded {:optional true} :int]
                                                    [:mobile {:optional true} :string]]]]}
                                      401 {:body [:map [:message :string]]}
                                      403 {:body [:map [:message :string]]}}
@@ -156,8 +156,8 @@
                                                    [:firstname {:optional true} :string]
                                                    [:lastname {:optional true} :string]
                                                    [:type [:enum "creator" "distributor" "admin"]]
-                                                   [:email-verified :int]
-                                                   [:onboarded :int]
+                                                   [:email-verified {:optional true} :int]
+                                                   [:onboarded {:optional true} :int]
                                                    [:mobile {:optional true} :string]]]
                                                  [:access-token :string]
                                                  [:refresh-token :string]]}
@@ -178,8 +178,8 @@
                                                       [:firstname {:optional true} :string]
                                                       [:lastname {:optional true} :string]
                                                       [:type [:enum "creator" "distributor" "admin"]]
-                                                      [:email-verified :int]
-                                                      [:onboarded :int]
+                                                      [:email-verified {:optional true} :int]
+                                                      [:onboarded {:optional true} :int]
                                                       [:mobile {:optional true} :string]]]
                                                     [:access-token :string]
                                                     [:refresh-token :string]]}}
