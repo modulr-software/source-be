@@ -29,7 +29,9 @@
         {:get {:no-doc true
                :swagger {:info {:title "source-api"
                                 :description "swagger docs for source api with malli and reitit-ring"}
-                         :securityDefinitions {"auth" {:type :bearer}}}
+                         :securityDefinitions {"auth" {:type :apiKey
+                                                       :in :header
+                                                       :name "Authorization"}}}
                :handler (swagger/create-swagger-handler)}}]
        ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
                   :tags #{"admin-only"}
