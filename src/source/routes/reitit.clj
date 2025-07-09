@@ -34,7 +34,7 @@
                                                        :name "Authorization"}}}
                :handler (swagger/create-swagger-handler)}}]
        ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
-                  :tags #{"admin-only"}
+                  :tags #{"users"}
                   :swagger {:security [{"auth" []}]}}
         ["" {:get {:summary "get all users"
                    :responses {200 {:body [:map
@@ -102,7 +102,9 @@
                                      401 {:body [:map [:message :string]]}
                                      403 {:body [:map [:message :string]]}}
                          :handler user/patch}}]]
-       ["/businesses"
+       ["/businesses" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                       :tags #{"businesses"}
+                       :swagger {:security [{"auth" []}]}}
         ["" {:get {:summary "get all businesses"
                    :parameters {:body [:map
                                        [:name :string]
@@ -136,7 +138,7 @@
                                              [:twitter {:optional true} :string]]}
                          :responses {200 {:body [:map [:message :string]]}}
                          :handler business/patch}}]]
-       ["/sectors"
+       ["/sectors" {:tags #{"sectors"}}
         ["" {:get {:summary "get all sectors"
                    :responses {200 {:body [:map
                                            [:sectors
@@ -144,48 +146,50 @@
                                              [:id :int]
                                              [:name :string]]]]}}
                    :handler sectors/get}}]]
-       ["/login" {:post {:summary "get user data and access token provided valid login credentials"
-                         :parameters {:body [:map
-                                             [:email :string]
-                                             [:password :string]]}
-                         :responses {200 {:body [:map
-                                                 [:user
-                                                  [:map
-                                                   [:id :int]
-                                                   [:address {:optional true} :string]
-                                                   [:profile-image {:optional true} :string]
-                                                   [:email :string]
-                                                   [:firstname {:optional true} :string]
-                                                   [:lastname {:optional true} :string]
-                                                   [:type [:enum "creator" "distributor" "admin"]]
-                                                   [:email-verified {:optional true} :int]
-                                                   [:onboarded {:optional true} :int]
-                                                   [:mobile {:optional true} :string]]]
-                                                 [:access-token :string]
-                                                 [:refresh-token :string]]}
-                                     401 {:body [:map [:message :string]]}}
-                         :handler login/post}}]
-       ["/register" {:post {:summary "register a new user"
-                            :parameters {:body [:map
-                                                [:email :string]
-                                                [:password :string]
-                                                [:confirm-password :string]]}
-                            :responses {200 {:body [:map
-                                                    [:user
-                                                     [:map
-                                                      [:id :int]
-                                                      [:address {:optional true} :string]
-                                                      [:profile-image {:optional true} :string]
-                                                      [:email :string]
-                                                      [:firstname {:optional true} :string]
-                                                      [:lastname {:optional true} :string]
-                                                      [:type [:enum "creator" "distributor" "admin"]]
-                                                      [:email-verified {:optional true} :int]
-                                                      [:onboarded {:optional true} :int]
-                                                      [:mobile {:optional true} :string]]]
-                                                    [:access-token :string]
-                                                    [:refresh-token :string]]}}
-                            :handler register/post}}]
+       ["/login" {:tags #{"auth"}}
+        {:post {:summary "get user data and access token provided valid login credentials"
+                :parameters {:body [:map
+                                    [:email :string]
+                                    [:password :string]]}
+                :responses {200 {:body [:map
+                                        [:user
+                                         [:map
+                                          [:id :int]
+                                          [:address {:optional true} :string]
+                                          [:profile-image {:optional true} :string]
+                                          [:email :string]
+                                          [:firstname {:optional true} :string]
+                                          [:lastname {:optional true} :string]
+                                          [:type [:enum "creator" "distributor" "admin"]]
+                                          [:email-verified {:optional true} :int]
+                                          [:onboarded {:optional true} :int]
+                                          [:mobile {:optional true} :string]]]
+                                        [:access-token :string]
+                                        [:refresh-token :string]]}
+                            401 {:body [:map [:message :string]]}}
+                :handler login/post}}]
+       ["/register" {:tags #{"auth"}}
+        {:post {:summary "register a new user"
+                :parameters {:body [:map
+                                    [:email :string]
+                                    [:password :string]
+                                    [:confirm-password :string]]}
+                :responses {200 {:body [:map
+                                        [:user
+                                         [:map
+                                          [:id :int]
+                                          [:address {:optional true} :string]
+                                          [:profile-image {:optional true} :string]
+                                          [:email :string]
+                                          [:firstname {:optional true} :string]
+                                          [:lastname {:optional true} :string]
+                                          [:type [:enum "creator" "distributor" "admin"]]
+                                          [:email-verified {:optional true} :int]
+                                          [:onboarded {:optional true} :int]
+                                          [:mobile {:optional true} :string]]]
+                                        [:access-token :string]
+                                        [:refresh-token :string]]}}
+                :handler register/post}}]
        ["/oauth2" {:no-doc true}
         ["/google"
          ["" {:get google-launch/get}]
@@ -201,7 +205,7 @@
                                                         [:type [:enum "creator" "distributor" "admin"]]]]]}}
                               :handler authorized/get}}]]
        ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
-                  :tags #{"admin-only"}
+                  :tags #{"admin"}
                   :swagger {:security [{"auth" []}]}}
         ["/add-admin" {:post {:summary "registers an admin user [admins only]"
                               :parameters {:body [:map
