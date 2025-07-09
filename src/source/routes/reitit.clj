@@ -1,5 +1,11 @@
 (ns source.routes.reitit
   (:require [reitit.ring :as ring]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.coercion.malli]
+            [reitit.ring.malli]
+            [malli.util :as mu]
+            [muuntaja.core :as muuntaja]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
@@ -19,28 +25,196 @@
   (let [ds (db/ds :master)]
     (ring/ring-handler
      (ring/router
-      [["/" {:middleware [[mw/apply-generic :ds ds]]}
-        ["" (fn [_request] {:status 200 :body {:message "success"}})]
-        ["users" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["" {:get users/get}]
-         ["/:id" {:get user/get
-                  :patch user/patch}]]
-        ["businesses"
-         ["" {:get businesses/get
-              :post business/post}]
-         ["/:id" {:patch business/patch}]]
-        ["sectors"
-         ["" {:get sectors/get}]]
-        ["login" {:post login/post}]
-        ["register" {:post register/post}]
-        ["oauth2"
-         ["/google"
-          ["" {:get google-launch/get}]
-          ["/callback" {:get google-redirect/get}]]]
-        ["protected" {:middleware [[mw/apply-auth]]}
-         ["/authorized" {:get authorized/get}]]
-        ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["/add-admin" {:post admin/post}]]]]))))
+      [["/swagger.json"
+        {:get {:no-doc true
+               :swagger {:info {:title "source-api"
+                                :description "swagger docs for source api with malli and reitit-ring"}}
+               :handler (swagger/create-swagger-handler)}}]
+       ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]}
+        ["" {:get {:summary "get all users"
+                   :responses {200 {:body [:map
+                                           [:users
+                                            [:vector
+                                             [:map
+                                              [:id :int]
+                                              [:address {:optional true} :string]
+                                              [:profile-image {:optional true} :string]
+                                              [:email :string]
+                                              [:firstname {:optional true} :string]
+                                              [:lastname {:optional true} :string]
+                                              [:type [:enum "creator" "distributor" "admin"]]
+                                              [:email-verified :int]
+                                              [:onboarded :int]
+                                              [:mobile {:optional true} :string]]]]]}
+                               401 {:body [:map [:message :string]]}
+                               403 {:body [:map [:message :string]]}}
+                   :handler users/get}}]
+        ["/:id" {:get {:summary "get user by id"
+                       :parameters {:path [:map [:id {:title "id"
+                                                      :description "user id"} :int]]}
+                       :responses {200 {:body [:map
+                                               [:user
+                                                [:map
+                                                 [:id :int]
+                                                 [:address {:optional true} :string]
+                                                 [:profile-image {:optional true} :string]
+                                                 [:email :string]
+                                                 [:firstname {:optional true} :string]
+                                                 [:lastname {:optional true} :string]
+                                                 [:type [:enum "creator" "distributor" "admin"]]
+                                                 [:email-verified :int]
+                                                 [:onboarded :int]
+                                                 [:mobile {:optional true} :string]]]]}
+                                   401 {:body [:map [:message :string]]}
+                                   403 {:body [:map [:message :string]]}}
+                       :handler user/get}
+                 :patch {:summary "update user by id"
+                         :parameters {:path [:map [:id {:title "id"
+                                                        :description "user id"} :int]]
+                                      :body [:map
+                                             [:address {:optional true} :string]
+                                             [:profile-image {:optional true} :string]
+                                             [:email :string]
+                                             [:firstname {:optional true} :string]
+                                             [:lastname {:optional true} :string]
+                                             [:type [:enum "creator" "distributor" "admin"]]
+                                             [:email-verified :int]
+                                             [:onboarded :int]
+                                             [:mobile {:optional true} :string]]}
+                         :responses {200 {:body [:map
+                                                 [:user
+                                                  [:map
+                                                   [:id :int]
+                                                   [:address {:optional true} :string]
+                                                   [:profile-image {:optional true} :string]
+                                                   [:email :string]
+                                                   [:firstname {:optional true} :string]
+                                                   [:lastname {:optional true} :string]
+                                                   [:type [:enum "creator" "distributor" "admin"]]
+                                                   [:email-verified :int]
+                                                   [:onboarded :int]
+                                                   [:mobile {:optional true} :string]]]]}
+                                     401 {:body [:map [:message :string]]}
+                                     403 {:body [:map [:message :string]]}}
+                         :handler user/patch}}]]
+       ["/businesses"
+        ["" {:get {:summary "get all businesses"
+                   :parameters {:body [:map
+                                       [:name :string]
+                                       [:url {:optional true} :string]
+                                       [:linkedin {:optional true} :string]
+                                       [:twitter {:optional true} :string]]}
+                   :responses {200 {:body [:map
+                                           [:businesses
+                                            [:map
+                                             [:id :int]
+                                             [:name :string]
+                                             [:url {:optional true} :string]
+                                             [:linkedin {:optional true} :string]
+                                             [:twitter {:optional true} :string]]]]}}
+                   :handler businesses/get}
+             :post {:summary "insert a business"
+                    :parameters {:body [:map
+                                        [:name :string]
+                                        [:url {:optional true} :string]
+                                        [:linkedin {:optional true} :string]
+                                        [:twitter {:optional true} :string]]}
+                    :responses {201 {:body [:map [:message :string]]}}
+                    :handler business/post}}]
+        ["/:id" {:patch {:summary "update business by id"
+                         :parameters {:path [:map [:id {:title "id"
+                                                        :description "business id"} :int]]
+                                      :body [:map
+                                             [:name :string]
+                                             [:url {:optional true} :string]
+                                             [:linkedin {:optional true} :string]
+                                             [:twitter {:optional true} :string]]}
+                         :responses {200 {:body [:map [:message :string]]}}
+                         :handler business/patch}}]]
+       ["/sectors"
+        ["" {:get {:summary "get all sectors"
+                   :responses {200 {:body [:map
+                                           [:sectors
+                                            [:map
+                                             [:id :int]
+                                             [:name :string]]]]}}
+                   :handler sectors/get}}]]
+       ["/login" {:post {:summary "get user data and access token provided valid login credentials"
+                         :parameters {:body [:map
+                                             [:email :string]
+                                             [:password :string]]}
+                         :responses {200 {:body [:map
+                                                 [:user
+                                                  [:map
+                                                   [:id :int]
+                                                   [:address {:optional true} :string]
+                                                   [:profile-image {:optional true} :string]
+                                                   [:email :string]
+                                                   [:firstname {:optional true} :string]
+                                                   [:lastname {:optional true} :string]
+                                                   [:type [:enum "creator" "distributor" "admin"]]
+                                                   [:email-verified :int]
+                                                   [:onboarded :int]
+                                                   [:mobile {:optional true} :string]]]
+                                                 [:access-token :string]
+                                                 [:refresh-token :string]]}
+                                     401 {:body [:map [:message :string]]}}
+                         :handler login/post}}]
+       ["/register" {:post {:summary "register a new user"
+                            :parameters {:body [:map
+                                                [:email :string]
+                                                [:password :string]
+                                                [:confirm-password :string]]}
+                            :responses {200 {:body [:map
+                                                    [:user
+                                                     [:map
+                                                      [:id :int]
+                                                      [:address {:optional true} :string]
+                                                      [:profile-image {:optional true} :string]
+                                                      [:email :string]
+                                                      [:firstname {:optional true} :string]
+                                                      [:lastname {:optional true} :string]
+                                                      [:type [:enum "creator" "distributor" "admin"]]
+                                                      [:email-verified :int]
+                                                      [:onboarded :int]
+                                                      [:mobile {:optional true} :string]]]
+                                                    [:access-token :string]
+                                                    [:refresh-token :string]]}}
+                            :handler register/post}}]
+       ["/oauth2" {:no-doc true}
+        ["/google"
+         ["" {:get google-launch/get}]
+         ["/callback" {:get google-redirect/get}]]]
+       ["/protected" {:middleware [[mw/apply-auth]]}
+        ["/authorized" {:get {:summary "checks if authenticated"
+                              :responses {200 {:body [:map
+                                                      [:user
+                                                       [:map
+                                                        [:id :int]
+                                                        [:type [:enum "creator" "distributor" "admin"]]]]]}}
+                              :handler authorized/get}}]]
+       ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
+        ["/add-admin" {:post {:summary "registers an admin user [admins only]"
+                              :parameters {:body [:map
+                                                  [:email :string]
+                                                  [:password :string]
+                                                  [:confirm-password :string]]}
+                              :responses {201 {:body [:map [:message :string]]}
+                                          401 {:body [:map [:message :string]]}
+                                          403 {:body [:map [:message :string]]}}
+                              :handler admin/post}}]]]
+
+      {:data {:coercion (reitit.coercion.malli/create
+                         {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
+                          :compile mu/closed-schema
+                          :strip-extra-keys true
+                          :default-values true
+                          :options nil})
+              :muuntaja muuntaja/instance
+              :middleware [[mw/apply-generic :ds ds]]}})
+     (ring/routes
+      (swagger-ui/create-swagger-ui-handler {:path "/"})
+      (ring/create-default-handler)))))
 
 (comment
   (require '[source.middleware.auth.util :as auth.util])

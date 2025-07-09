@@ -14,7 +14,6 @@
         ring/ring-json {:mvn/version "0.5.1"}
         ring/ring-defaults {:mvn/version "0.6.0"}
         ring-cors/ring-cors {:mvn/version "0.1.13"}
-        metosin/jsonista {:mvn/version "0.3.13"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.3.994"}
         org.xerial/sqlite-jdbc {:mvn/version "3.49.1.0"}
         buddy/buddy-core {:mvn/version "1.12.0-430"}
@@ -28,4 +27,8 @@
         com.kepler16/mallard {:mvn/version "3.2.1"}
         com.kepler16/mallard-sqlite-store {:mvn/version "3.2.1"}
         com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}
-        metosin/reitit {:mvn/version "0.9.1"}}}
+        metosin/jsonista {:mvn/version "0.3.13"}
+        metosin/reitit {:mvn/version "0.9.1"}
+        metosin/reitit-middleware {:mvn/version "0.9.1"}
+        metosin/reitit-swagger {:mvn/version "0.9.1"}
+        metosin/reitit-swagger-ui {:mvn/version "0.9.1"}}}
