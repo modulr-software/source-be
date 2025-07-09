@@ -3,10 +3,9 @@
             [ring.util.response :as res]))
 
 (defn get [{:keys [ds path-params] :as _request}]
-  (->> path-params
-       (services/user ds)
-       (assoc {} :user)
-       (res/response)))
+  (let [user (->> path-params
+                  (services/user ds))]
+    (res/response (assoc {} :user (dissoc user :password)))))
 
 (defn patch [{:keys [ds body path-params] :as _request}]
   (services/update-user! ds
