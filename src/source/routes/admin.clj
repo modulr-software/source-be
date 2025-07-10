@@ -19,9 +19,17 @@
       :else
       (let [pw (pw/hash-password password)
             new-user (-> (assoc body
-                            :password pw
-                            :type "admin")
+                                :password pw
+                                :type "admin")
                          (dissoc :confirm-password))]
         (users/insert-user! ds {:data new-user})
         {:status 200 :body {:message "successfully created user"}}))))
 
+(def post-parameters {:body [:map
+                             [:email :string]
+                             [:password :string]
+                             [:confirm-password :string]]})
+
+(def post-responses {201 {:body [:map [:message :string]]}
+                     401 {:body [:map [:message :string]]}
+                     403 {:body [:map [:message :string]]}})

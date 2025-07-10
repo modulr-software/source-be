@@ -5,6 +5,12 @@
 (defn get [{:keys [ds] :as _request}]
   (res/response {:sectors (sectors/sectors ds)}))
 
+(def get-responses {200 {:body [:map
+                                [:sectors
+                                 [:map
+                                  [:id :int]
+                                  [:name :string]]]]}})
+
 (comment
   (require '[source.db.util :as db.util])
   (get {:ds (db.util/conn)})

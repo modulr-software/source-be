@@ -4,3 +4,8 @@
   {:status 200
    :body {:user user}})
 
+(def get-responses {200 {:body [:map
+                                [:user
+                                 [:map
+                                  [:id :int]
+                                  [:type [:enum "creator" "distributor" "admin"]]]]]}})

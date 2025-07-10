@@ -14,6 +14,27 @@
 
       (res/response (auth/login ds {:user user})))))
 
+(def post-parameters {:body [:map
+                             [:email :string]
+                             [:password :string]]})
+
+(def post-responses {200 {:body [:map
+                                 [:user
+                                  [:map
+                                   [:id :int]
+                                   [:address {:optional true} :string]
+                                   [:profile-image {:optional true} :string]
+                                   [:email :string]
+                                   [:firstname {:optional true} :string]
+                                   [:lastname {:optional true} :string]
+                                   [:type [:enum "creator" "distributor" "admin"]]
+                                   [:email-verified {:optional true} :int]
+                                   [:onboarded {:optional true} :int]
+                                   [:mobile {:optional true} :string]]]
+                                 [:access-token :string]
+                                 [:refresh-token :string]]}
+                     401 {:body [:map [:message :string]]}})
+
 (comment
   (require '[source.db.interface :as db])
   (post {:ds (db/ds :master) :body {:email "toast@toast.com" :password "poop"}})
