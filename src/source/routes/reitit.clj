@@ -1,5 +1,10 @@
 (ns source.routes.reitit
   (:require [reitit.ring :as ring]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.coercion.malli]
+            [reitit.ring.malli]
+            [malli.util :as mu]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
@@ -13,37 +18,78 @@
             [source.routes.authorized :as authorized]
             [source.routes.business :as business]
             [source.routes.businesses :as businesses]
-            [source.routes.sectors :as sectors]))
+            [source.routes.sectors :as sectors]
+            [source.util :as util]))
+
+(defn route [handlers]
+  (reduce (fn [acc [k v]]
+            (let [{:keys [summary parameters responses]} (util/metadata v)]
+              (merge acc {k {:summary summary
+                             :parameters parameters
+                             :responses responses
+                             :handler v}})))
+          {} handlers))
 
 (defn create-app []
   (let [ds (db/ds :master)]
     (ring/ring-handler
      (ring/router
-      [["/" {:middleware [[mw/apply-generic :ds ds]]}
-        ["" (fn [_request] {:status 200 :body {:message "success"}})]
-        ["users" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["" {:get users/get}]
-         ["/:id" {:get user/get
-                  :patch user/patch}]]
-        ["businesses"
-         ["" {:get businesses/get
-              :post business/post}]
-         ["/:id" {:patch business/patch}]]
-        ["sectors"
-         ["" {:get sectors/get}]]
-        ["login" {:post login/post}]
-        ["register" {:post register/post}]
-        ["oauth2"
-         ["/google"
-          ["" {:get google-launch/get}]
-          ["/callback" {:get google-redirect/get}]]]
-        ["protected" {:middleware [[mw/apply-auth]]}
-         ["/authorized" {:get authorized/get}]]
-        ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-         ["/add-admin" {:post admin/post}]]]]))))
+      [["/swagger.json"
+        {:get {:no-doc true
+               :swagger {:info {:title "source-api"
+                                :description "swagger docs for source api with malli and reitit-ring"}
+                         :securityDefinitions {"auth" {:type :apiKey
+                                                       :in :header
+                                                       :name "Authorization"}}}
+               :handler (swagger/create-swagger-handler)}}]
+       ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                  :tags #{"users"}
+                  :swagger {:security [{"auth" []}]}}
+        ["" (route {:get users/get})]
+        ["/:id" (route {:get user/get
+                        :patch user/patch})]]
+       ["/businesses" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                       :tags #{"businesses"}
+                       :swagger {:security [{"auth" []}]}}
+        ["" (route {:get businesses/get
+                    :post business/post})]
+        ["/:id" (route {:patch business/patch})]]
+       ["/sectors" {:tags #{"sectors"}}
+        ["" (route {:get sectors/get})]]
+       ["/login" {:tags #{"auth"}}
+        ["" (route {:post login/post})]]
+       ["/register" {:tags #{"auth"}}
+        ["" (route {:post register/post})]]
+       ["/oauth2" {:no-doc true}
+        ["/google"
+         ["" {:get google-launch/get}]
+         ["/callback" {:get google-redirect/get}]]]
+       ["/protected" {:middleware [[mw/apply-auth]]
+                      :tags #{"protected"}
+                      :swagger {:security [{"auth" []}]}}
+        ["/authorized" (route {:get authorized/get})]]
+       ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                  :tags #{"admin"}
+                  :swagger {:security [{"auth" []}]}}
+        ["/add-admin" (route {:post admin/post})]]]
+
+      {:data {:coercion (reitit.coercion.malli/create
+                         {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
+                          :compile mu/closed-schema
+                          :strip-extra-keys true
+                          :default-values true
+                          :options nil})
+              :middleware [[mw/apply-generic :ds ds]]}})
+     (ring/routes
+      (swagger-ui/create-swagger-ui-handler {:path "/"})
+      (ring/create-default-handler)))))
 
 (comment
   (require '[source.middleware.auth.util :as auth.util])
+
+  (route {:get #'user/get
+          :patch #'user/patch})
+  (util/metadata user/get)
 
   (let [app (create-app)
         request {:uri "/users" :request-method :get}]

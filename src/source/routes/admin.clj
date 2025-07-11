@@ -3,7 +3,17 @@
             [source.db.util :as db.util]
             [source.password :as pw]))
 
-(defn post [{:keys [body] :as _request}]
+(defn post
+  {:summary "registers an admin user"
+   :parameters {:body [:map
+                       [:email :string]
+                       [:password :string]
+                       [:confirm-password :string]]}
+   :responses {201 {:body [:map [:message :string]]}
+               401 {:body [:map [:message :string]]}
+               403 {:body [:map [:message :string]]}}}
+
+  [{:keys [body] :as _request}]
   (let [ds (db.util/conn :master)
         user (users/user
               ds
@@ -19,9 +29,8 @@
       :else
       (let [pw (pw/hash-password password)
             new-user (-> (assoc body
-                            :password pw
-                            :type "admin")
+                                :password pw
+                                :type "admin")
                          (dissoc :confirm-password))]
         (users/insert-user! ds {:data new-user})
         {:status 200 :body {:message "successfully created user"}}))))
-

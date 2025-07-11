@@ -1,6 +1,7 @@
 (ns source.util
   (:require [buddy.core.codecs :as codecs]
-            [buddy.core.nonce :as nonce]))
+            [buddy.core.nonce :as nonce]
+            [clojure.main :refer [demunge]]))
 
 (defn content-type [request]
   (or (get-in request [:headers "Content-Type"])
@@ -25,3 +26,12 @@
   (->
    (nonce/random-bytes 8)
    (codecs/bytes->hex)))
+
+(defn metadata [func]
+  (-> (class func)
+      (print-str)
+      (demunge)
+      (symbol)
+      (find-var)
+      (meta)))
+

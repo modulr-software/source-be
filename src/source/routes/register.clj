@@ -2,7 +2,29 @@
   (:require [source.services.interface :as services]
             [ring.util.response :as res]))
 
-(defn post [{:keys [ds body] :as _request}]
+(defn post
+  {:summary "register a new user"
+   :parameters {:body [:map
+                       [:email :string]
+                       [:password :string]
+                       [:confirm-password :string]]}
+   :responses {200 {:body [:map
+                           [:user
+                            [:map
+                             [:id :int]
+                             [:address {:optional true} :string]
+                             [:profile-image {:optional true} :string]
+                             [:email :string]
+                             [:firstname {:optional true} :string]
+                             [:lastname {:optional true} :string]
+                             [:type [:enum "creator" "distributor" "admin"]]
+                             [:email-verified {:optional true} :int]
+                             [:onboarded {:optional true} :int]
+                             [:mobile {:optional true} :string]]]
+                           [:access-token :string]
+                           [:refresh-token :string]]}}}
+
+  [{:keys [ds body] :as _request}]
   ;;TODO: needs schema validation here
   (let [{:keys [email password confirm-password]} body
         existing-user (services/user ds {:where [:= :email email]})]
