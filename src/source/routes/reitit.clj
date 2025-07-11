@@ -4,6 +4,7 @@
             [reitit.swagger-ui :as swagger-ui]
             [reitit.coercion.malli]
             [reitit.ring.malli]
+            [malli.util :as mu]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
@@ -17,7 +18,17 @@
             [source.routes.authorized :as authorized]
             [source.routes.business :as business]
             [source.routes.businesses :as businesses]
-            [source.routes.sectors :as sectors]))
+            [source.routes.sectors :as sectors]
+            [source.util :as util]))
+
+(defn route [handlers]
+  (reduce (fn [acc [k v]]
+            (let [{:keys [summary parameters responses]} (util/metadata v)]
+              (merge acc {k {:summary summary
+                             :parameters parameters
+                             :responses responses
+                             :handler v}})))
+          {} handlers))
 
 (defn create-app []
   (let [ds (db/ds :master)]
@@ -34,46 +45,21 @@
        ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
                   :tags #{"users"}
                   :swagger {:security [{"auth" []}]}}
-        ["" {:get {:summary "get all users"
-                   :responses users/get-responses
-                   :handler users/get}}]
-        ["/:id" {:get {:summary "get user by id"
-                       :parameters user/get-parameters
-                       :responses user/get-responses
-                       :handler user/get}
-                 :patch {:summary "update user by id"
-                         :parameters user/patch-parameters
-                         :responses user/patch-responses
-                         :handler user/patch}}]]
+        ["" (route {:get users/get})]
+        ["/:id" (route {:get user/get
+                        :patch user/patch})]]
        ["/businesses" {:middleware [[mw/apply-auth {:required-type :admin}]]
                        :tags #{"businesses"}
                        :swagger {:security [{"auth" []}]}}
-        ["" {:get {:summary "get all businesses"
-                   :parameters businesses/get-parameters
-                   :responses businesses/get-responses
-                   :handler businesses/get}
-             :post {:summary "insert a business"
-                    :parameters business/post-parameters
-                    :responses business/post-responses
-                    :handler business/post}}]
-        ["/:id" {:patch {:summary "update business by id"
-                         :parameters business/patch-parameters
-                         :responses business/patch-responses
-                         :handler business/patch}}]]
+        ["" (route {:get businesses/get
+                    :post business/post})]
+        ["/:id" (route {:patch business/patch})]]
        ["/sectors" {:tags #{"sectors"}}
-        ["" {:get {:summary "get all sectors"
-                   :responses sectors/get-responses
-                   :handler sectors/get}}]]
-       ["/login" {:tags #{"auth"}
-                  :post {:summary "get user data and access token provided valid login credentials"
-                         :parameters login/post-parameters
-                         :responses login/post-responses
-                         :handler login/post}}]
-       ["/register" {:tags #{"auth"}
-                     :post {:summary "register a new user"
-                            :parameters register/post-parameters
-                            :responses register/post-responses
-                            :handler register/post}}]
+        ["" (route {:get sectors/get})]]
+       ["/login" {:tags #{"auth"}}
+        ["" (route {:post login/post})]]
+       ["/register" {:tags #{"auth"}}
+        ["" (route {:post register/post})]]
        ["/oauth2" {:no-doc true}
         ["/google"
          ["" {:get google-launch/get}]
@@ -81,24 +67,29 @@
        ["/protected" {:middleware [[mw/apply-auth]]
                       :tags #{"protected"}
                       :swagger {:security [{"auth" []}]}}
-        ["/authorized" {:get {:summary "checks if authenticated"
-                              :responses authorized/get-responses
-                              :handler authorized/get}}]]
+        ["/authorized" (route {:get authorized/get})]]
        ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
                   :tags #{"admin"}
                   :swagger {:security [{"auth" []}]}}
-        ["/add-admin" {:post {:summary "registers an admin user"
-                              :parameters admin/post-parameters
-                              :responses admin/post-responses
-                              :handler admin/post}}]]]
+        ["/add-admin" (route {:post admin/post})]]]
 
-      {:data {:middleware [[mw/apply-generic :ds ds]]}})
+      {:data {:coercion (reitit.coercion.malli/create
+                         {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
+                          :compile mu/closed-schema
+                          :strip-extra-keys true
+                          :default-values true
+                          :options nil})
+              :middleware [[mw/apply-generic :ds ds]]}})
      (ring/routes
       (swagger-ui/create-swagger-ui-handler {:path "/"})
       (ring/create-default-handler)))))
 
 (comment
   (require '[source.middleware.auth.util :as auth.util])
+
+  (route {:get #'user/get
+          :patch #'user/patch})
+  (util/metadata user/get)
 
   (let [app (create-app)
         request {:uri "/users" :request-method :get}]
