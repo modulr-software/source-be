@@ -25,7 +25,9 @@
   [{:keys [ds path-params] :as _request}]
   (let [user (->> path-params
                   (services/user ds))]
-    (res/response (assoc {} :user (dissoc user :password)))))
+    (->> (dissoc user :password)
+         (assoc {} :user)
+         (res/response))))
 
 (defn patch
   {:summary "update user by id"
