@@ -1,6 +1,5 @@
 (ns source.routes.admin
   (:require [source.services.users :as users]
-            [source.db.util :as db.util]
             [source.password :as pw]))
 
 (defn post
@@ -13,9 +12,8 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [body] :as _request}]
-  (let [ds (db.util/conn :master)
-        user (users/user
+  [{:keys [ds body] :as _request}]
+  (let [user (users/user
               ds
               {:where [:= :email (:email body)]})
         {:keys [password confirm-password]} body]

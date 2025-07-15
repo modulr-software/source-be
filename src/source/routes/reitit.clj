@@ -14,6 +14,7 @@
             [source.routes.register :as register]
             [source.routes.google-launch :as google-launch]
             [source.routes.google-redirect :as google-redirect]
+            [source.routes.google-user :as google-user]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]
             [source.routes.business :as business]
@@ -34,44 +35,52 @@
   (let [ds (db/ds :master)]
     (ring/ring-handler
      (ring/router
-      [["/swagger.json"
-        {:get {:no-doc true
-               :swagger {:info {:title "source-api"
-                                :description "swagger docs for source api with malli and reitit-ring"}
-                         :securityDefinitions {"auth" {:type :apiKey
-                                                       :in :header
-                                                       :name "Authorization"}}}
-               :handler (swagger/create-swagger-handler)}}]
-       ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
-                  :tags #{"users"}
-                  :swagger {:security [{"auth" []}]}}
-        ["" (route {:get users/get})]
-        ["/:id" (route {:get user/get
-                        :patch user/patch})]]
-       ["/businesses" {:middleware [[mw/apply-auth {:required-type :admin}]]
-                       :tags #{"businesses"}
-                       :swagger {:security [{"auth" []}]}}
-        ["" (route {:get businesses/get
-                    :post business/post})]
-        ["/:id" (route {:patch business/patch})]]
-       ["/sectors" {:tags #{"sectors"}}
-        ["" (route {:get sectors/get})]]
-       ["/login" {:tags #{"auth"}}
-        ["" (route {:post login/post})]]
-       ["/register" {:tags #{"auth"}}
-        ["" (route {:post register/post})]]
-       ["/oauth2" {:no-doc true}
+      [["/swagger.json" {:get {:no-doc true
+                               :swagger {:info {:title "source-api"
+                                                :description "swagger docs for source api with malli and reitit-ring"}
+                                         :securityDefinitions {"auth" {:type :apiKey
+                                                                       :in :header
+                                                                       :name "Authorization"}}}
+                               :handler (swagger/create-swagger-handler)}}]
+
+       ["/users"        {:middleware [[mw/apply-auth {:required-type :admin}]]
+                         :tags #{"users"}
+                         :swagger {:security [{"auth" []}]}}
+        [""             (route {:get users/get})]
+        ["/:id"         (route {:get user/get
+                                :patch user/patch})]]
+
+       ["/businesses"   {:middleware [[mw/apply-auth {:required-type :admin}]]
+                         :tags #{"businesses"}
+                         :swagger {:security [{"auth" []}]}}
+        [""             (route {:get businesses/get
+                                :post business/post})]
+        ["/:id"         (route {:patch business/patch})]]
+
+       ["/sectors"      {:tags #{"sectors"}}
+        [""             (route {:get sectors/get})]]
+
+       ["/login"        {:tags #{"auth"}}
+        [""             (route {:post login/post})]]
+
+       ["/register"     {:tags #{"auth"}}
+        [""             (route {:post register/post})]]
+
+       ["/oauth2"       {:no-doc true}
         ["/google"
-         ["" {:get google-launch/get}]
-         ["/callback" {:get google-redirect/get}]]]
-       ["/protected" {:middleware [[mw/apply-auth]]
-                      :tags #{"protected"}
-                      :swagger {:security [{"auth" []}]}}
-        ["/authorized" (route {:get authorized/get})]]
-       ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
-                  :tags #{"admin"}
-                  :swagger {:security [{"auth" []}]}}
-        ["/add-admin" (route {:post admin/post})]]]
+         [""            {:get google-launch/get}]
+         ["/callback"   {:get google-redirect/get}]
+         ["/user"       {:get google-user/get}]]]
+
+       ["/protected"    {:middleware [[mw/apply-auth]]
+                         :tags #{"protected"}
+                         :swagger {:security [{"auth" []}]}}
+        ["/authorized"  (route {:get authorized/get})]]
+
+       ["/admin"        {:middleware [[mw/apply-auth {:required-type :admin}]]
+                         :tags #{"admin"}
+                         :swagger {:security [{"auth" []}]}}
+        ["/add-admin"   (route {:post admin/post})]]]
 
       {:data {:coercion (reitit.coercion.malli/create
                          {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
