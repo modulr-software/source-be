@@ -46,7 +46,8 @@
   "returns all current tables in a sqlite datasource"
   [ds]
   (->> {:tname :sqlite-master
-        :where [:and [:= :type "table"] [:<> :name "sqlite_sequence"]]}
+        :where [:and [:= :type "table"] [:<> :name "sqlite_sequence"]]
+        :ret :*}
        (hon/find ds)))
 
 (defn table-name
@@ -110,11 +111,13 @@
    :source.db.master
    [:users
     :cadences
+    :sectors
     :businesses])
 
   (drop-tables!
    (db.util/conn :master)
    [:users
+    :sectors
     :cadences])
 
   (drop-all-tables! (db.util/conn :master))
