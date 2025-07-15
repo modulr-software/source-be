@@ -16,31 +16,23 @@
         (assoc :ds ds)
         (handler))))
 
-(defn wrap-request->kebab [handler]
-  (fn [request]
-    (if (map? (:body request))
-      (-> request
-          (assoc :body (cske/transform-keys
-                        (fn [k]
-                          (if (or (keyword? k) (string? k))
-                            (csk/->kebab-case k)
-                            k))
-                        (:body request)))
-          (handler))
-      (handler request))))
+(defn process-body [{:keys [body] :as req} t-fn]
+  (assoc req
+         :body
+         (if
+          (or (map? body) (vector? body) (seq? body))
+           (cske/transform-keys (fn [k]
+                                  (if (or (keyword? k) (string? k))
+                                    (t-fn k)
+                                    k)) body)
+           body)))
 
-(defn wrap-response->snake [handler]
+(defn wrap-case-conversion [handler]
   (fn [request]
-    (let [response (handler request)
-          body (:body response)]
-      (if (map? body)
-        (assoc response :body (cske/transform-keys
-                               (fn [k]
-                                 (if (or (keyword? k) (string? k))
-                                   (csk/->snake_case k)
-                                   k))
-                               (:body response)))
-        response))))
+    (-> request
+        (process-body csk/->kebab-case-keyword)
+        (handler)
+        (process-body csk/->camelCaseKeyword))))
 
 (defn apply-ds [app ds]
   (-> app
@@ -49,14 +41,13 @@
 (defn apply-generic [app & {:keys [ds]}]
   (-> app
       (apply-ds ds)
+      (wrap-case-conversion)
       (content-type/wrap-content-type)
       (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :cors-origin))]
                  :access-control-allow-methods [:get :put :post :delete])
       (wrap-params)
       (wrap-defaults (assoc site-defaults :session false :security {:anti-forgery false}))
-      (wrap-response->snake)
       (ring/wrap-json-response)
-      (wrap-request->kebab)
       (ring/wrap-json-body {:keywords? true})
       (cookies/wrap-cookies)))
 
