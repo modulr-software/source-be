@@ -18,18 +18,29 @@
 
 (defn wrap-request->kebab [handler]
   (fn [request]
-    (-> request
-        (assoc :body (cske/transform-keys
-                      csk/->kebab-case
-                      (:body request)))
-        (handler))))
+    (if (map? (:body request))
+      (-> request
+          (assoc :body (cske/transform-keys
+                        (fn [k]
+                          (if (or (keyword? k) (string? k))
+                            (csk/->kebab-case k)
+                            k))
+                        (:body request)))
+          (handler))
+      (handler request))))
 
 (defn wrap-response->snake [handler]
   (fn [request]
-    (let [response (handler request)]
-      (assoc response :body (cske/transform-keys
-                             csk/->snake_case
-                             (:body response))))))
+    (let [response (handler request)
+          body (:body response)]
+      (if (map? body)
+        (assoc response :body (cske/transform-keys
+                               (fn [k]
+                                 (if (or (keyword? k) (string? k))
+                                   (csk/->snake_case k)
+                                   k))
+                               (:body response)))
+        response))))
 
 (defn apply-ds [app ds]
   (-> app
