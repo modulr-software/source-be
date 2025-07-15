@@ -2,13 +2,11 @@
   (:require [source.oauth2.google.interface :as google]
             [source.middleware.auth.core :as auth]
             [source.services.users :as users]
-            [source.db.util :as db.util]
             [ring.util.response :as res]))
 
-(defn get [req]
-  (let [{:keys [uuid _uri]} (:body req)
+(defn get [{:keys [ds body] :as req}]
+  (let [{:keys [uuid _uri]} body
         email (google/google-session-user uuid (:params req))
-        ds (db.util/conn :master)
         user (users/user ds {:where [:= :email email]})
         user-type (get-in req [:cookies "user_type" :value])]
 
