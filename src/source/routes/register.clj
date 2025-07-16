@@ -27,28 +27,27 @@
 
   [{:keys [ds body] :as _request}]
 
-  (let [{:keys [data error success]} (util/validate post body)]
-    (if (not success)
+  (let [{:keys [data error success]} (util/validate post body)
+        {:keys [email password confirm-password]} data
+        existing-user (services/user ds {:where [:= :email email]})]
+    (cond
 
-      (-> (res/response error)
-          (res/status 400))
+      (not success) (-> (res/response error)
+                        (res/status 400))
 
-      (let [{:keys [email password confirm-password]} data
-            existing-user (services/user ds {:where [:= :email email]})]
-        (cond
-          (not (= password confirm-password))
-          (-> (res/response {:error "Passwords do not match!"}))
+      (not (= password confirm-password))
+      (-> (res/response {:error "Passwords do not match!"}))
 
-          (some? existing-user)
-          (-> (res/response {:error "An account for this email already exists!"}))
+      (some? existing-user)
+      (-> (res/response {:error "An account for this email already exists!"}))
 
-          :else
-          (-> (services/register ds body)
-              (res/response)))))))
+      :else
+      (-> (services/register ds data)
+          (res/response)))))
 
 (comment
   (require '[source.db.interface :as db])
-  (post {:ds (db/ds :master) :body {:email "test@test.com"
+  (post {:ds (db/ds :master) :body {:email "poop@test.com"
                                     :password "test"
                                     :type "distributor"
                                     :confirm-password "test"}})

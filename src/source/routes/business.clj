@@ -15,12 +15,11 @@
   [{:keys [ds body] :as _request}]
 
   (let [{:keys [data error success]} (utils/validate post body)]
-    (cond
-      (not success) (-> (res/response error)
-                        (res/status 400))
+    (if (not success) (-> (res/response error)
+                          (res/status 400))
 
-      :else (do (businesses/insert-business! ds {:values data})
-                (res/response {:message "successfully added business"})))))
+        (do (businesses/insert-business! ds {:values data})
+            (res/response {:message "successfully added business"})))))
 
 (defn patch
   {:summary "update a business by id"

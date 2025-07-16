@@ -16,28 +16,25 @@
 
   [{:keys [ds body] :as _request}]
 
-  (let [{:keys [data error success]} (util/validate post body)]
-    (if (not success)
+  (let [{:keys [data error success]} (util/validate post body)
+        user (users/user ds {:where [:= :email (:email data)]})
+        {:keys [password confirm-password]} data
+        pw (pw/hash-password password)
+        new-user (-> (assoc data
+                            :password pw
+                            :type "admin")
+                     (dissoc :confirm-password))]
+    (cond
 
-      (-> (res/response error)
-          (res/status 400))
+      (not success) (-> (res/response error)
+                        (res/status 400))
 
-      (let [user (users/user
-                  ds
-                  {:where [:= :email (:email data)]})
-            {:keys [password confirm-password]} data]
-        (cond
-          (not (= password confirm-password))
-          {:status 400 :body {:message "passwords do not match!"}}
+      (not (= password confirm-password))
+      {:status 400 :body {:message "passwords do not match!"}}
 
-          (some? user)
-          {:status 400 :body {:message "an account for this email already exists!"}}
+      (some? user)
+      {:status 400 :body {:message "an account for this email already exists!"}}
 
-          :else
-          (let [pw (pw/hash-password password)
-                new-user (-> (assoc body
-                                    :password pw
-                                    :type "admin")
-                             (dissoc :confirm-password))]
-            (users/insert-user! ds {:data new-user})
-            {:status 200 :body {:message "successfully created user"}}))))))
+      :else
+      (do (users/insert-user! ds {:data new-user})
+          (res/response {:message "successfully created user"})))))
