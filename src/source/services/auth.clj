@@ -14,7 +14,7 @@
                                     (assoc :password (pw/hash-password password)))})
   (let [user (users/user ds {:where [:= :email email]})]
     (merge
-     {:user user}
+     {:user (dissoc user :password)}
      (auth/create-session (select-keys user [:id :type])))))
 
 (comment
