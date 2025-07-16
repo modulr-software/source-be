@@ -4,6 +4,7 @@
             [reitit.swagger-ui :as swagger-ui]
             [reitit.coercion.malli]
             [reitit.ring.malli]
+            [reitit.ring.middleware.exception :as exception]
             [malli.util :as mu]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
@@ -88,7 +89,8 @@
                           :strip-extra-keys true
                           :default-values true
                           :options nil})
-              :middleware [[mw/apply-generic :ds ds]]}})
+              :middleware [[mw/apply-generic :ds ds]
+                           [exception/exception-middleware]]}})
      (ring/routes
       (swagger-ui/create-swagger-ui-handler {:path "/"})
       (ring/create-default-handler)))))
