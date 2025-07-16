@@ -1,6 +1,7 @@
 (ns source.routes.register
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.util :as util]))
 
 (defn post
   {:summary "register a new user"
@@ -25,19 +26,25 @@
                            [:refresh-token :string]]}}}
 
   [{:keys [ds body] :as _request}]
-  ;;TODO: needs schema validation here
-  (let [{:keys [email password confirm-password]} body
-        existing-user (services/user ds {:where [:= :email email]})]
-    (cond
-      (not (= password confirm-password))
-      (-> (res/response {:error "Passwords do not match!"}))
 
-      (some? existing-user)
-      (-> (res/response {:error "An account for this email already exists!"}))
+  (let [{:keys [data error success]} (util/validate post body)]
+    (if (not success)
 
-      :else
-      (-> (services/register ds body)
-          (res/response)))))
+      (-> (res/response error)
+          (res/status 400))
+
+      (let [{:keys [email password confirm-password]} data
+            existing-user (services/user ds {:where [:= :email email]})]
+        (cond
+          (not (= password confirm-password))
+          (-> (res/response {:error "Passwords do not match!"}))
+
+          (some? existing-user)
+          (-> (res/response {:error "An account for this email already exists!"}))
+
+          :else
+          (-> (services/register ds body)
+              (res/response)))))))
 
 (comment
   (require '[source.db.interface :as db])

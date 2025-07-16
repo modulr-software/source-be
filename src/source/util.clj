@@ -1,7 +1,10 @@
 (ns source.util
   (:require [buddy.core.codecs :as codecs]
             [buddy.core.nonce :as nonce]
-            [clojure.main :refer [demunge]]))
+            [clojure.main :refer [demunge]]
+            [malli.core :as m]
+            [malli.transform :as mt]
+            [malli.error :as me]))
 
 (defn content-type [request]
   (or (get-in request [:headers "Content-Type"])
@@ -34,4 +37,19 @@
       (symbol)
       (find-var)
       (meta)))
+
+(defn validate [handler data]
+  (let [schema (get-in (metadata handler) [:parameters :body])
+        decoded (m/decode schema data mt/string-transformer)
+        success (m/validate schema decoded)]
+    {:data decoded
+     :success success
+     :error (when-not success (->> decoded
+                                   (m/explain schema)
+                                   (me/humanize)))}))
+
+(comment 
+  (require '[source.routes.business :as business])
+  (validate business/post {:name "modulr"})
+  ())
 
