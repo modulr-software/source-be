@@ -40,16 +40,15 @@
 
 (defn validate [handler data]
   (let [schema (get-in (metadata handler) [:parameters :body])
-        decoded (m/decode schema data mt/string-transformer)
-        success (m/validate schema decoded)]
-    {:data decoded
+        success (m/validate schema data)]
+    {:data (when success data)
      :success success
-     :error (when-not success (->> decoded
+     :error (when-not success (->> data
                                    (m/explain schema)
                                    (me/humanize)))}))
 
 (comment 
   (require '[source.routes.business :as business])
-  (validate business/post {:name "modulr"})
+  (validate business/post {:cheese "modulr"})
   ())
 
