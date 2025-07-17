@@ -3,8 +3,7 @@
             [ring.util.response :as res]
             [source.services.users :as users]
             [source.password :as pw]
-            [source.util :as util]
-            [source.db.util :as db.util]))
+            [source.util :as util]))
 
 (defn post
   {:summary "get user data and access token provided valid credentials"
