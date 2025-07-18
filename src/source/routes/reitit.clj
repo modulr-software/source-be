@@ -10,6 +10,7 @@
             [clojure.data.json :as json]
             [source.routes.user :as user]
             [source.routes.users :as users]
+            [source.routes.me :as me]
             [source.routes.login :as login]
             [source.routes.register :as register]
             [source.routes.google-launch :as google-launch]
@@ -49,6 +50,11 @@
         [""             (route {:get users/get})]
         ["/:id"         (route {:get user/get
                                 :patch user/patch})]]
+
+       ["/me"           {:middleware [[mw/apply-auth]]
+                         :tags #{"me"}
+                         :swagger {:security [{"auth" []}]}}
+        [""             (route {:get me/get})]]
 
        ["/businesses"   {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"businesses"}
