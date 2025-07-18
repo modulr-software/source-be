@@ -1,6 +1,8 @@
 (ns source.routes.admin
   (:require [source.services.users :as users]
-            [source.password :as pw]))
+            [source.password :as pw]
+            [source.util :as util]
+            [ring.util.response :as res]))
 
 (defn post
   {:summary "registers an admin user"
@@ -13,22 +15,28 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body] :as _request}]
-  (let [user (users/user
-              ds
-              {:where [:= :email (:email body)]})
-        {:keys [password confirm-password]} body]
+
+  (let [{:keys [data error success]} (util/validate post body)
+        user (users/user ds {:where [:= :email (:email data)]})
+        {:keys [password confirm-password]} data]
     (cond
+
+      (not success) (-> (res/response error)
+                        (res/status 400))
+
       (not (= password confirm-password))
-      {:status 400 :body {:message "passwords do not match!"}}
+      (-> (res/response {:message "passwords do not match!"})
+          (res/status 400))
 
       (some? user)
-      {:status 400 :body {:message "an account for this email already exists!"}}
+      (-> (res/response {:message "an account for this email already exists!"})
+          (res/status 400))
 
       :else
       (let [pw (pw/hash-password password)
-            new-user (-> (assoc body
+            new-user (-> (assoc data
                                 :password pw
                                 :type "admin")
                          (dissoc :confirm-password))]
         (users/insert-user! ds {:data new-user})
-        {:status 200 :body {:message "successfully created user"}}))))
+        (res/response {:message "successfully created user"})))))
