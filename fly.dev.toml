@@ -9,7 +9,7 @@ primary_region = 'jnb'
 [build]
 
 [env]
-  CORS_ORIGIN = 'http://localhost:3001'
+  CORS_ORIGIN = 'https://source-staging.fly.dev'
   ENV = 'prod'
   GOOGLE_CLIENT_ID = '449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com'
   DATABASE_DIR = '/data'
