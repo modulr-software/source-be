@@ -4,12 +4,14 @@
             [reitit.swagger-ui :as swagger-ui]
             [reitit.coercion.malli]
             [reitit.ring.malli]
+            [reitit.ring.middleware.exception :as exception]
             [malli.util :as mu]
             [source.middleware.interface :as mw]
             [source.db.interface :as db]
             [clojure.data.json :as json]
             [source.routes.user :as user]
             [source.routes.users :as users]
+            [source.routes.me :as me]
             [source.routes.login :as login]
             [source.routes.register :as register]
             [source.routes.google-launch :as google-launch]
@@ -50,6 +52,11 @@
         ["/:id"         (route {:get user/get
                                 :patch user/patch})]]
 
+       ["/me"           {:middleware [[mw/apply-auth]]
+                         :tags #{"me"}
+                         :swagger {:security [{"auth" []}]}}
+        [""             (route {:get me/get})]]
+
        ["/businesses"   {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"businesses"}
                          :swagger {:security [{"auth" []}]}}
@@ -88,7 +95,8 @@
                           :strip-extra-keys true
                           :default-values true
                           :options nil})
-              :middleware [[mw/apply-generic :ds ds]]}})
+              :middleware [[mw/apply-generic :ds ds]
+                           [exception/exception-middleware]]}})
      (ring/routes
       (swagger-ui/create-swagger-ui-handler {:path "/"})
       (ring/create-default-handler)))))
