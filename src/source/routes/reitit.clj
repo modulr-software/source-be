@@ -2,6 +2,7 @@
   (:require [reitit.ring :as ring]
             [reitit.swagger :as swagger]
             [reitit.swagger-ui :as swagger-ui]
+            [reitit.openapi :as openapi]
             [reitit.coercion.malli]
             [reitit.ring.malli]
             [reitit.ring.middleware.exception :as exception]
@@ -39,11 +40,21 @@
      (ring/router
       [["/swagger.json" {:get {:no-doc true
                                :swagger {:info {:title "source-api"
-                                                :description "swagger docs for source api with malli and reitit-ring"}
+                                                :description "swagger docs for source api with malli and reitit-ring"
+                                                :version "0.0.1"}
                                          :securityDefinitions {"auth" {:type :apiKey
                                                                        :in :header
                                                                        :name "Authorization"}}}
                                :handler (swagger/create-swagger-handler)}}]
+
+       ["/openapi.json" {:get {:no-doc true
+                               :openapi {:info {:title "source-api"
+                                                :description "openapi3 docs for source api with malli and reitit-ring"
+                                                :version "0.0.1"}
+                                         :components {:securitySchemas {"auth" {:type :apiKey
+                                                                                :in :header
+                                                                                :name "Authorization"}}}}
+                               :handler (openapi/create-openapi-handler)}}]
 
        ["/users"        {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"users"}
@@ -98,7 +109,12 @@
               :middleware [[mw/apply-generic :ds ds]
                            [exception/exception-middleware]]}})
      (ring/routes
-      (swagger-ui/create-swagger-ui-handler {:path "/"})
+      (swagger-ui/create-swagger-ui-handler {:path "/"
+                                             :config {:validatorUrl nil
+                                                      :urls [{:name "swagger", :url "swagger.json"}
+                                                             {:name "openapi", :url "openapi.json"}]
+                                                      :urls.primaryName "swagger"
+                                                      :operationsSorter "alpha"}})
       (ring/create-default-handler)))))
 
 (comment
