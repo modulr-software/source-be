@@ -11,15 +11,15 @@
                            [:user
                             [:map
                              [:id :int]
-                             [:address {:optional true} :string]
-                             [:profile-image {:optional true} :string]
+                             [:address [:maybe :string]]
+                             [:profile-image [:maybe :string]]
                              [:email :string]
-                             [:firstname {:optional true} :string]
-                             [:lastname {:optional true} :string]
+                             [:firstname [:maybe :string]]
+                             [:lastname [:maybe :string]]
                              [:type [:enum "creator" "distributor" "admin"]]
-                             [:email-verified {:optional true} :int]
-                             [:onboarded {:optional true} :int]
-                             [:mobile {:optional true} :string]]]]}
+                             [:email-verified [:maybe :int]]
+                             [:onboarded [:maybe :int]]
+                             [:mobile [:maybe :string]]]]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
@@ -48,15 +48,15 @@
                            [:user
                             [:map
                              [:id :int]
-                             [:address {:optional true} :string]
-                             [:profile-image {:optional true} :string]
+                             [:address [:maybe :string]]
+                             [:profile-image [:maybe :string]]
                              [:email :string]
-                             [:firstname {:optional true} :string]
-                             [:lastname {:optional true} :string]
+                             [:firstname [:maybe :string]]
+                             [:lastname [:maybe :string]]
                              [:type [:enum "creator" "distributor" "admin"]]
-                             [:email-verified {:optional true} :int]
-                             [:onboarded {:optional true} :int]
-                             [:mobile {:optional true} :string]]]]}
+                             [:email-verified [:maybe :int]]
+                             [:onboarded [:maybe :int]]
+                             [:mobile [:maybe :string]]]]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
