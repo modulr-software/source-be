@@ -51,26 +51,30 @@
                                :openapi {:info {:title "source-api"
                                                 :description "openapi3 docs for source api with malli and reitit-ring"
                                                 :version "0.0.1"}
-                                         :components {:securitySchemas {"auth" {:type :apiKey
-                                                                                :in :header
-                                                                                :name "Authorization"}}}}
+                                         :components {:securitySchemes {"bearerAuth" {:type :http
+                                                                                      :scheme :bearer
+                                                                                      :bearerFormat "JWT"
+                                                                                      :description "JWT Authorization using the Bearer scheme"}}}}
                                :handler (openapi/create-openapi-handler)}}]
 
        ["/users"        {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"users"}
-                         :swagger {:security [{"auth" []}]}}
+                         :swagger {:security [{"auth" []}]}
+                         :openapi {:security [{:bearerAuth []}]}}
         [""             (route {:get users/get})]
         ["/:id"         (route {:get user/get
                                 :patch user/patch})]]
 
        ["/me"           {:middleware [[mw/apply-auth]]
                          :tags #{"me"}
-                         :swagger {:security [{"auth" []}]}}
+                         :swagger {:security [{"auth" []}]}
+                         :openapi {:security [{:bearerAuth []}]}}
         [""             (route {:get me/get})]]
 
        ["/businesses"   {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"businesses"}
-                         :swagger {:security [{"auth" []}]}}
+                         :swagger {:security [{"auth" []}]}
+                         :openapi {:security [{:bearerAuth []}]}}
         [""             (route {:get businesses/get
                                 :post business/post})]
         ["/:id"         (route {:patch business/patch})]]
@@ -84,20 +88,23 @@
        ["/register"     {:tags #{"auth"}}
         [""             (route {:post register/post})]]
 
-       ["/oauth2"       {:no-doc true}
-        ["/google"
-         [""            {:get google-launch/get}]
-         ["/callback"   {:get google-redirect/get}]
-         ["/user"       {:get google-user/get}]]]
+       ["/oauth2"
+        ["/google"      {:tags #{"google"}}
+         [""            (route {:get google-launch/get})]
+         ["/callback"   {:no-doc true
+                         :get google-redirect/get}]
+         ["/user"       (route {:get google-user/get})]]]
 
        ["/protected"    {:middleware [[mw/apply-auth]]
                          :tags #{"protected"}
-                         :swagger {:security [{"auth" []}]}}
+                         :swagger {:security [{"auth" []}]}
+                         :openapi {:security [{:bearerAuth []}]}}
         ["/authorized"  (route {:get authorized/get})]]
 
        ["/admin"        {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"admin"}
-                         :swagger {:security [{"auth" []}]}}
+                         :swagger {:security [{"auth" []}]}
+                         :openapi {:security [{:bearerAuth []}]}}
         ["/add-admin"   (route {:post admin/post})]]]
 
       {:data {:coercion (reitit.coercion.malli/create
