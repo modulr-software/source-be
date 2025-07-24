@@ -4,7 +4,28 @@
             [source.services.users :as users]
             [ring.util.response :as res]))
 
-(defn get [{:keys [ds body] :as req}]
+(defn get
+  {:summary "completes the google oauth2 flow and returns the authenticated user"
+   :parameters {:query [:map
+                        [:code :string]
+                        [:scope :string]]}
+   :responses {200 {:body [:map
+                           [:user
+                            [:map
+                             [:id :int]
+                             [:address [:maybe :string]]
+                             [:profile-image [:maybe :string]]
+                             [:email :string]
+                             [:firstname [:maybe :string]]
+                             [:lastname [:maybe :string]]
+                             [:type [:enum "creator" "distributor" "admin"]]
+                             [:email-verified [:maybe :int]]
+                             [:onboarded [:maybe :int]]
+                             [:mobile [:maybe :string]]]]
+                           [:access-token :string]
+                           [:refresh-token :string]]}}}
+  [{:keys [ds body] :as req}]
+
   (let [{:keys [uuid _uri]} body
         email (google/google-session-user uuid (:params req))
         user (users/user ds {:where [:= :email email]})

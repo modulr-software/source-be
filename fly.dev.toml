@@ -12,6 +12,7 @@ primary_region = 'jnb'
   CORS_ORIGIN = 'https://source-staging.fly.dev'
   ENV = 'prod'
   GOOGLE_CLIENT_ID = '449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com'
+  GOOGLE_REDIRECT_URI = 'https://source-be-staging.fly.dev/oauth2/google/callback'
   DATABASE_DIR = '/data'
 
 [http_service]
