@@ -8,7 +8,8 @@
    :parameters {:body [:map
                        [:email :string]
                        [:password :string]
-                       [:confirm-password :string]]}
+                       [:confirm-password :string]
+                       [:type [:enum "creator" "distributor"]]]}
    :responses {200 {:body [:map
                            [:user
                             [:map
