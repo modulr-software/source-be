@@ -20,9 +20,16 @@
             [source.routes.google-user :as google-user]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]
+            [source.routes.selection-schema :as selection-schema]
             [source.routes.business :as business]
             [source.routes.businesses :as businesses]
             [source.routes.sectors :as sectors]
+            [source.routes.selection-schemas :as selection-schemas]
+            [source.routes.xml :as xml]
+            [source.routes.data :as data]
+            [source.datastore.tables :as store.tables]
+            [source.datastore.interface :as store]
+            [source.datastore.util :as store.util]
             [source.util :as util]))
 
 (defn route [handlers]
@@ -102,10 +109,14 @@
         ["/authorized"  (route {:get authorized/get})]]
 
        ["/admin"        {:middleware [[mw/apply-auth {:required-type :admin}]]
+                         :no-doc true
                          :tags #{"admin"}
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
-        ["/add-admin"   (route {:post admin/post})]]]
+        ["/add-admin"   (route {:post admin/post})]
+        ["/selection-schema" {:post selection-schema/post}]]]
+      ["/ast" {:post xml/post}]
+      ["/extract-data" {:post data/post}]
 
       {:data {:coercion (reitit.coercion.malli/create
                          {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
@@ -125,7 +136,10 @@
       (ring/create-default-handler)))))
 
 (comment
-  (require '[source.middleware.auth.util :as auth.util])
+  (require '[source.middleware.auth.util :as auth.util]
+           '[source.datastore.interface :as store]
+           '[source.datastore.tables :as store.tables]
+           '[source.rss.youtube :as yt])
 
   (route {:get #'user/get
           :patch #'user/patch})
@@ -215,6 +229,73 @@
   (let [app (create-app)
         request {:uri "/sectors"
                  :request-method :get}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        store (store.util/conn "datalevin")
+        ;; open table before operation
+        _thing (dl/open-dbi store "selection-schemas")
+        request {:uri "/admin/selection-schema"
+                 :request-method :post
+                 :store store
+                 :body {:record {:provider-id 1
+                                 :output-schema-id 1}
+                        :schema {:title {:path ["tag/body" "tag/feed" "tag/title" "content/0"]}}}
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/admin/selection-schema/1"
+                 :request-method :get
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        store (store/ds :store)
+        request {:uri "/admin/selection-schemas"
+                 :store store
+                 :request-method :get
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (defn get-url []
+    (->> "https://www.youtube.com/@ThePrimeTimeagen"
+         (yt/find-channel-id)
+         (str "https://www.youtube.com/feeds/videos.xml?channel_id=")))
+
+  (let [app (create-app)
+        request {:uri "/admin/ast"
+                 :request-method :post
+                 :body {:url (get-url)}
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        store (store/ds :store)
+        request {:uri "/admin/extract-data"
+                 :store store
+                 :request-method :post
+                 :body {:schema-id 1
+                        :url (get-url)}
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (println (store/get-all store {:tname :selection-schemas}))
+    (println (store/find store {:tname :selection-schemas
+                                :key 1}))
     (-> request
         app
         :body

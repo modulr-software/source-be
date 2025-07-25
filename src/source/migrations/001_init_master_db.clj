@@ -73,7 +73,8 @@
       :providers
       :businesses
       :user-sectors
-      :feed-sectors])
+      :feed-sectors
+      :selection-schemas])
 
     (db/insert! ds-master baselines-seed)
     (db/insert! ds-master cadences-seed)

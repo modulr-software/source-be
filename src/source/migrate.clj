@@ -1,10 +1,9 @@
 (ns source.migrate
-  (:require
-   [k16.mallard :as mallard]
-   [k16.mallard.store.sqlite :as store]
-   [k16.mallard.loader.fs :as loader.fs]
-   [next.jdbc :as jdbc]
-   [source.db.util :as db.util]))
+  (:require [k16.mallard :as mallard]
+            [k16.mallard.store.sqlite :as store]
+            [k16.mallard.loader.fs :as loader.fs]
+            [next.jdbc :as jdbc]
+            [source.db.util :as db.util]))
 
 ;; This is our interface for running migrations.
 ;;

@@ -2,6 +2,7 @@
   (:require  [source.services.users :as users]
              [source.db.interface :as db]
              [source.services.auth :as auth]
+             [source.services.xml-schemas :as xml]
              [source.services.bundles :as bundles]))
 
 (defn users
@@ -23,8 +24,23 @@
 (defn register [ds user]
   (auth/register ds user))
 
+(defn add-selection-schema! [store db {:keys [_schema _record] :as opts}]
+  (xml/add-selection-schema! store db opts))
+
+(defn selection-schema [ds {:keys [_id] :as opts}]
+  (xml/selection-schema ds opts))
+
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
+
+(defn selection-schemas [ds]
+  (xml/selection-schemas ds))
+
+(defn ast [url]
+  (xml/ast url))
+
+(defn extract-data [store {:keys [schema-id url]}]
+  (xml/extract-data store schema-id url))
 
 (comment
   (users (db/ds :master))
