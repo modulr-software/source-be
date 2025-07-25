@@ -15,7 +15,7 @@
 
 (defn conn
   "Open a connection to a datalevin kv store"
-  [store-name] (d/open-kv (store-path store-name)))
+  [store-name] (d/open-kv (store-path (name store-name))))
 
 (defn close
   "Close a connection to a datalevin store"

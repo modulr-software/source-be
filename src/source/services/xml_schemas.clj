@@ -1,6 +1,7 @@
 (ns source.services.xml-schemas
   (:require [source.db.interface :as db]
-            [source.datastore.interface :as store]))
+            [source.datastore.interface :as store]
+            [source.rss.core :as rss]))
 
 (defn get-all
   [ds {:keys [tname]}]
@@ -45,3 +46,20 @@
   (store/find store {:tname :output-schemas
                      :key id}))
 
+(defn ast
+  [url]
+  (-> url
+      slurp
+      rss/get-ast
+      rss/collect-leaf-paths))
+
+(defn extract-data
+  [store schema-id url]
+  (let [schema (store/find store {:tname :selection-schemas
+                                  :key schema-id})]
+    (println (store/get-all store {:tname :selection-schemas}))
+    (println "schema: " schema)
+    (->> url
+         slurp
+         rss/get-ast
+         (rss/extract-data schema))))

@@ -33,6 +33,15 @@
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
 
+(defn selection-schemas [ds]
+  (xml/selection-schemas ds))
+
+(defn ast [url]
+  (xml/ast url))
+
+(defn extract-data [store {:keys [schema-id url]}]
+  (xml/extract-data store schema-id url))
+
 (comment
   (users (db/ds :master))
   (user (db/ds :master) {:id 2})

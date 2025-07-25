@@ -20,3 +20,5 @@
   "Returns a vector of all tables in store"
   [store]
   (d/list-dbis store))
+
+(open-table! (d/open-kv "store") "some-table")

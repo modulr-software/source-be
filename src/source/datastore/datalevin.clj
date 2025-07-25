@@ -1,5 +1,6 @@
 (ns source.datastore.datalevin
   (:require [datalevin.core :as d]
+            [source.datastore.tables :as tables]
             [source.util :as util]))
 
 ;; If we want to have higher write speed in future we can use transact-kv-async
@@ -22,6 +23,8 @@
 (defn find
   "Returns the value for a key in the kv-store"
   [ds {:keys [tname key]}]
+  (tables/open-table! ds (name tname))
+  (println "finding for " key " in " (name tname))
   (d/get-value ds (name tname) key))
 
 (defn exists?
@@ -33,11 +36,13 @@
 (defn entries
   "Get the number of entries in a table"
   [ds {:keys [tname]}]
+  (tables/open-table! ds (name tname))
   (d/entries ds tname))
 
 (defn delete!
   "Removes one or multiple keys from kv store."
   [ds {:keys [tname keys]}]
+  (tables/open-table! ds (name tname))
   (->> (mapv (fn [key] [:del key]) keys)
        (d/transact-kv ds (name tname))))
 
@@ -45,6 +50,7 @@
   "Inserts kv's into store. Skips keys that already exist.
   Returns the key-value pairs that were inserted."
   [ds {:keys [tname data]}]
+  (tables/open-table! ds (name tname))
   (let [multi? (util/vectors? data)
         input-kvs (if multi? data [data])
         kvs-to-insert (->> input-kvs
@@ -58,26 +64,29 @@
 (defn update!
   "Replaces values for keys in store. Skips keys that don't exist"
   [ds {:keys [tname data]}]
-  (let [transducer (comp
-                    (filter (fn [[k _]]
-                              (exists? ds {:tname tname :key k})))
-                    (map (fn [[k v]]
-                           [:put k v])))]
-    (->> data
-         (into [] transducer)
-         (d/transact-kv ds (name tname)))))
+  (tables/open-table! ds (name tname))
+  (->> data
+       (filter (fn [[k _]]
+                 (exists? ds {:tname tname :key k})))
+       (map (fn [[k v]]
+              [:put k v]))
+       (d/transact-kv ds (name tname))))
 
 (defn get-all
   "Returns all key value pairs in table in kv-store."
   [ds {:keys [tname]}]
+  (tables/open-table! ds (name tname))
+  (println "finding all in " (name tname))
   (d/get-range ds (name tname) [:all]))
 
 (comment
   (require '[source.datastore.util :as ds.util])
-  (let [ds (ds.util/conn "datalevin")
-        key "somekey"
-        value "somestringvalue"
-        tname :some-table]
+  (let [ds (ds.util/conn :store)
+        key "test-key"
+        value {:title {:path ["tag/body" "tag/feed" "tag/title" "content/0"]}}
+        tname :test-table]
+    (println (get-all ds {:tname :selection-schemas}))
+    (println (find ds {:tname :selection-schemas :key 4}))
     (println "Putting a value")
     (d/open-dbi ds (name tname))
     (insert! ds {:tname tname
@@ -87,6 +96,10 @@
                          :key key})))
     (insert! ds {:tname tname
                  :data [key value]})
+    (println "1 " (get-all ds {:tname :selection-schemas}))
+    (println "2 " (find ds {:tname :selection-schemas :key 4}))
+    (println "3 " (get-all ds {:tname tname}))
+    (println "4 " (find ds {:tname tname :key "test-key"}))
     (println "Test passed")
     (println "Deleting a value")
     (delete! ds {:tname tname
