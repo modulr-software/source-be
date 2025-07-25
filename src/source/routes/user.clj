@@ -1,18 +1,77 @@
 (ns source.routes.user
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.util :as util]))
 
-(defn get [{:keys [ds path-params] :as _request}]
-  (->> path-params
-       (services/user ds)
-       (assoc {} :user)
-       (res/response)))
+(defn get
+  {:summary "get user by id"
+   :parameters {:path [:map [:id {:title "id"
+                                  :description "user id"} :int]]}
+   :responses {200 {:body [:map
+                           [:user
+                            [:map
+                             [:id :int]
+                             [:address [:maybe :string]]
+                             [:profile-image [:maybe :string]]
+                             [:email :string]
+                             [:firstname [:maybe :string]]
+                             [:lastname [:maybe :string]]
+                             [:type [:enum "creator" "distributor" "admin"]]
+                             [:email-verified [:maybe :int]]
+                             [:onboarded [:maybe :int]]
+                             [:mobile [:maybe :string]]]]]}
+               401 {:body [:map [:message :string]]}
+               403 {:body [:map [:message :string]]}}}
 
-(defn patch [{:keys [ds body path-params] :as _request}]
-  (services/update-user! ds
-                         {:id (:id path-params)
-                          :values body})
-  (res/response {:message "successfully updated user"}))
+  [{:keys [ds path-params] :as _request}]
+  (let [user (->> path-params
+                  (services/user ds))]
+    (->> (dissoc user :password)
+         (assoc {} :user)
+         (res/response))))
+
+(defn patch
+  {:summary "update user by id"
+   :parameters {:path [:map [:id {:title "id"
+                                  :description "user id"} :int]]
+                :body [:map
+                       [:address {:optional true} :string]
+                       [:profile-image {:optional true} :string]
+                       [:email :string]
+                       [:firstname {:optional true} :string]
+                       [:lastname {:optional true} :string]
+                       [:type [:enum "creator" "distributor" "admin"]]
+                       [:email-verified {:optional true} :int]
+                       [:onboarded {:optional true} :int]
+                       [:mobile {:optional true} :string]]}
+   :responses {200 {:body [:map
+                           [:user
+                            [:map
+                             [:id :int]
+                             [:address [:maybe :string]]
+                             [:profile-image [:maybe :string]]
+                             [:email :string]
+                             [:firstname [:maybe :string]]
+                             [:lastname [:maybe :string]]
+                             [:type [:enum "creator" "distributor" "admin"]]
+                             [:email-verified [:maybe :int]]
+                             [:onboarded [:maybe :int]]
+                             [:mobile [:maybe :string]]]]]}
+               401 {:body [:map [:message :string]]}
+               403 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds body path-params] :as _request}]
+
+  (let [{:keys [data error success]} (util/validate patch body)]
+    (if (not success)
+
+      (-> (res/response error)
+          (res/status 400))
+
+      (do (services/update-user! ds
+                                 {:id (:id path-params)
+                                  :values data})
+          (res/response {:message "successfully updated user"})))))
 
 (comment
   (require '[source.db.interface :as db])
@@ -21,4 +80,6 @@
           :path-params {:id 5}
           :body {:firstname "kiigan"
                  :lastname "korinzu"}})
+
+  (meta #'get)
   ())

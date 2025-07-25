@@ -2,7 +2,8 @@
   (:require  [source.services.users :as users]
              [source.db.interface :as db]
              [source.services.auth :as auth]
-             [source.services.xml-schemas :as xml]))
+             [source.services.xml-schemas :as xml]
+             [source.services.bundles :as bundles]))
 
 (defn users
   [& args]
@@ -11,7 +12,7 @@
 (defn user [ds {:keys [_id] :as opts}]
   (users/user ds opts))
 
-(defn insert-user! [ds {:keys [_id] :as opts}]
+(defn insert-user! [ds {:keys [_values _ret] :as opts}]
   (users/insert-user! ds opts))
 
 (defn update-user! [ds {:keys [_id _values _where] :as opts}]
@@ -28,6 +29,9 @@
 
 (defn selection-schema [ds {:keys [_id] :as opts}]
   (xml/selection-schema ds opts))
+
+(defn bundle [ds {:keys [_id _where] :as opts}]
+  (bundles/bundle ds opts))
 
 (comment
   (users (db/ds :master))

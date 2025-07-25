@@ -1,6 +1,7 @@
 (ns source.source
-  (:require [modulr.server :as server]
-            [modulr.hooks :as hooks]))
+  (:require [source.server :as server]
+            [source.hooks :as hooks])
+  (:gen-class))
 
 (defn -main [& _]
   (server/start-server)

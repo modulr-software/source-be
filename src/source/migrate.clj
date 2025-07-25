@@ -1,9 +1,9 @@
 (ns source.migrate
-  (:require
-   [k16.mallard :as mallard]
-   [k16.mallard.store.sqlite :as store]
-   [k16.mallard.loader.fs :as loader.fs]
-   [source.db.util :as db.util]))
+  (:require [k16.mallard :as mallard]
+            [k16.mallard.store.sqlite :as store]
+            [k16.mallard.loader.fs :as loader.fs]
+            [next.jdbc :as jdbc]
+            [source.db.util :as db.util]))
 
 ;; This is our interface for running migrations.
 ;;
@@ -17,8 +17,8 @@
   (loader.fs/load! "src/source/migrations"))
 
 (defn run-migrations [args]
-  (let [context {:db-master (db.util/conn :master)}
-        db-migrate (db.util/conn :migrate)
+  (let [context {:db-master (jdbc/get-datasource {:dbname (db.util/db-path "master") :dbtype "sqlite"})}
+        db-migrate (jdbc/get-datasource {:dbname (db.util/db-path "migrate") :dbtype "sqlite"})
         datastore (store/create-datastore
                    {:db db-migrate
                     :table-name "migrations"})]
