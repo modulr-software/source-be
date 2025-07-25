@@ -115,8 +115,8 @@
                          :openapi {:security [{:bearerAuth []}]}}
         ["/add-admin"   (route {:post admin/post})]
         ["/selection-schema" {:post selection-schema/post}]]]
-        ["/ast" {:post xml/post}]
-        ["/extract-data" {:post data/post}]
+      ["/ast" {:post xml/post}]
+      ["/extract-data" {:post data/post}]
 
       {:data {:coercion (reitit.coercion.malli/create
                          {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
@@ -199,7 +199,6 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-<<<<<<< Updated upstream
         request {:uri "/businesses"
                  :request-method :get}]
     (-> request
@@ -240,10 +239,6 @@
         ;; open table before operation
         _thing (dl/open-dbi store "selection-schemas")
         request {:uri "/admin/selection-schema"
-=======
-        store (store/ds :store)
-        request {:uri "/admin/selection-schemas"
->>>>>>> Stashed changes
                  :request-method :post
                  :store store
                  :body {:record {:provider-id 1
