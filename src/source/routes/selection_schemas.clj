@@ -5,3 +5,8 @@
 (defn get [{:keys [ds] :as _request}]
   (-> (services/selection-schemas ds)
       (res/response)))
+
+(comment
+  (require '[source.db.util :as db.util])
+  (get {:ds (db.util/conn)})
+  ())

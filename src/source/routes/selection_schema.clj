@@ -11,3 +11,9 @@
   (->> path-params
        (services/selection-schema ds)
        (res/response)))
+
+(comment
+  (require '[source.db.util :as db.util])
+  (get {:ds (db.util/conn)
+        :path-params {:id 1}})
+  ())

@@ -1,30 +1,36 @@
 (ns source.datastore.interface
-  (:require [source.datastore.datalevin :as dl]
+  (:require [source.datastore.datahike :as dh]
             [source.datastore.util :as store.util]))
 
 (defn ds [store-name]
   (store.util/conn store-name))
 
-(defn store-name [& args]
-  (apply store.util/store-name args))
+(defn lookup [ds eids]
+  (dh/lookup ds eids))
 
-(defn find [ds opts]
-  (dl/find ds opts))
+(defn find [ds {:keys [_key _value] :as opts}]
+  (dh/find ds opts))
 
-(defn exists? [ds opts]
-  (dl/exists? ds opts))
+(defn find-entities [ds {:keys [_key _value] :as opts}]
+  (dh/find-entities ds opts))
 
-(defn insert! [ds opts]
-  (dl/insert! ds opts))
+(defn exists? [ds k]
+  (dh/exists? ds k))
 
-(defn update! [ds opts]
-  (dl/update! ds opts))
+(defn insert! [ds data]
+  (dh/insert! ds data))
 
-(defn get-all [ds opts]
-  (dl/get-all ds opts))
+(defn update! [ds eid data]
+  (dh/update! ds eid data))
 
-(defn delete! [ds opts]
-  (dl/delete! ds opts))
+(defn get-all [ds]
+  (dh/get-all ds))
 
-(defn entries [ds opts]
-  (dl/entries ds opts))
+(defn delete! [ds eids]
+  (dh/delete! ds eids))
+
+(defn entries [ds k]
+  (dh/entries ds k))
+
+(defn entities-with [ds k]
+  (dh/entities-with ds k))

@@ -27,9 +27,6 @@
             [source.routes.selection-schemas :as selection-schemas]
             [source.routes.xml :as xml]
             [source.routes.data :as data]
-            [source.datastore.tables :as store.tables]
-            [source.datastore.interface :as store]
-            [source.datastore.util :as store.util]
             [source.util :as util]))
 
 (defn route [handlers]
@@ -108,15 +105,17 @@
                          :openapi {:security [{:bearerAuth []}]}}
         ["/authorized"  (route {:get authorized/get})]]
 
-       ["/admin"        {:middleware [[mw/apply-auth {:required-type :admin}]]
-                         :no-doc true
-                         :tags #{"admin"}
-                         :swagger {:security [{"auth" []}]}
-                         :openapi {:security [{:bearerAuth []}]}}
-        ["/add-admin"   (route {:post admin/post})]
-        ["/selection-schema" {:post selection-schema/post}]]]
-      ["/ast" {:post xml/post}]
-      ["/extract-data" {:post data/post}]
+       ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
+                                   :no-doc true
+                                   :tags #{"admin"}
+                                   :swagger {:security [{"auth" []}]}
+                                   :openapi {:security [{:bearerAuth []}]}}
+        ["/add-admin"             (route {:post admin/post})]
+        ["/selection-schemas"     {:get selection-schemas/get
+                                   :post selection-schema/post}]
+        ["/selection-schemas/:id" {:get selection-schema/get}]
+        ["/ast"                   {:post xml/post}]
+        ["/extract-data"          {:post data/post}]]]
 
       {:data {:coercion (reitit.coercion.malli/create
                          {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
@@ -138,12 +137,7 @@
 (comment
   (require '[source.middleware.auth.util :as auth.util]
            '[source.datastore.interface :as store]
-           '[source.datastore.tables :as store.tables]
            '[source.rss.youtube :as yt])
-
-  (route {:get #'user/get
-          :patch #'user/patch})
-  (util/metadata user/get)
 
   (let [app (create-app)
         request {:uri "/users" :request-method :get}]
@@ -235,10 +229,8 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        store (store.util/conn "datalevin")
-        ;; open table before operation
-        _thing (dl/open-dbi store "selection-schemas")
-        request {:uri "/admin/selection-schema"
+        store (store/ds :datahike)
+        request {:uri "/admin/selection-schemas"
                  :request-method :post
                  :store store
                  :body {:record {:provider-id 1
@@ -251,7 +243,7 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        request {:uri "/admin/selection-schema/1"
+        request {:uri "/admin/selection-schemas/1"
                  :request-method :get
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
     (-> request
@@ -260,7 +252,7 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        store (store/ds :store)
+        store (store/ds :datahike)
         request {:uri "/admin/selection-schemas"
                  :store store
                  :request-method :get
@@ -286,16 +278,16 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app)
-        store (store/ds :store)
+        store (store/ds :datahike)
         request {:uri "/admin/extract-data"
                  :store store
                  :request-method :post
-                 :body {:schema-id 1
+                 :body {:schema-id 2
                         :url (get-url)}
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
-    (println (store/get-all store {:tname :selection-schemas}))
-    (println (store/find store {:tname :selection-schemas
-                                :key 1}))
+    (println (store/entities-with store :selection-schemas/id))
+    (println (store/find-entities store {:key :selection-schemas/id
+                                         :value 1}))
     (-> request
         app
         :body

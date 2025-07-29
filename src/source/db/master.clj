@@ -153,4 +153,5 @@
   (sql/format businesses)
   (sql/format user-sectors)
   (sql/format feed-sectors)
+  (sql/format selection-schemas)
   ())

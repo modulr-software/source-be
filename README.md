@@ -4,14 +4,7 @@ This is the backend for the Source platform. You can find documentation on setup
 
 ## Dependencies
 
-
-- >= openjdk version 17.
-- libc, libomp, libmvec (Refer to the Datalevin [installation docs](https://github.com/juji-io/datalevin/blob/master/doc/install.md#native-dependencies) for more info)
-
-If you are on MacOS you can run:
-```
-brew install libomp llvm openjdk@17
-```
+- >= openjdk version 11.
 
 ## Development setup
 
