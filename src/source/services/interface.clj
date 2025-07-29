@@ -36,11 +36,32 @@
 (defn selection-schemas [ds]
   (xml/selection-schemas ds))
 
+(defn selection-schemas-by-provider [ds {:keys [_provider-id] :as opts}]
+  (xml/selection-schemas-by-provider ds opts))
+
 (defn ast [url]
   (xml/ast url))
 
 (defn extract-data [store {:keys [schema-id url]}]
   (xml/extract-data store schema-id url))
+
+(defn output-schemas [store]
+  (xml/output-schemas store))
+
+(defn output-schema [store output-schema-id]
+  (xml/output-schema store output-schema-id))
+
+(defn add-output-schema! [store schema]
+  (xml/add-output-schema! store schema))
+
+(defn providers [store]
+  (xml/providers store))
+
+(defn provider [store provider-id]
+  (xml/provider store provider-id))
+
+(defn add-provider! [store name]
+  (xml/add-provider! store name))
 
 (comment
   (users (db/ds :master))

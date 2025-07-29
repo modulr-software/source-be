@@ -20,14 +20,20 @@
             [source.routes.google-user :as google-user]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]
-            [source.routes.selection-schema :as selection-schema]
             [source.routes.business :as business]
             [source.routes.businesses :as businesses]
             [source.routes.sectors :as sectors]
             [source.routes.selection-schemas :as selection-schemas]
+            [source.routes.selection-schema :as selection-schema]
+            [source.routes.provider-selection-schemas :as provider-selection-schemas]
+            [source.routes.output-schemas :as output-schemas]
+            [source.routes.output-schema :as output-schema]
+            [source.routes.providers :as providers]
+            [source.routes.provider :as provider]
             [source.routes.xml :as xml]
             [source.routes.data :as data]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.datastore.interface :as store]))
 
 (defn route [handlers]
   (reduce (fn [acc [k v]]
@@ -39,7 +45,8 @@
           {} handlers))
 
 (defn create-app []
-  (let [ds (db/ds :master)]
+  (let [ds (db/ds :master)
+        store (store/ds :datahike)]
     (ring/ring-handler
      (ring/router
       [["/swagger.json" {:get {:no-doc true
@@ -111,9 +118,19 @@
                                    :swagger {:security [{"auth" []}]}
                                    :openapi {:security [{:bearerAuth []}]}}
         ["/add-admin"             (route {:post admin/post})]
-        ["/selection-schemas"     {:get selection-schemas/get
-                                   :post selection-schema/post}]
-        ["/selection-schemas/:id" {:get selection-schema/get}]
+        ["/selection-schemas"
+         [""                      {:get selection-schemas/get
+                                   :post selection-schemas/post}]
+         ["/:id"                  {:get selection-schema/get}]
+         ["/providers/:id"        {:get provider-selection-schemas/get}]]
+        ["/output-schemas"
+         [""                      {:get output-schemas/get
+                                   :post output-schemas/post}]
+         ["/:id"                  {:get output-schema/get}]]
+        ["/providers"
+         [""                      {:get providers/get
+                                   :post providers/post}]
+         ["/:id"                  {:get provider/get}]]
         ["/ast"                   {:post xml/post}]
         ["/extract-data"          {:post data/post}]]]
 
@@ -123,7 +140,7 @@
                           :strip-extra-keys true
                           :default-values true
                           :options nil})
-              :middleware [[mw/apply-generic :ds ds]
+              :middleware [[mw/apply-generic :ds ds :store store]
                            [exception/exception-middleware]]}})
      (ring/routes
       (swagger-ui/create-swagger-ui-handler {:path "/"
@@ -136,7 +153,6 @@
 
 (comment
   (require '[source.middleware.auth.util :as auth.util]
-           '[source.datastore.interface :as store]
            '[source.rss.youtube :as yt])
 
   (let [app (create-app)
@@ -282,7 +298,7 @@
         request {:uri "/admin/extract-data"
                  :store store
                  :request-method :post
-                 :body {:schema-id 2
+                 :body {:schema-id 1
                         :url (get-url)}
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
     (println (store/entities-with store :selection-schemas/id))

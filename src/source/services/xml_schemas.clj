@@ -4,12 +4,23 @@
             [source.rss.core :as rss]))
 
 (defn add-output-schema!
-  [store {:keys [schema]}]
+  [store schema]
   (let [id (-> (store/entries store :output-schemas/id)
                (count)
                (inc))]
-    (store/insert! store {:selection-schemas/id id
-                          :selection-schemas/schema schema})))
+    (store/insert! store {:output-schemas/id id
+                          :output-schemas/schema schema})))
+
+(defn output-schemas
+  [store]
+  (store/entities-with store :output-schemas/id))
+
+(defn output-schema
+  [store output-schema-id]
+  (->> {:key :output-schemas/id
+        :value output-schema-id}
+       (store/find-entities store)
+       (first)))
 
 (defn add-selection-schema!
   [store db {:keys [schema record]}]
@@ -27,6 +38,14 @@
         (merge opts)
         (db/find ds))))
 
+(defn selection-schemas-by-provider
+  [ds {:keys [provider-id] :as opts}]
+  (->> {:tname :selection-schemas
+        :where [:= :provider-id provider-id]
+        :ret :*}
+       (merge opts)
+       (db/find ds)))
+
 (defn selection-schema [ds {:keys [id where] :as opts}]
   (->> {:tname :selection-schemas
         :where (if (some? id)
@@ -36,14 +55,22 @@
        (merge opts)
        (db/find ds)))
 
-(defn output-schemas
-  [store]
-  (store/entities-with store :output-schemas/id))
+(defn add-provider!
+  [store name]
+  (let [id (-> (store/entries store :providers/id)
+               (count)
+               (inc))]
+    (store/insert! store {:providers/id id
+                          :providers/name name})))
 
-(defn output-schema
-  [store output-schema-id]
-  (->> {:key :output-schemas/id
-        :value output-schema-id}
+(defn providers
+  [store]
+  (store/entities-with store :providers/id))
+
+(defn provider
+  [store provider-id]
+  (->> {:key :providers/id
+        :value provider-id}
        (store/find-entities store)
        (first)))
 
@@ -60,8 +87,6 @@
                     (store/find-entities store)
                     (first)
                     (:selection-schemas/schema))]
-    (println (store/entities-with store :selection-schemas/id))
-    (println "schema: " schema)
     (->> url
          (slurp)
          (rss/get-ast)
@@ -71,6 +96,8 @@
   (require '[source.db.util :as db.util])
 
   (def ds (store/ds :datahike))
+
+  (selection-schemas-by-provider (db.util/conn) {:provider-id 1})
 
   (count (store/entries ds :selection-schemas/id))
   (store/entities-with ds :selection-schemas/id)
