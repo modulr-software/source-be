@@ -78,7 +78,8 @@
   [url]
   (-> url
       (slurp)
-      (rss/get-ast)))
+      (rss/get-ast)
+      (rss/collect-leaf-paths)))
 
 (defn extract-data
   [store schema-id url]
