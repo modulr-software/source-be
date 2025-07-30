@@ -4,5 +4,6 @@
 
 (defn get [{:keys [store path-params] :as _request}]
   (->> (:id path-params)
+       (Integer/parseInt)
        (services/provider store)
        (res/response)))

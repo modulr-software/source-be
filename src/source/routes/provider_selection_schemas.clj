@@ -3,6 +3,7 @@
             [ring.util.response :as res]))
 
 (defn get [{:keys [ds path-params] :as _request}]
-  (->> {:provider-id (:id path-params)}
+  (->> (:id path-params)
+       (assoc {} :provider-id)
        (services/selection-schemas-by-provider ds)
        (res/response)))
