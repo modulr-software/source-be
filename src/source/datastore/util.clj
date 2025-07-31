@@ -33,6 +33,9 @@
                 {:db/ident        :output-schemas/schema
                  :db/valueType    :db.type/any
                  :db/cardinality  :db.cardinality/one}
+                {:db/ident        :output-schemas/version
+                 :db/valueType    :db.type/long
+                 :db/cardinality  :db.cardinality/one}
 
                 {:db/ident        :providers/id
                  :db/valueType    :db.type/long

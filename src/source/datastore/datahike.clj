@@ -105,6 +105,8 @@
                      :value 23})
   (insert! ds {:user/name "Shani"
                :user/age 23})
+  (insert! ds {:providers/name "YouTube"})
+  (delete! ds (entries ds :providers/id))
 
   (insert! ds {:selection-schemas/id 4
                :selection-schemas/schema {:title {:path ["tag/body" "tag/feed" "tag/title" "content/0"]}}})

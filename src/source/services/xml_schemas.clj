@@ -99,6 +99,9 @@
   (def ds (store/ds :datahike))
 
   (selection-schemas-by-provider (db.util/conn) {:provider-id 1})
+  (add-provider! ds "poop")
+  (add-provider! ds "YouTube")
+  (providers ds)
 
   (count (store/entries ds :selection-schemas/id))
   (store/entities-with ds :selection-schemas/id)

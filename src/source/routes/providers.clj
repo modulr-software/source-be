@@ -7,6 +7,12 @@
       (res/response)))
 
 (defn post [{:keys [store body] :as _request}]
-  (let [{:keys [_name]} body]
+  (let [{:keys [name]} body]
     (services/add-provider! store name)
     (res/response {:message "successfully added provider"})))
+
+(comment 
+  (require '[source.datastore.interface :as store])
+
+  (services/add-provider! (store/ds :datahike) "YouTube")
+  )
