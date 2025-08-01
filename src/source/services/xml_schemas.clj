@@ -1,6 +1,6 @@
 (ns source.services.xml-schemas
-  (:require [source.db.interface :as db]
-            [source.datastore.interface :as store]
+  (:require [source.datastore.interface :as store]
+            [source.db.interface :as db]
             [source.rss.core :as rss]))
 
 (defn add-output-schema!
@@ -24,6 +24,8 @@
 
 (defn add-selection-schema!
   [store db {:keys [schema record]}]
+  (prn "schema" schema)
+  (prn "record" record)
   (let [db-result (db/insert! db {:tname :selection-schemas
                                   :data record
                                   :ret :1})]

@@ -141,7 +141,8 @@
                           :default-values true
                           :options nil})
               :middleware [[mw/apply-generic :ds ds :store store]
-                           [exception/exception-middleware]]}})
+                           ;;[exception/exception-middleware]
+                           ]}})
      (ring/routes
       (swagger-ui/create-swagger-ui-handler {:path "/"
                                              :config {:validatorUrl nil
