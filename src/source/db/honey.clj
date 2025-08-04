@@ -52,7 +52,6 @@
   (let [values' (or data values)
         multi? (vector? values')
         vals (if multi? values' [values'])]
-    (prn "vals" vals)
     (execute! ds
               (-> (hsql/insert-into (csk/->snake_case_keyword tname))
                   (hsql/values vals)

@@ -22,12 +22,24 @@
        (store/find-entities store)
        (first)))
 
+(defn highest-version
+  [previous-records]
+  (->> (reduce (fn [acc {:keys [version]}]
+                 (conj acc version)) [] previous-records)
+       (apply max 0)))
+
 (defn add-selection-schema!
   [store db {:keys [schema record]}]
-  (prn "schema" schema)
-  (prn "record" record)
-  (let [db-result (db/insert! db {:tname :selection-schemas
-                                  :data record
+  (let [{:keys [output-schema-id provider-id]} record
+        previous-versions (db/find db {:tname :selection-schemas
+                                       :where [:= :provider-id provider-id]
+                                       :ret :*})
+        next-version (-> (highest-version previous-versions)
+                         (inc))
+        db-result (db/insert! db {:tname :selection-schemas
+                                  :data {:output-schema-id output-schema-id
+                                         :provider-id provider-id
+                                         :version next-version}
                                   :ret :1})]
     (store/insert! store {:selection-schemas/id (:id db-result)
                           :selection-schemas/schema schema})))
@@ -76,6 +88,13 @@
        (store/find-entities store)
        (first)))
 
+(defn delete-provider!
+  [store provider-id]
+  (->> {:key :providers/id
+        :value provider-id}
+       (store/find store)
+       (store/delete! store)))
+
 (defn ast
   [url]
   (-> url
@@ -97,6 +116,16 @@
 
 (comment
   (require '[source.db.util :as db.util])
+  (ast "https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ")
+
+  (reduce (fn [acc {:keys [version]}]
+            (conj acc version)) [] [{:version 2} {:version 3}])
+
+  (db/find (db.util/conn) {:tname :selection-schemas
+                           :where [:and
+                                   [:= :output-schema-id 1]
+                                   [:= :provider-id 1]]
+                           :ret :*})
 
   (def ds (store/ds :datahike))
 

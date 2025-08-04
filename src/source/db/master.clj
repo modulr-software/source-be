@@ -133,6 +133,7 @@
   (tables/create-table-sql
    :selection-schemas
    (tables/table-id)
+   [:version :integer :not nil]
    [:output-schema-id :integer :not nil]
    [:provider-id :integer :not nil]
    (tables/foreign-key :provider-id :providers :id)))

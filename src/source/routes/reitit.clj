@@ -130,7 +130,8 @@
         ["/providers"
          [""                      {:get providers/get
                                    :post providers/post}]
-         ["/:id"                  {:get provider/get}]]
+         ["/:id"                  {:get provider/get
+                                   :delete provider/delete}]]
         ["/ast"                   {:post xml/post}]
         ["/extract-data"          {:post data/post}]]]
 

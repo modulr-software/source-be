@@ -60,6 +60,9 @@
 (defn provider [store provider-id]
   (xml/provider store provider-id))
 
+(defn delete-provider! [store provider-id]
+  (xml/delete-provider! store provider-id))
+
 (defn add-provider! [store name]
   (xml/add-provider! store name))
 

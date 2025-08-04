@@ -8,6 +8,7 @@
 
 (defn post [{:keys [store ds body] :as _request}]
   (-> (services/add-selection-schema! store ds body)
+      (first)
       (res/response)))
 
 

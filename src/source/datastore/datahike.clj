@@ -94,7 +94,7 @@
   (def ds (ds.util/conn :datahike))
   (get-all ds)
   (entries ds :user/name)
-  (delete! ds (entries ds :user/name))
+  (delete! ds (entries ds :output-schemas/id))
   (update! ds 3 {:user/age 21})
 
   (exists? ds :user/name)
