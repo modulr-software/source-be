@@ -69,32 +69,6 @@
        (merge opts)
        (db/find ds)))
 
-(defn add-provider!
-  [store name]
-  (let [id (-> (store/entries store :providers/id)
-               (count)
-               (inc))]
-    (store/insert! store {:providers/id id
-                          :providers/name name})))
-
-(defn providers
-  [store]
-  (store/entities-with store :providers/id))
-
-(defn provider
-  [store provider-id]
-  (->> {:key :providers/id
-        :value provider-id}
-       (store/find-entities store)
-       (first)))
-
-(defn delete-provider!
-  [store provider-id]
-  (->> {:key :providers/id
-        :value provider-id}
-       (store/find store)
-       (store/delete! store)))
-
 (defn ast
   [url]
   (-> url
@@ -130,9 +104,6 @@
   (def ds (store/ds :datahike))
 
   (selection-schemas-by-provider (db.util/conn) {:provider-id 1})
-  (add-provider! ds "poop")
-  (add-provider! ds "YouTube")
-  (providers ds)
 
   (count (store/entries ds :selection-schemas/id))
   (store/entities-with ds :selection-schemas/id)

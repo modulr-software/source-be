@@ -3,7 +3,9 @@
              [source.db.interface :as db]
              [source.services.auth :as auth]
              [source.services.xml-schemas :as xml]
-             [source.services.bundles :as bundles]))
+             [source.services.bundles :as bundles]
+             [source.services.providers :as providers]
+             [source.services.content-types :as content-types]))
 
 (defn users
   [& args]
@@ -54,17 +56,26 @@
 (defn add-output-schema! [store schema]
   (xml/add-output-schema! store schema))
 
-(defn providers [store]
-  (xml/providers store))
+(defn providers [ds]
+  (providers/providers ds))
 
-(defn provider [store provider-id]
-  (xml/provider store provider-id))
+(defn provider [ds provider-id]
+  (providers/provider ds provider-id))
 
-(defn delete-provider! [store provider-id]
-  (xml/delete-provider! store provider-id))
+(defn delete-provider! [ds provider-id]
+  (providers/delete-provider! ds provider-id))
 
-(defn add-provider! [store name]
-  (xml/add-provider! store name))
+(defn insert-provider! [ds {:keys [_values _ret] :as opts}]
+  (providers/insert-provider! ds opts))
+
+(defn content-types [ds]
+  (content-types/content-types ds))
+
+(defn content-type [ds id]
+  (content-types/content-type ds id))
+
+(defn add-content-type! [ds {:keys [_values _ret] :as opts}]
+  (content-types/add-content-type! ds opts))
 
 (comment
   (users (db/ds :master))

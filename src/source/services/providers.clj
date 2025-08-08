@@ -1,16 +1,18 @@
 (ns source.services.providers
-  (:require [source.db.interface :as db]
-            [source.datastore.interface :as store]))
+  (:require [source.db.interface :as db]))
 
-(defn insert-provider! [ds provider]
+(defn insert-provider! [ds {:keys [data ret] :as opts}]
   (->> {:tname :providers
-        :data provider}
+        :data data
+        :ret ret}
+       (merge opts)
        (db/insert! ds)))
 
 (defn providers
   ([ds] (providers ds {}))
   ([ds opts]
-   (->> {:tname :providers}
+   (->> {:tname :providers
+         :ret :*}
         (merge opts)
         (db/find ds))))
 
@@ -23,3 +25,11 @@
        (merge opts)
        (db/find ds)))
 
+(defn delete-provider! [ds {:keys [id where] :as opts}]
+  (->> {:tname :providers
+        :where (if (some? id)
+                 [:= :id id]
+                 where)
+        :ret :1}
+       (merge opts)
+       (db/delete! ds)))

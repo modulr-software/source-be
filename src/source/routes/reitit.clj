@@ -30,6 +30,8 @@
             [source.routes.output-schema :as output-schema]
             [source.routes.providers :as providers]
             [source.routes.provider :as provider]
+            [source.routes.content-types :as content-types]
+            [source.routes.content-type :as content-type]
             [source.routes.xml :as xml]
             [source.routes.data :as data]
             [source.util :as util]
@@ -112,6 +114,14 @@
                          :openapi {:security [{:bearerAuth []}]}}
         ["/authorized"  (route {:get authorized/get})]]
 
+       ["/providers"
+        [""             {:get providers/get}]
+        ["/:id"         {:get provider/get}]]
+
+       ["/content-types"
+        [""             {:get content-types/get}]
+        ["/:id"         {:get content-type/get}]]
+
        ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                    :no-doc true
                                    :tags #{"admin"}
@@ -128,10 +138,8 @@
                                    :post output-schemas/post}]
          ["/:id"                  {:get output-schema/get}]]
         ["/providers"
-         [""                      {:get providers/get
-                                   :post providers/post}]
-         ["/:id"                  {:get provider/get
-                                   :delete provider/delete}]]
+         [""                      {:post providers/post}]
+         ["/:id"                  {:delete provider/delete}]]
         ["/ast"                   {:post xml/post}]
         ["/extract-data"          {:post data/post}]]]
 
@@ -240,6 +248,38 @@
 
   (let [app (create-app)
         request {:uri "/sectors"
+                 :request-method :get}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/providers"
+                 :request-method :get}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/providers/1"
+                 :request-method :get}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/content-types"
+                 :request-method :get}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app)
+        request {:uri "/content-types/1"
                  :request-method :get}]
     (-> request
         app
