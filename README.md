@@ -2,6 +2,10 @@
 
 This is the backend for the Source platform. You can find documentation on setup for development below.
 
+## Dependencies
+
+- >= openjdk version 11.
+
 ## Development setup
 
 - Pull the project from GitHub.

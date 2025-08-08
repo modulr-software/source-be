@@ -6,6 +6,12 @@
             [malli.transform :as mt]
             [malli.error :as me]))
 
+(defn vectors?
+  "Returns true if coll is a 2d vector"
+  [coll]
+  (and (vector? coll)
+       (vector? (first coll))))
+
 (defn content-type [request]
   (or (get-in request [:headers "Content-Type"])
       (get-in request [:headers :content-type])

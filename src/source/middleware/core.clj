@@ -16,6 +16,16 @@
         (assoc :ds ds)
         (handler))))
 
+(defn wrap-store [handler store]
+  (fn [request]
+    (-> request
+        (assoc :store store)
+        (handler))))
+
+(defn apply-store [app store]
+  (-> app
+      (wrap-store store)))
+
 (defn process-body [{:keys [body] :as req} t-fn]
   (assoc req
          :body
@@ -38,9 +48,10 @@
   (-> app
       (wrap-ds ds)))
 
-(defn apply-generic [app & {:keys [ds]}]
+(defn apply-generic [app & {:keys [ds store]}]
   (-> app
       (apply-ds ds)
+      (apply-store store)
       (wrap-case-conversion)
       (content-type/wrap-content-type)
       (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :cors-origin))]

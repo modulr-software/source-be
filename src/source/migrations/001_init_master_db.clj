@@ -3,6 +3,7 @@
             [source.db.master]
             [source.db.honey :as db]
             [source.db.tables :as tables]
+            [source.datastore.util :as ds.util]
             [source.config :as conf]))
 
 (def baselines-seed
@@ -58,6 +59,8 @@
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
 
+    (ds.util/create-datastore :datahike)
+
     (tables/create-tables!
      ds-master
      :source.db.master
@@ -73,7 +76,8 @@
       :providers
       :businesses
       :user-sectors
-      :feed-sectors])
+      :feed-sectors
+      :selection-schemas])
 
     (db/insert! ds-master baselines-seed)
     (db/insert! ds-master cadences-seed)
@@ -95,6 +99,8 @@
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
+    (ds.util/delete-datastore :datahike)
+
     (tables/drop-all-tables! ds-master)))
 
 (comment

@@ -27,6 +27,8 @@
         com.kepler16/mallard {:mvn/version "3.2.1"}
         com.kepler16/mallard-sqlite-store {:mvn/version "3.2.1"}
         com.github.seancorfield/honeysql {:mvn/version "2.7.1310"}
+        io.replikativ/datahike {:mvn/version "0.6.1599"}
+        hickory/hickory {:mvn/version "0.7.1"}
         metosin/jsonista {:mvn/version "0.3.13"}
         metosin/reitit {:mvn/version "0.9.1"}
         metosin/reitit-middleware {:mvn/version "0.9.1"}

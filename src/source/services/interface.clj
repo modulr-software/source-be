@@ -2,7 +2,10 @@
   (:require  [source.services.users :as users]
              [source.db.interface :as db]
              [source.services.auth :as auth]
-             [source.services.bundles :as bundles]))
+             [source.services.xml-schemas :as xml]
+             [source.services.bundles :as bundles]
+             [source.services.providers :as providers]
+             [source.services.content-types :as content-types]))
 
 (defn users
   [& args]
@@ -23,8 +26,56 @@
 (defn register [ds user]
   (auth/register ds user))
 
+(defn add-selection-schema! [store db {:keys [_schema _record] :as opts}]
+  (xml/add-selection-schema! store db opts))
+
+(defn selection-schema [ds {:keys [_id] :as opts}]
+  (xml/selection-schema ds opts))
+
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
+
+(defn selection-schemas [ds]
+  (xml/selection-schemas ds))
+
+(defn selection-schemas-by-provider [ds {:keys [_provider-id] :as opts}]
+  (xml/selection-schemas-by-provider ds opts))
+
+(defn ast [url]
+  (xml/ast url))
+
+(defn extract-data [store {:keys [schema-id url]}]
+  (xml/extract-data store schema-id url))
+
+(defn output-schemas [store]
+  (xml/output-schemas store))
+
+(defn output-schema [store output-schema-id]
+  (xml/output-schema store output-schema-id))
+
+(defn add-output-schema! [store schema]
+  (xml/add-output-schema! store schema))
+
+(defn providers [ds]
+  (providers/providers ds))
+
+(defn provider [ds provider-id]
+  (providers/provider ds provider-id))
+
+(defn delete-provider! [ds provider-id]
+  (providers/delete-provider! ds provider-id))
+
+(defn insert-provider! [ds {:keys [_values _ret] :as opts}]
+  (providers/insert-provider! ds opts))
+
+(defn content-types [ds]
+  (content-types/content-types ds))
+
+(defn content-type [ds id]
+  (content-types/content-type ds id))
+
+(defn add-content-type! [ds {:keys [_values _ret] :as opts}]
+  (content-types/add-content-type! ds opts))
 
 (comment
   (users (db/ds :master))

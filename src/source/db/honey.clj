@@ -1,11 +1,11 @@
 (ns source.db.honey
-  (:require [honey.sql :as sql]
-            [honey.sql.helpers :as hsql]
-            [source.db.util :as db.util]
-            [camel-snake-kebab.core :as csk]
+  (:require [camel-snake-kebab.core :as csk]
             [camel-snake-kebab.extras :as cske]
+            [honey.sql :as sql]
+            [honey.sql.helpers :as hsql]
             [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [next.jdbc.result-set :as rs]
+            [source.db.util :as db.util]))
 
 (defn execute!
   "computes a prepared statement for an sql map and executes select one
