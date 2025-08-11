@@ -22,24 +22,12 @@
        (store/find-entities store)
        (first)))
 
-(defn highest-version
-  [previous-records]
-  (->> (reduce (fn [acc {:keys [version]}]
-                 (conj acc version)) [] previous-records)
-       (apply max 0)))
-
 (defn add-selection-schema!
   [store db {:keys [schema record]}]
   (let [{:keys [output-schema-id provider-id]} record
-        previous-versions (db/find db {:tname :selection-schemas
-                                       :where [:= :provider-id provider-id]
-                                       :ret :*})
-        next-version (-> (highest-version previous-versions)
-                         (inc))
         db-result (db/insert! db {:tname :selection-schemas
                                   :data {:output-schema-id output-schema-id
-                                         :provider-id provider-id
-                                         :version next-version}
+                                         :provider-id provider-id}
                                   :ret :1})]
     (store/insert! store {:selection-schemas/id (:id db-result)
                           :selection-schemas/schema schema})))
