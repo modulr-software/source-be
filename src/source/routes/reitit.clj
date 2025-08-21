@@ -58,7 +58,7 @@
         store (store/ds :datahike)
         js (congest/create-job-service [])]
     (job-service/kill-all! js)
-    (job-service/start-interrupted-jobs! js ds)
+    (job-service/start-interrupted-jobs! js ds store)
     (ring/ring-handler
      (ring/router
       [["/swagger.json"   {:get {:no-doc true

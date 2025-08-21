@@ -83,10 +83,10 @@
 
     (if (some? extracted)
       (do (jobs/register! js ds store
-                          {:initial-delay 10;(* 1000 60 60 24)
+                          {:initial-delay (* 1000 60 60 24)
                            :auto-start true
                            :stop-after-fail false,
-                           :interval (* 1000 60) ;(* 1000 60 60 24)
+                           :interval (* 1000 60 60 24)
                            :recurring? true
                            :handler :update-feed-post
                            :created-at (utils/get-utc-timestamp-string)
