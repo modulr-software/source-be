@@ -35,11 +35,11 @@
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
 
-(defn selection-schemas [ds]
-  (xml/selection-schemas ds))
-
-(defn selection-schemas-by-provider [ds {:keys [_provider-id] :as opts}]
-  (xml/selection-schemas-by-provider ds opts))
+(defn selection-schemas
+  ([ds]
+   (selection-schemas ds {}))
+  ([ds opts]
+   (xml/selection-schemas ds opts)))
 
 (defn ast [url]
   (xml/ast url))

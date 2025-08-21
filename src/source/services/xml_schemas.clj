@@ -40,14 +40,6 @@
         (merge opts)
         (db/find ds))))
 
-(defn selection-schemas-by-provider
-  [ds {:keys [provider-id] :as opts}]
-  (->> {:tname :selection-schemas
-        :where [:= :provider-id provider-id]
-        :ret :*}
-       (merge opts)
-       (db/find ds)))
-
 (defn selection-schema [ds {:keys [id where] :as opts}]
   (->> {:tname :selection-schemas
         :where (if (some? id)
@@ -90,8 +82,6 @@
                            :ret :*})
 
   (def ds (store/ds :datahike))
-
-  (selection-schemas-by-provider (db.util/conn) {:provider-id 1})
 
   (count (store/entries ds :selection-schemas/id))
   (store/entities-with ds :selection-schemas/id)
