@@ -1,23 +1,23 @@
-(ns source.services.content-types
+(ns source.services.cadences
   (:require [source.db.interface :as db]))
 
-(defn insert-content-type! [ds {:keys [data ret] :as opts}]
-  (->> {:tname :content-types
+(defn insert-cadence! [ds {:keys [data ret] :as opts}]
+  (->> {:tname :cadences
         :data data
         :ret ret}
        (merge opts)
        (db/insert! ds)))
 
-(defn content-types
-  ([ds] (content-types ds {}))
+(defn cadences
+  ([ds] (cadences ds {}))
   ([ds opts]
-   (->> {:tname :content-types
+   (->> {:tname :cadences
          :ret :*}
         (merge opts)
         (db/find ds))))
 
-(defn content-type [ds {:keys [id where] :as opts}]
-  (->> {:tname :content-types
+(defn cadence [ds {:keys [id where] :as opts}]
+  (->> {:tname :cadences
         :where (if (some? id)
                  [:= :id id]
                  where)

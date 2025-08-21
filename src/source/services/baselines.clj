@@ -1,23 +1,23 @@
-(ns source.services.content-types
+(ns source.services.baselines
   (:require [source.db.interface :as db]))
 
-(defn insert-content-type! [ds {:keys [data ret] :as opts}]
-  (->> {:tname :content-types
+(defn insert-baseline! [ds {:keys [data ret] :as opts}]
+  (->> {:tname :baselines
         :data data
         :ret ret}
        (merge opts)
        (db/insert! ds)))
 
-(defn content-types
-  ([ds] (content-types ds {}))
+(defn baselines
+  ([ds] (baselines ds {}))
   ([ds opts]
-   (->> {:tname :content-types
+   (->> {:tname :baselines
          :ret :*}
         (merge opts)
         (db/find ds))))
 
-(defn content-type [ds {:keys [id where] :as opts}]
-  (->> {:tname :content-types
+(defn baseline [ds {:keys [id where] :as opts}]
+  (->> {:tname :baselines
         :where (if (some? id)
                  [:= :id id]
                  where)

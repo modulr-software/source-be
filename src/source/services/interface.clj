@@ -5,7 +5,12 @@
              [source.services.xml-schemas :as xml]
              [source.services.bundles :as bundles]
              [source.services.providers :as providers]
-             [source.services.content-types :as content-types]))
+             [source.services.feeds :as feeds]
+             [source.services.incoming-posts :as incoming-posts]
+             [source.services.cadences :as cadences]
+             [source.services.baselines :as baselines]
+             [source.services.content-types :as content-types]
+             [source.services.jobs :as jobs]))
 
 (defn users
   [& args]
@@ -26,8 +31,8 @@
 (defn register [ds user]
   (auth/register ds user))
 
-(defn add-selection-schema! [store db {:keys [_schema _record] :as opts}]
-  (xml/add-selection-schema! store db opts))
+(defn insert-selection-schema! [store db {:keys [_schema _record] :as opts}]
+  (xml/insert-selection-schema! store db opts))
 
 (defn selection-schema [ds {:keys [_id] :as opts}]
   (xml/selection-schema ds opts))
@@ -41,6 +46,9 @@
 (defn selection-schemas-by-provider [ds {:keys [_provider-id] :as opts}]
   (xml/selection-schemas-by-provider ds opts))
 
+(defn delete-selection-schemas-by-provider! [store db provider-id]
+  (xml/delete-selection-schemas-by-provider! store db provider-id))
+
 (defn ast [url]
   (xml/ast url))
 
@@ -53,8 +61,8 @@
 (defn output-schema [store output-schema-id]
   (xml/output-schema store output-schema-id))
 
-(defn add-output-schema! [store schema]
-  (xml/add-output-schema! store schema))
+(defn insert-output-schema! [store schema]
+  (xml/insert-output-schema! store schema))
 
 (defn providers [ds]
   (providers/providers ds))
@@ -74,8 +82,85 @@
 (defn content-type [ds id]
   (content-types/content-type ds id))
 
-(defn add-content-type! [ds {:keys [_values _ret] :as opts}]
-  (content-types/add-content-type! ds opts))
+(defn insert-content-type! [ds {:keys [_values _ret] :as opts}]
+  (content-types/insert-content-type! ds opts))
+
+(defn insert-feed! [ds {:keys [_data] :as opts}]
+  (feeds/insert-feed! ds opts))
+
+(defn update-feed! [ds {:keys [_id _data _where] :as opts}]
+  (feeds/update-feed! ds opts))
+
+(defn feeds
+  ([ds]
+   (feeds/feeds ds))
+  ([ds {:keys [_where] :as opts}]
+   (feeds/feeds ds opts)))
+
+(defn feed [ds id]
+  (feeds/feed ds id))
+
+(defn insert-incoming-post! [ds {:keys [_data] :as opts}]
+  (incoming-posts/insert-incoming-post! ds opts))
+
+(defn update-incoming-post! [ds {:keys [_id _data _where] :as opts}]
+  (incoming-posts/update-incoming-post! ds opts))
+
+(defn incoming-posts
+  ([ds]
+   (incoming-posts/incoming-posts ds))
+  ([ds {:keys [_where] :as opts}]
+   (incoming-posts/incoming-posts ds opts)))
+
+(defn incoming-post [ds id]
+  (incoming-posts/incoming-post ds id))
+
+(defn insert-cadence! [ds {:keys [_values _ret] :as opts}]
+  (cadences/insert-cadence! ds opts))
+
+(defn cadences [ds]
+  (cadences/cadences ds))
+
+(defn cadence [ds id]
+  (cadences/cadence ds id))
+
+(defn insert-baseline! [ds {:keys [_values _ret] :as opts}]
+  (baselines/insert-baseline! ds opts))
+
+(defn baselines [ds]
+  (baselines/baselines ds))
+
+(defn baseline [ds id]
+  (baselines/baseline ds id))
+
+(defn insert-job! [ds {:keys [_data _ret] :as opts}]
+  (jobs/insert-job! ds opts))
+
+(defn update-job! [ds {:keys [_id _data _where] :as opts}]
+  (jobs/update-job! ds opts))
+
+(defn delete-job! [ds {:keys [_id _where] :as opts}]
+  (jobs/delete-job! ds opts))
+
+(defn jobs
+  ([ds] (jobs ds {}))
+  ([ds opts]
+   (jobs/jobs ds opts)))
+
+(defn job [ds {:keys [_id _where] :as opts}]
+  (jobs/job ds opts))
+
+(defn insert-job-metadata! [ds {:keys [_data _ret] :as opts}]
+  (jobs/insert-job-metadata! ds opts))
+
+(defn update-job-metadata! [ds {:keys [_id _data _where] :as opts}]
+  (jobs/update-job-metadata! ds opts))
+
+(defn delete-job-metadata! [ds {:keys [_id _where] :as opts}]
+  (jobs/delete-job-metadata! ds opts))
+
+(defn job-metadata [ds {:keys [_id _where] :as opts}]
+  (jobs/job-metadata ds opts))
 
 (comment
   (users (db/ds :master))
