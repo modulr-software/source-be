@@ -19,8 +19,7 @@
   [store output-schema-id]
   (->> {:key :output-schemas/id
         :value output-schema-id}
-       (store/find-entities store)
-       (first)))
+       (store/lookup store)))
 
 (defn add-selection-schema!
   [store db {:keys [schema record]}]
@@ -60,8 +59,7 @@
   [store schema-id url]
   (let [schema (->> {:key :selection-schemas/id
                      :value schema-id}
-                    (store/find-entities store)
-                    (first)
+                    (store/lookup store)
                     (:selection-schemas/schema))]
     (->> url
          (slurp)
