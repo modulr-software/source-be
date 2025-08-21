@@ -3,7 +3,12 @@
             [ring.util.response :as res]))
 
 (defn get [{:keys [store path-params] :as _request}]
-  (->> (:id path-params)
-       (Integer/parseInt)
-       (services/output-schema store)
-       (res/response)))
+  (let [id (try
+             (Integer/parseInt (:id path-params))
+             (catch Exception _ nil))]
+    (if (some? id)
+      (->> id
+           (services/output-schema store)
+           (res/response))
+      (-> (res/response {:message "invalid id"})
+          (res/status 400)))))

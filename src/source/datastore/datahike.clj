@@ -2,7 +2,7 @@
   (:require [datahike.api :as d]
             [source.util :as util]))
 
-(defn lookup
+(defn entities
   "Returns one or more entities associated with the provided entity id(s)"
   [ds ids]
   (let [multi? (vector? ids)
@@ -12,7 +12,7 @@
                  (into {}))) ids-vec)))
 
 (defn find
-  "Returns one ore more entity ids where the provided key matches the provided value"
+  "Returns entity ids where the provided key matches the provided value"
   [ds {:keys [key value]}]
   (->> (d/q '[:find ?e
               :in $ ?k ?v
@@ -27,17 +27,14 @@
   [ds {:keys [_key _value] :as query}]
   (->> query
        (find ds)
-       (lookup ds)))
+       (entities ds)))
 
-(defn exists?
-  "Returns true if value exists for key in kv-store"
-  [ds k]
-  (-> (d/q '[:find ?e
-             :in $ ?k
-             :where [?e ?k _]]
-           @ds k)
-      (seq)
-      (boolean)))
+(defn lookup 
+  "Returns the first entity where the provided key matches the provided value"
+  [ds {:keys [_key _value] :as query}]
+  (->> query
+       (find-entities ds)
+       (first)))
 
 (defn entries
   "Get eids of all entities in which the provided attribute is present"
@@ -55,7 +52,7 @@
   [ds key]
   (->> key
        (entries ds)
-       (lookup ds)))
+       (entities ds)))
 
 (defn delete!
   "Accepts an entity id or a vec of entity ids and removes all the entities associated thereby"
@@ -97,8 +94,7 @@
   (delete! ds (entries ds :output-schemas/id))
   (update! ds 3 {:user/age 21})
 
-  (exists? ds :user/name)
-  (lookup ds [6 7])
+  (entities ds [6 7])
   (find ds {:key :user/name
             :value "Keagan"})
   (find-entities ds {:key :user/age
@@ -125,8 +121,7 @@
                  k v})
     (assert (= v
                (->> k
-                    (entities-with k)
-                    (first)
+                    (lookup ds)
                     (k))))
     (insert! ds {k v})
     (println "1 " (get-all ds))

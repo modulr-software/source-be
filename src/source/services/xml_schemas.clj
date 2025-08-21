@@ -19,8 +19,7 @@
   [store output-schema-id]
   (->> {:key :output-schemas/id
         :value output-schema-id}
-       (store/find-entities store)
-       (first)))
+       (store/lookup store)))
 
 (defn insert-selection-schema!
   [store db {:keys [schema record]}]
@@ -52,14 +51,6 @@
         (merge opts)
         (db/find ds))))
 
-(defn selection-schemas-by-provider
-  [ds {:keys [provider-id] :as opts}]
-  (->> {:tname :selection-schemas
-        :where [:= :provider-id provider-id]
-        :ret :*}
-       (merge opts)
-       (db/find ds)))
-
 (defn selection-schema [ds {:keys [id where] :as opts}]
   (->> {:tname :selection-schemas
         :where (if (some? id)
@@ -80,8 +71,7 @@
   [store schema-id url]
   (let [schema (->> {:key :selection-schemas/id
                      :value schema-id}
-                    (store/find-entities store)
-                    (first)
+                    (store/lookup store)
                     (:selection-schemas/schema))]
     (->> url
          (slurp)
@@ -102,8 +92,6 @@
                            :ret :*})
 
   (def ds (store/ds :datahike))
-
-  (selection-schemas-by-provider (db.util/conn) {:provider-id 1})
 
   (count (store/entries ds :selection-schemas/id))
   (store/entities-with ds :selection-schemas/id)

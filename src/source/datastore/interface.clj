@@ -5,14 +5,17 @@
 (defn ds [store-name]
   (store.util/conn store-name))
 
-(defn lookup [ds eids]
-  (dh/lookup ds eids))
+(defn entities [ds eids]
+  (dh/entities ds eids))
 
 (defn find [ds {:keys [_key _value] :as opts}]
   (dh/find ds opts))
 
 (defn find-entities [ds {:keys [_key _value] :as opts}]
   (dh/find-entities ds opts))
+
+(defn lookup [ds {:keys [_key _value] :as opts}]
+  (dh/lookup ds opts))
 
 (defn exists? [ds k]
   (dh/exists? ds k))
