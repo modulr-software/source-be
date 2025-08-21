@@ -2,18 +2,32 @@
   (:require [source.services.interface :as services]
             [ring.util.response :as res]))
 
-(defn get [{:keys [ds] :as _request}]
+(defn get
+  {:summary "get all providers"
+   :responses {200 {:body [:vector
+                           [:map
+                            [:id :int]
+                            [:name :string]
+                            [:domain :string]
+                            [:content-type-id :int]]]}}}
+
+  [{:keys [ds] :as _request}]
   (-> (services/providers ds)
       (res/response)))
 
-(defn post [{:keys [ds body] :as _request}]
+(defn post
+  {:summary "add a provider"
+   :parameters {:body [:map
+                       [:provider
+                        [:map
+                         [:id :int]
+                         [:name :string]
+                         [:domain :string]
+                         [:content-type-id :int]]]]}
+   :responses {200 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds body] :as _request}]
   (let [{:keys [provider]} body]
     (services/insert-provider! ds {:data provider
                                    :ret :1})
     (res/response {:message "successfully added provider"})))
-
-(comment
-  (require '[source.datastore.interface :as store])
-
-  (services/add-provider! (store/ds :datahike) "YouTube")
-  ())
