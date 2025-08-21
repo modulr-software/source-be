@@ -8,5 +8,5 @@
 
 (defn post [{:keys [store body] :as _request}]
   (let [{:keys [schema]} body]
-    (services/add-output-schema! store schema)
+    (services/insert-output-schema! store schema)
     (res/response {:message "successfully added output schema"})))
