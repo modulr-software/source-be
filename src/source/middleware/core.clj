@@ -4,6 +4,7 @@
             [source.config :as conf]
             [camel-snake-kebab.core :as csk]
             [camel-snake-kebab.extras :as cske]
+            [ring.util.response :as res]
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
@@ -22,9 +23,32 @@
         (assoc :store store)
         (handler))))
 
+(defn wrap-js [handler js]
+  (fn [request]
+    (-> request
+        (assoc :js js)
+        (handler))))
+
+(defn apply-ds [app ds]
+  (-> app
+      (wrap-ds ds)))
+
 (defn apply-store [app store]
   (-> app
       (wrap-store store)))
+
+(defn apply-js [app js]
+  (-> app
+      (wrap-js js)))
+
+(defn wrap-exception-logger [handler]
+  (fn [req]
+    (try
+      (handler req)
+      (catch Exception e
+        (println "Unhandled Exception:\n" e)
+        (-> (res/response {:message "Internal Server Error"})
+            (res/status 500))))))
 
 (defn process-body [{:keys [body] :as req} t-fn]
   (assoc req
@@ -44,14 +68,12 @@
         (handler)
         (process-body csk/->camelCaseKeyword))))
 
-(defn apply-ds [app ds]
+(defn apply-generic [app & {:keys [ds store js]}]
   (-> app
-      (wrap-ds ds)))
-
-(defn apply-generic [app & {:keys [ds store]}]
-  (-> app
+      (wrap-exception-logger)
       (apply-ds ds)
       (apply-store store)
+      (apply-js js)
       (wrap-case-conversion)
       (content-type/wrap-content-type)
       (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :cors-origin))]
@@ -70,4 +92,3 @@
 (defn apply-bundle [app]
   (-> app
       (auth/wrap-bundle-id)))
-
