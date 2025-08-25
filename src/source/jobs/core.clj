@@ -63,7 +63,7 @@
                 :sleep false})
 
   (services/jobs ds)
-  (services/job-metadata ds {:id 4})
+  (services/job-metadata ds {:id 5})
 
   (services/delete-job! ds {})
   (services/delete-job-metadata! ds {})

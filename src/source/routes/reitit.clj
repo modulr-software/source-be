@@ -145,7 +145,8 @@
          [""                      {:get jobs/get}]
          ["/manage"
           ["/register"            {:post jobs/post}]]
-         ["/:id"                  {:get job/get}
+         ["/:id"
+          [""                     {:get job/get}]
           ["/manage"
            ["/deregister"         {:get job-deregister/get}]
            ["/start"              {:get job-start/get}]
