@@ -36,13 +36,17 @@
     (congest/deregister! js job-id)
     (congest/register! js (prepare-congest-metadata ds store metadata))))
 
-(defn start-interrupted-jobs!
-  "Starts all jobs with a status of 'running'. Intended for server startup to restart interrupted jobs."
-  [js ds store]
+(defn interrupted-jobs
+  "Get congest-ready metadata of all jobs marked as running"
+  [ds store]
   (let [jobs (services/jobs ds)]
-    (run! (fn [{:keys [job-id status]}]
-            (when (= status "running")
-              (start! js ds store job-id))) jobs)))
+    (reduce (fn [acc {:keys [job-id job-metadata-id args handler status]}]
+              (when (= status "running")
+                (let [metadata (-> (services/job-metadata ds {:id job-metadata-id})
+                                   (assoc :id job-id
+                                          :args args
+                                          :handler handler))]
+                  (conj acc (prepare-congest-metadata ds store metadata))))) [] jobs)))
 
 (comment
   (require '[source.db.util :as db.util]
@@ -73,6 +77,6 @@
   (congest/deregister! js "test")
   (congest/stop! js "test" false)
   (start! js ds store "test")
-  (start-interrupted-jobs! js ds store)
+  (interrupted-jobs ds store)
 
   ())
