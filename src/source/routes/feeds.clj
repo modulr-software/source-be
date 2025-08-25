@@ -80,14 +80,16 @@
                    (services/insert-incoming-post! ds {:data (merge extracted
                                                                     {:feed-id (:id new-feed)
                                                                      :creator-id (:id user)
-                                                                     :content-type-id content-type-id})}))]
+                                                                     :content-type-id content-type-id})}))
+        {:keys [email]} (services/user ds {:id (:id user)})]
 
     (if (some? extracted)
       (do
         (->> (jobs/prepare-congest-metadata
               ds
               store
-              {:initial-delay (* 1000 60 60 24)
+              {:id (str email "-" (:id new-feed) "-" (:id new-post))
+               :initial-delay (* 1000 60 60 24)
                :auto-start true
                :stop-after-fail false,
                :interval (* 1000 60 60 24)
