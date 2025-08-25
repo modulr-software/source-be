@@ -1,6 +1,7 @@
 (ns source.routes.feeds
   (:require [source.services.interface :as services]
             [source.util :as utils]
+            [congest.jobs :as congest]
             [source.jobs.core :as jobs]
             [ring.util.response :as res]))
 
@@ -82,32 +83,35 @@
                                                                      :content-type-id content-type-id})}))]
 
     (if (some? extracted)
-      (do (jobs/register! js ds store
-                          {:initial-delay (* 1000 60 60 24)
-                           :auto-start true
-                           :stop-after-fail false,
-                           :interval (* 1000 60 60 24)
-                           :recurring? true
-                           :handler :update-feed-post
-                           :created-at (utils/get-utc-timestamp-string)
-                           :sleep false}
-                          {:feed-id (:id new-feed)
-                           :post-id (:id new-post)
-                           :schema-id latest-ss
-                           :url rss-url})
-          (res/response new-feed))
+      (do
+        (->> (jobs/prepare-congest-metadata
+              ds
+              store
+              {:initial-delay (* 1000 60 60 24)
+               :auto-start true
+               :stop-after-fail false,
+               :interval (* 1000 60 60 24)
+               :recurring? true
+               :args {:feed-id (:id new-feed)
+                      :post-id (:id new-post)
+                      :schema-id latest-ss
+                      :url rss-url}
+               :handler :update-feed-post
+               :created-at (utils/get-utc-timestamp-string)
+               :sleep false})
+             (congest/register! js))
+        (res/response new-feed))
 
-      (-> (res/response {:message "Failed to extract data, did you provide a selection schema?"})
+      (-> (res/response {:message "failed to extract data"})
           (res/status 500)))))
 
 (comment
   (require '[source.db.util :as db.util]
-           '[source.datastore.util :as store.util]
-           '[congest.jobs :as js])
+           '[source.datastore.util :as store.util])
 
   (get {:ds (db.util/conn) :user {:id 5}})
   (post {:ds (db.util/conn)
-         :js (js/create-job-service [])
+         :js (congest/create-job-service [])
          :store (store.util/conn :datahike)
          :user {:id 5}
          :body {:title "primeagen test"
@@ -116,5 +120,4 @@
                 :content-type-id 1
                 :cadence-id 1
                 :baseline-id 1}})
-
   ())

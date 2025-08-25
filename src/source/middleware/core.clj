@@ -23,7 +23,9 @@
         (assoc :store store)
         (handler))))
 
-(defn wrap-js [handler js]
+(defn wrap-js 
+  "attaches the provided job service to the handler's request"
+  [handler js]
   (fn [request]
     (-> request
         (assoc :js js)
@@ -37,7 +39,9 @@
   (-> app
       (wrap-store store)))
 
-(defn apply-js [app js]
+(defn apply-js 
+  "middleware for attaching the job service to the request"
+  [app js]
   (-> app
       (wrap-js js)))
 

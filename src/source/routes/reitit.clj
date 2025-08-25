@@ -57,7 +57,6 @@
   (let [ds (db/ds :master)
         store (store/ds :datahike)
         js (congest/create-job-service [])]
-    (job-service/kill-all! js)
     (job-service/start-interrupted-jobs! js ds store)
     (ring/ring-handler
      (ring/router
@@ -432,10 +431,10 @@
                                    :stop-after-fail false,
                                    :interval 1000
                                    :recurring? true
+                                   :args {:name "congest"}
                                    :handler "test"
                                    :created-at nil
-                                   :sleep false}
-                        :args {:name "congest"}}
+                                   :sleep false}}
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
     (-> request
         app

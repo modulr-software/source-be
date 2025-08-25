@@ -5,94 +5,74 @@
             [source.jobs.oplog :as oplog]
             [source.jobs.handlers :as handlers]))
 
-(defn start! [js ds store job-id]
-  (let [i->b (fn [i] (if (= i 1) true false))
-        job (services/job ds {:id job-id})
-        job-metadata (services/job-metadata ds {:id (:job-metadata-id job)})
-        metadata (-> (assoc job-metadata
-                            :id (str (:id job))
-                            :auto-start (i->b (:auto-start job-metadata))
-                            :stop-after-fail (i->b (:stop-after-fail job-metadata))
-                            :recurring? (i->b (:recurring job-metadata))
-                            :sleep (i->b (:sleep job-metadata))
-                            :args (json/read-str (:args job) {:key-fn keyword})
-                            :handler-name (:handler job)
-                            :handler (handlers/handler job)
-                            :logger oplog/operation-logger
-                            :ds ds
-                            :store store)
-                     (dissoc :recurring))]
-    (congest/deregister! js (str (:id job)))
-    (congest/register! js metadata)))
+(defn prepare-congest-metadata
+  "given raw job metadata, returns extended metadata necessary for use with congest"
+  [ds store metadata]
+  (let [i->b (fn [i] (if (integer? i)
+                       (if (= i 1) true false)
+                       i))
+        args (:args metadata)]
+    (-> metadata
+        (assoc :auto-start (i->b (:auto-start metadata))
+               :stop-after-fail (i->b (:stop-after-fail metadata))
+               :recurring? (i->b (or (:recurring metadata) (:recurring? metadata)))
+               :sleep (i->b (:sleep metadata))
+               :args (if (string? args) (json/read-str (:args metadata) {:key-fn keyword}) args)
+               :handler-name (:handler metadata)
+               :handler (handlers/handler metadata)
+               :logger oplog/operation-logger
+               :ds ds
+               :store store)
+        (dissoc :recurring))))
 
-(defn register!
-  "Registers a new job with the given job metadata, handler and arguments"
-  [js ds store job-metadata args]
-  (let [handler-fn (handlers/handler job-metadata)
-        job-id (-> (services/jobs ds)
-                   (count)
-                   (inc))
-        job-metadata (assoc job-metadata
-                            :id (str job-id)
+(defn start!
+  "given a job-id, re-registers an existing job from the database"
+  [js ds store job-id]
+  (let [{:keys [job-metadata-id args handler]} (services/job ds {:where [:= :job-id job-id]})
+        metadata (-> (services/job-metadata ds {:id job-metadata-id})
+                     (assoc :id job-id
                             :args args
-                            :ds ds
-                            :store store
-                            :handler-name (:handler job-metadata)
-                            :handler handler-fn
-                            :logger oplog/operation-logger)]
-    (congest/register! js job-metadata)))
-
-(defn deregister! [js job-id]
-  (congest/deregister! js (str job-id)))
-
-(defn stop!
-  ([js job-id]
-   (stop! js job-id false))
-  ([js job-id kill?]
-   (congest/stop! js (str job-id) kill?)))
-
-(defn kill! [js job-id]
-  (stop! js job-id true))
-
-(defn kill-all! [js]
-  (congest/kill! js))
+                            :handler handler))]
+    (congest/deregister! js job-id)
+    (congest/register! js (prepare-congest-metadata ds store metadata))))
 
 (defn start-interrupted-jobs!
   "Starts all jobs with a status of 'running'. Intended for server startup to restart interrupted jobs."
   [js ds store]
   (let [jobs (services/jobs ds)]
-    (run! (fn [job]
-            (when (= (:status job) "running")
-              (start! js ds store (:id job)))) jobs)))
+    (run! (fn [{:keys [job-id status]}]
+            (when (= status "running")
+              (start! js ds store job-id))) jobs)))
 
 (comment
   (require '[source.db.util :as db.util]
            '[source.datastore.util :as store.util])
+
   (def ds (db.util/conn))
   (def store (store.util/conn :datahike))
 
-  (def testjob {:initial-delay 10
+  (def testjob {:id "test"
+                :initial-delay 10
                 :auto-start true
                 :stop-after-fail false,
-                ;:kill-after 5
-                ;:num-calls nil
                 :interval 3000
                 :recurring? true
+                :args {:name "congest"}
                 :handler :test
                 :created-at nil
                 :sleep false})
 
   (services/jobs ds)
-  (services/job-metadata ds {:id 3})
+  (services/job-metadata ds {:id 4})
 
   (services/delete-job! ds {})
   (services/delete-job-metadata! ds {})
 
   (def js (congest/create-job-service []))
-  (register! js ds store testjob {:name "congest"})
-  (deregister! js 1)
-  (stop! js 1)
-  (start! js ds store 1)
+  (congest/register! js (prepare-congest-metadata ds store testjob))
+  (congest/deregister! js "test")
+  (congest/stop! js "test" false)
+  (start! js ds store "test")
   (start-interrupted-jobs! js ds store)
 
   ())

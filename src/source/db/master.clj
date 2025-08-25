@@ -157,6 +157,7 @@
   (tables/create-table-sql
    :jobs
    (tables/table-id)
+   [:job-id :text :not nil]
    [:status :text [:check [:in :status ["running" "stopped"]]]]
    [:args :text]
    [:handler :text :not nil]
