@@ -17,9 +17,6 @@
 (defn lookup [ds {:keys [_key _value] :as opts}]
   (dh/lookup ds opts))
 
-(defn exists? [ds k]
-  (dh/exists? ds k))
-
 (defn insert! [ds data]
   (dh/insert! ds data))
 

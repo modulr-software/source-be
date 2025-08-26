@@ -133,10 +133,52 @@
   (tables/create-table-sql
    :selection-schemas
    (tables/table-id)
-   [:version :integer :not nil]
    [:output-schema-id :integer :not nil]
    [:provider-id :integer :not nil]
    (tables/foreign-key :provider-id :providers :id)))
+
+(def incoming-posts
+  (tables/create-table-sql
+   :incoming-posts
+   (tables/table-id)
+   [:feed-id :integer :not nil]
+   [:title :text :not nil]
+   [:info :text]
+   [:url :text]
+   [:stream-url :text]
+   [:creator-id :integer :not nil]
+   [:season :integer]
+   [:episode :integer]
+   [:content-type-id :integer :not nil]
+   [:redacted :integer]
+   [:posted-at :datetime]))
+
+(def jobs
+  (tables/create-table-sql
+   :jobs
+   (tables/table-id)
+   [:job-id :text :not nil]
+   [:status :text [:check [:in :status ["running" "stopped"]]]]
+   [:args :text]
+   [:handler :text :not nil]
+   [:last-heartbeat :datetime]
+   [:job-metadata-id :integer :not nil]
+   (tables/foreign-key :job-metadata-id :job-metadata :id)
+   [[:foreign-key :job-metadata-id] [:references :job-metadata :id] :on-delete :cascade]))
+
+(def job-metadata
+  (tables/create-table-sql
+   :job-metadata
+   (tables/table-id)
+   [:initial-delay :integer]
+   [:auto-start :integer]
+   [:stop-after-fail :integer]
+   [:kill-after :integer]
+   [:num-calls :integer]
+   [:interval :integer]
+   [:recurring :integer]
+   [:created-at :datetime]
+   [:sleep :integer]))
 
 (comment
   (require '[honey.sql :as sql])
@@ -155,4 +197,7 @@
   (sql/format user-sectors)
   (sql/format feed-sectors)
   (sql/format selection-schemas)
+  (sql/format incoming-posts)
+  (sql/format jobs)
+  (sql/format job-metadata)
   ())

@@ -3,7 +3,7 @@
             [source.db.interface :as db]
             [source.rss.core :as rss]))
 
-(defn add-output-schema!
+(defn insert-output-schema!
   [store schema]
   (let [id (-> (store/entries store :output-schemas/id)
                (count)
@@ -21,7 +21,7 @@
         :value output-schema-id}
        (store/lookup store)))
 
-(defn add-selection-schema!
+(defn insert-selection-schema!
   [store db {:keys [schema record]}]
   (let [{:keys [output-schema-id provider-id]} record
         db-result (db/insert! db {:tname :selection-schemas
@@ -30,6 +30,18 @@
                                   :ret :1})]
     (store/insert! store {:selection-schemas/id (:id db-result)
                           :selection-schemas/schema schema})))
+
+(defn delete-selection-schemas-by-provider!
+  [store db provider-id]
+  (let [selection-schemas (db/find db {:tname :selection-schemas
+                                       :where [:= :provider-id provider-id]
+                                       :ret :*})]
+    (run! (fn [{:keys [id]}]
+            (->> (store/find store {:key :selection-schemas/id
+                                    :value id})
+                 (store/delete! store))) selection-schemas)
+    (db/delete! db {:tname :selection-schemas
+                    :where [:= :provider-id provider-id]})))
 
 (defn selection-schemas
   ([ds] (selection-schemas ds {}))
@@ -70,8 +82,8 @@
   (require '[source.db.util :as db.util])
   (ast "https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ")
 
-  (reduce (fn [acc {:keys [version]}]
-            (conj acc version)) [] [{:version 2} {:version 3}])
+  (reduce (fn [acc {:keys [id]}]
+            (conj acc id)) [] [{:id 2} {:id 3}])
 
   (db/find (db.util/conn) {:tname :selection-schemas
                            :where [:and
@@ -91,7 +103,7 @@
    1
    "https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ")
 
-  (add-selection-schema!
+  (insert-selection-schema!
    ds
    (db.util/conn)
    {:record {:provider-id 1

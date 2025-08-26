@@ -77,7 +77,10 @@
       :businesses
       :user-sectors
       :feed-sectors
-      :selection-schemas])
+      :selection-schemas
+      :incoming-posts
+      :jobs
+      :job-metadata])
 
     (db/insert! ds-master baselines-seed)
     (db/insert! ds-master cadences-seed)

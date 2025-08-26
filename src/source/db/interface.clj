@@ -11,7 +11,7 @@
 (defn execute! [ds opts]
   (hon/execute! ds opts))
 
-(defn find [ds opts]
+(defn find [ds {:keys [_tname _where _ret] :as opts}]
   (hon/find ds opts))
 
 (defn find-one [ds opts]
