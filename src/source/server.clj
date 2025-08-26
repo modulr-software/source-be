@@ -66,16 +66,16 @@
   (when (some? (:js @*components))
     (congest/kill! (:js @*components)))
   (when (some? (:server @*components))
-    (let [server (:server @*components)]
-      (server)))
+    (let [server-stop (:server @*components)]
+      (server-stop)))
   (reset! *components nil))
 
 (defn restart-server [& {:keys [keep-js]}]
   (if keep-js
     (do
       (when (some? (:server @*components))
-        (let [server (:server @*components)]
-          (server)))
+        (let [server-stop (:server @*components)]
+          (server-stop)))
       (swap! *components select-keys [:js])
       (initialise-components! [{:name :ds
                                 :init-fn (fn [_deps] (db/ds :master))
