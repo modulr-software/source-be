@@ -10,9 +10,13 @@
       (str path)))
 
 (defn store-path
-  ([store-name]
-   (-> (str (conf/read-value :database :dir) store-name)
-       (absolute))))
+  [store-name]
+  (let [db-dir (conf/read-value :database :dir)]
+    (str
+     db-dir
+     (when (not (= (last db-dir) \/))
+       "/")
+     store-name)))
 
 (defn config [store-name]
   {:store {:backend :file
