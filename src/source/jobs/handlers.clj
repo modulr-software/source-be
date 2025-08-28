@@ -14,15 +14,35 @@
   (fn [{:keys [args]}]
     (println "hello" (get args :name) args)))
 
-(defmethod handler :update-feed-post [_]
+(defmethod handler :update-feed-posts [_]
   (fn [{:keys [args ds store]}]
     (try
-      (let [{:keys [feed-id post-id schema-id url]} args
-            extracted (services/extract-data store {:schema-id schema-id
-                                                    :url url})]
+      (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
+            selection-schemas (->> [:= :provider-id provider-id]
+                                   (assoc {} :where)
+                                   (services/selection-schemas ds))
+            latest-ss (->> selection-schemas
+                           (reduce (fn [acc {:keys [id]}]
+                                     (conj acc id)) [])
+                           (apply max -1))
+            extracted (services/extract-data store {:schema-id latest-ss
+                                                    :url url})
+            extracted-posts (get-in extracted [:feed :posts])
+            extended-posts (mapv (fn [post]
+                                   (merge post
+                                          {:feed-id feed-id
+                                           :creator-id creator-id
+                                           :content-type-id content-type-id})) extracted-posts)
+            existing-posts (services/incoming-posts ds {:where [:= :creator-id creator-id]})]
         (services/update-feed! ds {:id feed-id
-                                   :data {:updated-at (util/get-utc-timestamp-string)}})
-        (services/update-incoming-post! ds {:id post-id
-                                            :data extracted}))
+                                   :data {:title (get-in extracted [:feed :title])
+                                          :updated-at (util/get-utc-timestamp-string)}})
+        (run!
+         (fn [post]
+           (if (some #(= (:post-id post) (:post-id %)) existing-posts)
+             (services/update-incoming-post! ds {:where [:= :post-id (:post-id post)]
+                                                 :data post})
+             (services/insert-incoming-post! ds {:data post})))
+         extended-posts))
       (catch Exception _ :fail))))
 

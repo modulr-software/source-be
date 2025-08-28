@@ -141,6 +141,7 @@
   (tables/create-table-sql
    :incoming-posts
    (tables/table-id)
+   [:post-id :text :not nil]
    [:feed-id :integer :not nil]
    [:title :text :not nil]
    [:info :text]

@@ -1,10 +1,10 @@
 (ns source.services.incoming-posts
   (:require [source.db.interface :as db]))
 
-(defn insert-incoming-post! [ds {:keys [data] :as opts}]
+(defn insert-incoming-post! [ds {:keys [data ret] :as opts}]
   (->> {:tname :incoming-posts
         :data data
-        :ret :1}
+        :ret ret}
        (merge opts)
        (db/insert! ds)))
 
