@@ -31,6 +31,8 @@
             [source.routes.content-types :as content-types]
             [source.routes.content-type :as content-type]
             [source.routes.feeds :as feeds]
+            [source.routes.feed :as feed]
+            [source.routes.posts :as posts]
             [source.routes.xml :as xml]
             [source.routes.data :as data]
             [source.routes.jobs :as jobs]
@@ -126,7 +128,10 @@
      ["/feeds"          {:middleware [[mw/apply-auth]]
                          :tags #{"feeds"}}
       [""               (route {:get feeds/get
-                                :post feeds/post})]]
+                                :post feeds/post})]
+      ["/:id"
+       [""              (route {:get feed/get})]
+       ["/posts"        (route {:get posts/get})]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                  :no-doc true
@@ -442,7 +447,7 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app components)
-        request {:uri "/admin/jobs/1/manage/deregister"
+        request {:uri "/admin/jobs/8/manage/deregister"
                  :request-method :get
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
     (-> request
