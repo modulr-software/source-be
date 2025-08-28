@@ -7,33 +7,30 @@
 
 (defn get
   {:summary "get all feeds"
-   :responses  {200 {:body [:map
-                            [:users
-                             [:vector
-                              [:map
-                               [:id :int]
-                               [:title :string]
-                               [:display-picture [:maybe :string]]
-                               [:url [:maybe :string]]
-                               [:rss-url :string]
-                               [:user-id [:maybe :int]]
-                               [:provider-id [:maybe :int]]
-                               [:created-at :string]
-                               [:updated-at [:maybe :string]]
-                               [:content-type-id :int]
-                               [:cadence-id :int]
-                               [:baseline-id :int]
-                               [:ts-and-cs [:maybe :string]]
-                               [:state [:maybe :string]]]]]]}}}
+   :responses  {200 {:body [:vector
+                            [:map
+                             [:id :int]
+                             [:title :string]
+                             [:display-picture [:maybe :string]]
+                             [:url [:maybe :string]]
+                             [:rss-url :string]
+                             [:user-id [:maybe :int]]
+                             [:provider-id [:maybe :int]]
+                             [:created-at :string]
+                             [:updated-at [:maybe :string]]
+                             [:content-type-id :int]
+                             [:cadence-id :int]
+                             [:baseline-id :int]
+                             [:ts-and-cs [:maybe :string]]
+                             [:state [:maybe :string]]]]}}}
 
   [{:keys [ds user] :as _request}]
   (-> (services/feeds ds {:where [:= :user-id (:id user)]})
       (res/response)))
 
 (defn post
-  {:summary "adds a feed and extracts data from RSS feed URL into a post and schedules a job to keep them updated"
+  {:summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
    :parameters {:body [:map
-                       [:title :string]
                        [:display-picture {:optional true} :string]
                        [:url {:optional true} :string]
                        [:rss-url :string]
@@ -72,33 +69,38 @@
         extracted (when-not (= latest-ss -1)
                     (services/extract-data store {:schema-id latest-ss
                                                   :url rss-url}))
+        extracted-posts (get-in extracted [:feed :posts])
         new-feed (services/insert-feed!
                   ds
-                  {:data (merge body {:user-id (:id user)
+                  {:data (merge body {:title (get-in extracted [:feed :title])
+                                      :user-id (:id user)
                                       :created-at datetime})})
-        new-post (when (some? extracted)
-                   (services/insert-incoming-post! ds {:data (merge extracted
-                                                                    {:feed-id (:id new-feed)
-                                                                     :creator-id (:id user)
-                                                                     :content-type-id content-type-id})}))
+        extended-posts (mapv (fn [post]
+                               (merge post
+                                      {:feed-id (:id new-feed)
+                                       :creator-id (:id user)
+                                       :content-type-id content-type-id})) extracted-posts)
         {:keys [email]} (services/user ds {:id (:id user)})]
 
-    (if (some? extracted)
+    (if (some? extracted-posts)
       (do
+        (services/insert-incoming-post! ds {:data extended-posts})
+
         (->> (jobs/prepare-congest-metadata
               ds
               store
-              {:id (str email "-" (:id new-feed) "-" (:id new-post))
-               :initial-delay (* 1000 60 60 24)
+              {:id (str email "-" (:id new-feed))
+               :initial-delay #_(* 1000 60 60 24) (* 1000 60)
                :auto-start true
                :stop-after-fail false,
-               :interval (* 1000 60 60 24)
+               :interval #_(* 1000 60 60 24) (* 1000 60)
                :recurring? true
                :args {:feed-id (:id new-feed)
-                      :post-id (:id new-post)
-                      :schema-id latest-ss
+                      :creator-id (:id user)
+                      :content-type-id content-type-id
+                      :provider-id provider-id
                       :url rss-url}
-               :handler :update-feed-post
+               :handler :update-feed-posts
                :created-at (utils/get-utc-timestamp-string)
                :sleep false})
              (congest/register! js))
@@ -111,15 +113,15 @@
   (require '[source.db.util :as db.util]
            '[source.datastore.util :as store.util])
 
-  (get {:ds (db.util/conn) :user {:id 5}})
+  (get {:ds (db.util/conn) :user {:id 3}})
   (post {:ds (db.util/conn)
          :js (congest/create-job-service [])
          :store (store.util/conn :datahike)
-         :user {:id 5}
-         :body {:title "primeagen test"
-                :rss-url "https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ"
+         :user {:id 3}
+         :body {:rss-url "https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ"
                 :provider-id 1
                 :content-type-id 1
                 :cadence-id 1
                 :baseline-id 1}})
+
   ())

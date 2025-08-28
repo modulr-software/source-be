@@ -100,7 +100,7 @@
 (defn feed [ds id]
   (feeds/feed ds id))
 
-(defn insert-incoming-post! [ds {:keys [_data] :as opts}]
+(defn insert-incoming-post! [ds {:keys [_data _ret] :as opts}]
   (incoming-posts/insert-incoming-post! ds opts))
 
 (defn update-incoming-post! [ds {:keys [_id _data _where] :as opts}]
