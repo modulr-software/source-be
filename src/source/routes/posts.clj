@@ -24,8 +24,6 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [ds user path-params] :as _request}]
-  (-> (services/incoming-posts ds {:where [:and
-                                           [:= :creator-id (:id user)]
-                                           [:= :feed-id (:id path-params)]]})
+  [{:keys [ds path-params] :as _request}]
+  (-> (services/incoming-posts ds {:where [:= :feed-id (:id path-params)]})
       (res/response)))
