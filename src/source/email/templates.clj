@@ -59,7 +59,7 @@
                [:br] [:br]
                "If you believe this was in error, you can reply to this email or click on the link below to leave us a message."]]
              (button {:text "Leave us a message"
-                               :redirect (str (conf/read-value :cors-origin) "/report-a-problem")})
+                      :redirect (str (conf/read-value :cors-origin) "/report-a-problem")})
              [:tr
               [:td {:class "body"
                     :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
@@ -93,7 +93,8 @@
                (str "Good news! The feed \"" feed-title "\" that you recently added was approved and is now live on the platform.")
                [:br] [:br]
                "Click on the link below to go to your dashboard and view your feed."]]
-             (button (str (conf/read-value :cors-origin) "/dashboard/feeds/" feed-id))
+             (button {:text "View your feed"
+                      :redirect (str (conf/read-value :cors-origin) "/dashboard/feeds/" feed-id)})
              [:tr
               [:td {:class "body"
                     :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
@@ -138,7 +139,7 @@
                  [:br]
                  "Click on the link below to respond"]]
                (button {:text "Respond"
-                                 :redirect (str "mailto:" user-email "?subject=Source Team Re:" shortened-message)})
+                        :redirect (str "mailto:" user-email "?subject=Source Team Re:" shortened-message)})
                [:tr
                 [:td {:class "body"
                       :style "padding: 40px; text-align: left; font-size: 11px; line-height: 1.6;"}

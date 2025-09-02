@@ -11,16 +11,6 @@
      :port 587
      :tls true}))
 
-(defn send-plaintext-email [{:keys [to subject body] :as _opts}]
-  (let [email-username (conf/read-value :email :username)]
-    (postal/send-message
-     (postal-config)
-     {:from email-username
-      :to to
-      :subject subject
-      :body [{:type "text/plain"
-              :content body}]})))
-
 (defn send-email [{:keys [to subject body type] :as _opts}]
   (let [email-username (conf/read-value :email :username)]
     (-> (postal-config)
@@ -30,16 +20,6 @@
           :subject subject
           :body [{:type (str (namespace type) "/" (name type))
                   :content body}]}))))
-
-(defn send-html-email [{:keys [to subject body] :as _opts}]
-  (let [email-username (conf/read-value :email :username)]
-    (postal/send-message
-     (postal-config)
-     {:from email-username
-      :to to
-      :subject subject
-      :body [{:type "text/html"
-              :content body}]})))
 
 (comment
   (require '[source.email.templates :as templates])
