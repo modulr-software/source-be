@@ -28,7 +28,7 @@
          {:from email-username
           :to to
           :subject subject
-          :body [{:type type
+          :body [{:type (str (namespace type) "/" (name type))
                   :content body}]}))))
 
 (defn send-html-email [{:keys [to subject body] :as _opts}]
@@ -44,27 +44,31 @@
 (comment
   (require '[source.email.templates :as templates])
 
-  (send-plaintext-email {:to "keaganncollins@gmail.com"
-                         :subject "test email"
-                         :body "hi this is a test coming from source-be"})
+  (send-email {:to "keaganncollins@gmail.com"
+               :subject "test email"
+               :body "hi this is a test coming from source-be"
+               :type :text/plain})
 
-  (send-html-email {:to "keaganncollins@gmail.com"
-                    :subject "feed rejection template"
-                    :body (templates/feed-rejection {:creator-name "Keagan"
-                                                     :feed-title "Keagan's Mukbang Channel"
-                                                     :reason "too cringe frfr"})})
+  (send-email {:to "keaganncollins@gmail.com"
+               :subject "feed rejection template"
+               :body (templates/feed-rejection {:creator-name "Keagan"
+                                                :feed-title "Keagan's Mukbang Channel"
+                                                :reason "too cringe frfr"})
+               :type :text/html})
 
-  (send-html-email {:to "keaganncollins@gmail.com"
-                    :subject "feed approval template"
-                    :body (templates/feed-approval {:creator-name "Keagan"
-                                                    :feed-title "Keagan's Mukbang Channel"
-                                                    :feed-id 2})})
+  (send-email {:to "keaganncollins@gmail.com"
+              :subject "feed approval template"
+              :body (templates/feed-approval {:creator-name "Keagan"
+                                              :feed-title "Keagan's Mukbang Channel"
+                                              :feed-id 2})
+               :type :text/html})
 
-  (send-html-email {:to "keaganncollins@gmail.com"
-                    :subject "admin reported problem"
-                    :body (templates/admin-reported-problem {:user-id 3
-                                                             :user-email "keaganncollins@gmail.com"
-                                                             :user-type "creator"
-                                                             :message "no burger king foot lettuce :("})})
+  (send-email {:to "keaganncollins@gmail.com"
+               :subject "admin reported problem"
+               :type :text/html
+               :body (templates/admin-reported-problem {:user-id 3
+                                                        :user-email "keaganncollins@gmail.com"
+                                                        :user-type "creator"
+                                                        :message "no burger king foot lettuce :("})})
 
   ())
