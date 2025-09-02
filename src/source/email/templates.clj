@@ -34,74 +34,74 @@
 (defn feed-rejection
   "Returns the completed HTML for a feed rejection email"
   [{:keys [creator-name feed-title reason]}]
-  (str (h/html5
-        {:lang "en"}
-        (head-metadata)
-        [:body {:style "font-family: 'Switzer', sans-serif"}
-         [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
-          [:tr
-           [:td {:align "center" :style "padding: 20px;"}
-            [:table {:class "content"
-                     :width "600"
-                     :border "0"
-                     :cellspacing "0"
-                     :cellpadding "0"
-                     :style "border-collapse: collapse; border: 1px solid #cccccc;"}
-             (header)
-             [:tr
-              [:td {:class "body"
-                    :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-               (str "Hi " creator-name)
-               [:br]
-               (str "Unfortunately, the feed \"" feed-title "\" that you recently added was rejected.")
-               [:br] [:br]
-               (str reason)
-               [:br] [:br]
-               "If you believe this was in error, you can reply to this email or click on the link below to leave us a message."]]
-             (button {:text "Leave us a message"
-                      :redirect (str (conf/read-value :cors-origin) "/report-a-problem")})
-             [:tr
-              [:td {:class "body"
-                    :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-               "Regards,"
-               [:br]
-               "The Source Team"]]
-             (footer)]]]]])))
+  (h/html5
+   {:lang "en"}
+   (head-metadata)
+   [:body {:style "font-family: 'Switzer', sans-serif"}
+    [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
+     [:tr
+      [:td {:align "center" :style "padding: 20px;"}
+       [:table {:class "content"
+                :width "600"
+                :border "0"
+                :cellspacing "0"
+                :cellpadding "0"
+                :style "border-collapse: collapse; border: 1px solid #cccccc;"}
+        (header)
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          (str "Hi " creator-name)
+          [:br]
+          (str "Unfortunately, the feed \"" feed-title "\" that you recently added was rejected.")
+          [:br] [:br]
+          (str reason)
+          [:br] [:br]
+          "If you believe this was in error, you can reply to this email or click on the link below to leave us a message."]]
+        (button {:text "Leave us a message"
+                 :redirect (str (conf/read-value :cors-origin) "/report-a-problem")})
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          "Regards,"
+          [:br]
+          "The Source Team"]]
+        (footer)]]]]]))
 
 (defn feed-approval
   "Returns the completed HTML for a feed approval email"
   [{:keys [creator-name feed-title feed-id]}]
-  (str (h/html5
-        {:lang "en"}
-        (head-metadata)
-        [:body {:style "font-family: 'Switzer', sans-serif"}
-         [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
-          [:tr
-           [:td {:align "center" :style "padding: 20px;"}
-            [:table {:class "content"
-                     :width "600"
-                     :border "0"
-                     :cellspacing "0"
-                     :cellpadding "0"
-                     :style "border-collapse: collapse; border: 1px solid #cccccc;"}
-             (header)
-             [:tr
-              [:td {:class "body"
-                    :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-               (str "Hi " creator-name)
-               [:br]
-               (str "Good news! The feed \"" feed-title "\" that you recently added was approved and is now live on the platform.")
-               [:br] [:br]
-               "Click on the link below to go to your dashboard and view your feed."]]
-             (button {:text "View your feed"
-                      :redirect (str (conf/read-value :cors-origin) "/dashboard/feeds/" feed-id)})
-             [:tr
-              [:td {:class "body"
-                    :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-               "Regards,"
-               [:br]
-               "The Source Team"]]
-             (footer)]]]]])))
+  (h/html5
+   {:lang "en"}
+   (head-metadata)
+   [:body {:style "font-family: 'Switzer', sans-serif"}
+    [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
+     [:tr
+      [:td {:align "center" :style "padding: 20px;"}
+       [:table {:class "content"
+                :width "600"
+                :border "0"
+                :cellspacing "0"
+                :cellpadding "0"
+                :style "border-collapse: collapse; border: 1px solid #cccccc;"}
+        (header)
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          (str "Hi " creator-name)
+          [:br]
+          (str "Good news! The feed \"" feed-title "\" that you recently added was approved and is now live on the platform.")
+          [:br] [:br]
+          "Click on the link below to go to your dashboard and view your feed."]]
+        (button {:text "View your feed"
+                 :redirect (str (conf/read-value :cors-origin) "/dashboard/feeds/" feed-id)})
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          "Regards,"
+          [:br]
+          "The Source Team"]]
+        (footer)]]]]]))
 
 (defn admin-reported-problem
   "Returns the completed HTML for an admin problem report email"
@@ -109,7 +109,7 @@
   (let [shortened-message (if (> (count message) 15)
                             (str (subs message 0 15) "...")
                             message)]
-    (str (h/html5
+    (h/html5
           {:lang "en"}
           (head-metadata)
           [:body {:style "font-family: 'Switzer', sans-serif"}
@@ -144,4 +144,4 @@
                 [:td {:class "body"
                       :style "padding: 40px; text-align: left; font-size: 11px; line-height: 1.6;"}
                  "This is an automated message. Please do not reply directly to this email."]]
-               (footer)]]]]]))))
+               (footer)]]]]])))
