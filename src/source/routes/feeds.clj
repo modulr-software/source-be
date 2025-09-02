@@ -90,10 +90,10 @@
               ds
               store
               {:id (str email "-" (:id new-feed))
-               :initial-delay #_(* 1000 60 60 24) (* 1000 60)
+               :initial-delay (* 1000 60 60 24)
                :auto-start true
                :stop-after-fail false,
-               :interval #_(* 1000 60 60 24) (* 1000 60)
+               :interval (* 1000 60 60 24)
                :recurring? true
                :args {:feed-id (:id new-feed)
                       :creator-id (:id user)

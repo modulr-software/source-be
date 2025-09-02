@@ -22,8 +22,6 @@
                             [:ts-and-cs [:maybe :string]]
                             [:state [:maybe :string]]]}}}
 
-  [{:keys [ds user path-params] :as _request}]
-  (-> (services/feed ds {:where [:and
-                                 [:= :id (:id path-params)]
-                                 [:= :user-id (:id user)]]})
+  [{:keys [ds path-params] :as _request}]
+  (-> (services/feed ds path-params)
       (res/response)))

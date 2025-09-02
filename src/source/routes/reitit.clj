@@ -33,6 +33,7 @@
             [source.routes.feeds :as feeds]
             [source.routes.feed :as feed]
             [source.routes.posts :as posts]
+            [source.routes.admin-feeds :as admin-feeds]
             [source.routes.xml :as xml]
             [source.routes.data :as data]
             [source.routes.jobs :as jobs]
@@ -134,10 +135,11 @@
        ["/posts"        (route {:get posts/get})]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
-                                 :no-doc true
                                  :tags #{"admin"}
                                  :swagger {:security [{"auth" []}]}
                                  :openapi {:security [{:bearerAuth []}]}}
+      ["/feeds"
+       [""                      (route {:get admin-feeds/get})]]
       ["/jobs"
        [""                      {:get jobs/get}]
        ["/manage"
