@@ -21,6 +21,16 @@
       :body [{:type "text/plain"
               :content body}]})))
 
+(defn send-email [{:keys [to subject body type] :as _opts}]
+  (let [email-username (conf/read-value :email :username)]
+    (-> (postal-config)
+        (postal/send-message
+         {:from email-username
+          :to to
+          :subject subject
+          :body [{:type type
+                  :content body}]}))))
+
 (defn send-html-email [{:keys [to subject body] :as _opts}]
   (let [email-username (conf/read-value :email :username)]
     (postal/send-message
