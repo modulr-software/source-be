@@ -41,6 +41,7 @@
             [source.routes.job-deregister :as job-deregister]
             [source.routes.job-start :as job-start]
             [source.routes.job-stop :as job-stop]
+            [source.routes.report :as report]
             [source.util :as util]))
 
 (defn route [handlers]
@@ -87,6 +88,12 @@
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get me/get})]]
+
+     ["/mail"             {:middleware [[mw/apply-auth]]
+                           :tags #{"mail"}
+                           :swagger {:security [{"auth" []}]}
+                           :openapi {:security [{:bearerAuth []}]}}
+      ["/report"          (route {:post report/post})]]
 
      ["/businesses"     {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"businesses"}
@@ -451,6 +458,16 @@
   (let [app (create-app components)
         request {:uri "/admin/jobs/8/manage/deregister"
                  :request-method :get
+                 :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
+    (-> request
+        app
+        :body
+        (json/read-json {:key-fn keyword})))
+
+  (let [app (create-app components)
+        request {:uri "/mail/report"
+                 :request-method :post
+                 :body {:message "I didn't get my cheesy fries how dare you"}
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
     (-> request
         app
