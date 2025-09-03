@@ -5,7 +5,8 @@
  :env #or [#env ENV "dev"]
  :database {:dir #or [#env DATABASE_DIR ".db/"]
             :type "sqlite"}
- :email {:username #env EMAIL_USERNAME
+ :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
+         :username #env EMAIL_USERNAME
          :password #env EMAIL_PASSWORD}
  :oauth2 {:google {:authorization-uri   "https://accounts.google.com/o/oauth2/auth"
                    :access-token-uri    "https://oauth2.googleapis.com/token"
