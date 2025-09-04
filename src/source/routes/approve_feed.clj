@@ -4,7 +4,7 @@
             [source.email.templates :as templates]
             [ring.util.response :as res]))
 
-(defn patch
+(defn post
   {:summary "approve the feed with the given feed-id and allow it to go live"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]}

@@ -150,8 +150,8 @@
       ["/feeds"
        [""                      (route {:get admin-feeds/get})]
        ["/:id"
-        ["/approve"             (route {:patch approve-feed/patch})]
-        ["/reject"              (route {:patch reject-feed/patch})]]]
+        ["/approve"             (route {:post approve-feed/post})]
+        ["/reject"              (route {:post reject-feed/post})]]]
       ["/jobs"
        [""                      {:get jobs/get}]
        ["/manage"

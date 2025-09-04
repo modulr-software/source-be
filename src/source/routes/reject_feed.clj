@@ -4,7 +4,7 @@
             [source.email.templates :as templates]
             [ring.util.response :as res]))
 
-(defn patch
+(defn post
   {:summary "reject the feed with the given feed-id and prevent it from going live"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]
