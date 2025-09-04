@@ -14,7 +14,7 @@
                              [:display-picture [:maybe :string]]
                              [:url [:maybe :string]]
                              [:rss-url :string]
-                             [:user-id [:maybe :int]]
+                             [:user-id :int]
                              [:provider-id [:maybe :int]]
                              [:created-at :string]
                              [:updated-at [:maybe :string]]
@@ -22,7 +22,7 @@
                              [:cadence-id :int]
                              [:baseline-id :int]
                              [:ts-and-cs [:maybe :string]]
-                             [:state [:maybe :string]]]]}}}
+                             [:state [:enum "live" "not live" "pending"]]]]}}}
 
   [{:keys [ds user] :as _request}]
   (-> (services/feeds ds {:where [:= :user-id (:id user)]})
@@ -38,15 +38,14 @@
                        [:content-type-id :int]
                        [:cadence-id :int]
                        [:baseline-id :int]
-                       [:ts-and-cs {:optional true} :string]
-                       [:state {:optional true} :string]]}
+                       [:ts-and-cs {:optional true} :string]]}
    :responses {200 {:body [:map
                            [:id :int]
                            [:title :string]
                            [:display-picture [:maybe :string]]
                            [:url [:maybe :string]]
                            [:rss-url :string]
-                           [:user-id [:maybe :int]]
+                           [:user-id :int]
                            [:provider-id [:maybe :int]]
                            [:created-at :string]
                            [:updated-at [:maybe :string]]
@@ -54,7 +53,7 @@
                            [:cadence-id :int]
                            [:baseline-id :int]
                            [:ts-and-cs [:maybe :string]]
-                           [:state [:maybe :string]]]}}}
+                           [:state [:enum "live" "not live" "pending"]]]}}}
 
   [{:keys [js ds store user body] :as _request}]
   (let [{:keys [provider-id rss-url content-type-id]} body
@@ -74,7 +73,8 @@
                   ds
                   {:data (merge body {:title (get-in extracted [:feed :title])
                                       :user-id (:id user)
-                                      :created-at datetime})})
+                                      :created-at datetime
+                                      :state "pending"})})
         extended-posts (mapv (fn [post]
                                (merge post
                                       {:feed-id (:id new-feed)

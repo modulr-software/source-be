@@ -97,8 +97,8 @@
   ([ds {:keys [_where] :as opts}]
    (feeds/feeds ds opts)))
 
-(defn feed [ds id]
-  (feeds/feed ds id))
+(defn feed [ds {:keys [_id] :as opts}]
+  (feeds/feed ds opts))
 
 (defn insert-incoming-post! [ds {:keys [_data _ret] :as opts}]
   (incoming-posts/insert-incoming-post! ds opts))

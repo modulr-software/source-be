@@ -42,6 +42,8 @@
             [source.routes.job-start :as job-start]
             [source.routes.job-stop :as job-stop]
             [source.routes.report :as report]
+            [source.routes.approve-feed :as approve-feed]
+            [source.routes.reject-feed :as reject-feed]
             [source.util :as util]))
 
 (defn route [handlers]
@@ -146,7 +148,10 @@
                                  :swagger {:security [{"auth" []}]}
                                  :openapi {:security [{:bearerAuth []}]}}
       ["/feeds"
-       [""                      (route {:get admin-feeds/get})]]
+       [""                      (route {:get admin-feeds/get})]
+       ["/:id"
+        ["/approve"             (route {:post approve-feed/post})]
+        ["/reject"              (route {:post reject-feed/post})]]]
       ["/jobs"
        [""                      {:get jobs/get}]
        ["/manage"

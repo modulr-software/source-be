@@ -12,7 +12,7 @@
                             [:display-picture [:maybe :string]]
                             [:url [:maybe :string]]
                             [:rss-url :string]
-                            [:user-id [:maybe :int]]
+                            [:user-id :int]
                             [:provider-id [:maybe :int]]
                             [:created-at :string]
                             [:updated-at [:maybe :string]]
@@ -20,7 +20,7 @@
                             [:cadence-id :int]
                             [:baseline-id :int]
                             [:ts-and-cs [:maybe :string]]
-                            [:state [:maybe :string]]]}}}
+                            [:state [:enum "live" "not live" "pending"]]]}}}
 
   [{:keys [ds path-params] :as _request}]
   (-> (services/feed ds path-params)
