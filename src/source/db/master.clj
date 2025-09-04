@@ -69,7 +69,7 @@
    [:display-picture :text]
    [:url :text]
    [:rss-url :text :not nil]
-   [:user-id :integer]
+   [:user-id :integer :not nil]
    [:provider-id :integer]
    [:created-at :datetime :not nil]
    [:updated-at :datetime]
@@ -77,7 +77,7 @@
    [:cadence-id :integer :not nil]
    [:baseline-id :integer :not nil]
    [:ts-and-cs :text]
-   [:state :text]
+   [:state :text [:check [:in :state ["live" "not live" "pending"]]]]
    (tables/foreign-key :user-id :users :id)
    (tables/foreign-key :provider-id :providers :id)
    (tables/foreign-key :cadence-id :cadences :id)
