@@ -28,10 +28,14 @@
             [source.routes.output-schema :as output-schema]
             [source.routes.providers :as providers]
             [source.routes.provider :as provider]
+            [source.routes.cadences :as cadences]
+            [source.routes.categories :as categories]
+            [source.routes.baselines :as baselines]
             [source.routes.content-types :as content-types]
             [source.routes.content-type :as content-type]
             [source.routes.feeds :as feeds]
             [source.routes.feed :as feed]
+            [source.routes.feed-categories :as feed-categories]
             [source.routes.posts :as posts]
             [source.routes.admin-feeds :as admin-feeds]
             [source.routes.xml :as xml]
@@ -131,6 +135,15 @@
       [""               (route {:get providers/get})]
       ["/:id"           (route {:get provider/get})]]
 
+     ["/cadences"      {:tags #{"cadences"}}
+      [""               (route {:get cadences/get})]]
+
+     ["/categories"      {:tags #{"categories"}}
+      [""               (route {:get categories/get})]]
+
+     ["/baselines"      {:tags #{"baselines"}}
+      [""               (route {:get baselines/get})]]
+
      ["/content-types"  {:tags #{"content types"}}
       [""               {:get content-types/get}]
       ["/:id"           {:get content-type/get}]]
@@ -140,8 +153,11 @@
       [""               (route {:get feeds/get
                                 :post feeds/post})]
       ["/:id"
-       [""              (route {:get feed/get})]
-       ["/posts"        (route {:get posts/get})]]]
+       [""              (route {:get feed/get
+                                :patch feed/patch})]
+       ["/posts"        (route {:get posts/get})]
+       ["/categories"   (route {:get feed-categories/get
+                                :patch feed-categories/patch})]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                  :tags #{"admin"}

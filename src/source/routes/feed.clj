@@ -25,3 +25,22 @@
   [{:keys [ds path-params] :as _request}]
   (-> (services/feed ds path-params)
       (res/response)))
+
+(defn patch
+  {:summary "update feed by id"
+   :parameters {:path [:map [:id {:title "id"
+                                  :description "feed id"} :int]]
+                :body [:map
+                       [:title :string]
+                       [:display-picture {:optional true} :string]
+                       [:url {:optional true} :string]
+                       [:cadence-id :int]
+                       [:baseline-id :int]]}
+   :responses  {200 {:body [:map [:message :string]]}
+                401 {:body [:map [:message :string]]}
+                403 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds path-params body] :as _request}]
+  (services/update-feed! ds {:id (:id path-params)
+                             :data body})
+  (res/response {:message "successfully updated feed"}))
