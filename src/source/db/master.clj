@@ -91,7 +91,8 @@
    [:feed-id :integer :not nil]
    [:category-id :integer :not nil]
    (tables/foreign-key :feed-id :feeds :id)
-   (tables/foreign-key :category-id :categories :id)))
+   (tables/foreign-key :category-id :categories :id)
+   [[:unique [:composite :feed-id :category-id]]]))
 
 (def providers
   (tables/create-table-sql
