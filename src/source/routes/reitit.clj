@@ -154,10 +154,10 @@
                                 :post feeds/post})]
       ["/:id"
        [""              (route {:get feed/get
-                                :patch feed/patch})]
+                                :post feed/post})]
        ["/posts"        (route {:get posts/get})]
        ["/categories"   (route {:get feed-categories/get
-                                :patch feed-categories/patch})]]]
+                                :post feed-categories/post})]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                  :tags #{"admin"}

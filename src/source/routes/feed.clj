@@ -26,7 +26,7 @@
   (-> (services/feed ds path-params)
       (res/response)))
 
-(defn patch
+(defn post
   {:summary "update feed by id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]

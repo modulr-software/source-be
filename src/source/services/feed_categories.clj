@@ -36,7 +36,7 @@
 
 (defn categories-by-feed [ds {:keys [feed-id where] :as _opts}]
   (hon/execute! ds
-                {:select :*
+                {:select [[:feed-categories.category-id :id] :name]
                  :from :categories
                  :join [:feed-categories [:= :feed-categories.category-id :categories.id]]
                  :where (if (some? feed-id)
@@ -62,10 +62,6 @@
   (insert-feed-category! ds {:data {:feed-id 1
                                     :category-id 2}})
   (categories-by-feed ds {:feed-id 1})
-  (upsert-feed-categories! ds {:data [{:feed-id 2
-                                       :category-id 2}
-                                      {:feed-id 2
-                                       :category-id 3}
-                                      {:feed-id 2
-                                       :category-id 1}]})
+  (upsert-feed-categories! ds {:data [{:feed-id 1
+                                       :category-id 6}]})
   ())

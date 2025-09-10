@@ -16,7 +16,7 @@
   (->> (services/categories-by-feed ds {:feed-id (:id path-params)})
        (res/response)))
 
-(defn patch
+(defn post
   {:summary "update categories belonging to the feed with the given id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]
@@ -29,7 +29,6 @@
   (let [update-data (reduce (fn [acc {:keys [id]}]
                               (conj acc {:feed-id (:id path-params)
                                          :category-id id})) [] body)]
-    (if (seq update-data)
-      (services/upsert-feed-categories! ds {:data update-data})
-      (services/delete-feed-category! ds {:where [:= :feed-id (:id path-params)]}))
+    (services/delete-feed-category! ds {:where [:= :feed-id (:id path-params)]})
+    (services/insert-feed-category! ds {:data update-data})
     (res/response {:message "successfully updated feed categories"})))
