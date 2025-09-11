@@ -19,7 +19,7 @@
                             [:content-type-id :int]
                             [:cadence-id :int]
                             [:baseline-id :int]
-                            [:ts-and-cs [:maybe :string]]
+                            [:ts-and-cs [:maybe :int]]
                             [:state [:enum "live" "not live" "pending"]]]}}}
 
   [{:keys [ds path-params] :as _request}]
@@ -34,6 +34,7 @@
                        [:title :string]
                        [:display-picture {:optional true} :string]
                        [:url {:optional true} :string]
+                       [:ts-and-cs {:optional true} :int]
                        [:cadence-id :int]
                        [:baseline-id :int]]}
    :responses  {200 {:body [:map [:message :string]]}

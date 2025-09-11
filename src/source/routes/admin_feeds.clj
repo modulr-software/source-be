@@ -18,7 +18,7 @@
                              [:content-type-id :int]
                              [:cadence-id :int]
                              [:baseline-id :int]
-                             [:ts-and-cs [:maybe :string]]
+                             [:ts-and-cs [:maybe :int]]
                              [:state [:enum "live" "not live" "pending"]]]]}}}
 
   [{:keys [ds] :as _request}]

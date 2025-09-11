@@ -76,7 +76,7 @@
    [:content-type-id :integer :not nil]
    [:cadence-id :integer :not nil]
    [:baseline-id :integer :not nil]
-   [:ts-and-cs :text]
+   [:ts-and-cs :integer]
    [:state :text [:check [:in :state ["live" "not live" "pending"]]]]
    (tables/foreign-key :user-id :users :id)
    (tables/foreign-key :provider-id :providers :id)
