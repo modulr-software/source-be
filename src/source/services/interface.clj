@@ -10,6 +10,8 @@
              [source.services.cadences :as cadences]
              [source.services.baselines :as baselines]
              [source.services.content-types :as content-types]
+             [source.services.categories :as categories]
+             [source.services.feed-categories :as feed-categories]
              [source.services.jobs :as jobs]))
 
 (defn users
@@ -132,6 +134,40 @@
 
 (defn baseline [ds id]
   (baselines/baseline ds id))
+
+(defn insert-category! [ds {:keys [_data _ret] :as opts}]
+  (categories/insert-category! ds opts))
+
+(defn update-category! [ds {:keys [_id _data _where] :as opts}]
+  (categories/update-category! ds opts))
+
+(defn categories
+  ([ds] (categories ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (categories/categories ds opts)))
+
+(defn category [ds {:keys [_id _where] :as opts}]
+  (categories/category ds opts))
+
+(defn feed-categories
+  ([ds] (feed-categories ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (feed-categories/feed-categories ds opts)))
+
+(defn insert-feed-category! [ds {:keys [_data _ret] :as opts}]
+  (feed-categories/insert-feed-category! ds opts))
+
+(defn upsert-feed-categories! [ds {:keys [_data] :as opts}]
+  (feed-categories/upsert-feed-categories! ds opts))
+
+(defn delete-feed-category! [ds {:keys [_id _where] :as opts}]
+  (feed-categories/delete-feed-category! ds opts))
+
+(defn categories-by-feed [ds {:keys [_feed-id _where] :as opts}]
+  (feed-categories/categories-by-feed ds opts))
+
+(defn category-id [ds {:keys [_feed-id _where] :as opts}]
+  (feed-categories/category-id ds opts))
 
 (defn insert-job! [ds {:keys [_data _ret] :as opts}]
   (jobs/insert-job! ds opts))

@@ -76,7 +76,7 @@
    [:content-type-id :integer :not nil]
    [:cadence-id :integer :not nil]
    [:baseline-id :integer :not nil]
-   [:ts-and-cs :text]
+   [:ts-and-cs :integer]
    [:state :text [:check [:in :state ["live" "not live" "pending"]]]]
    (tables/foreign-key :user-id :users :id)
    (tables/foreign-key :provider-id :providers :id)
@@ -91,7 +91,8 @@
    [:feed-id :integer :not nil]
    [:category-id :integer :not nil]
    (tables/foreign-key :feed-id :feeds :id)
-   (tables/foreign-key :category-id :categories :id)))
+   (tables/foreign-key :category-id :categories :id)
+   [[:unique [:composite :feed-id :category-id]]]))
 
 (def providers
   (tables/create-table-sql

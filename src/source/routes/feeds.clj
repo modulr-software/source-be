@@ -21,7 +21,7 @@
                              [:content-type-id :int]
                              [:cadence-id :int]
                              [:baseline-id :int]
-                             [:ts-and-cs [:maybe :string]]
+                             [:ts-and-cs [:maybe :int]]
                              [:state [:enum "live" "not live" "pending"]]]]}}}
 
   [{:keys [ds user] :as _request}]
@@ -38,7 +38,7 @@
                        [:content-type-id :int]
                        [:cadence-id :int]
                        [:baseline-id :int]
-                       [:ts-and-cs {:optional true} :string]]}
+                       [:ts-and-cs {:optional true} :int]]}
    :responses {200 {:body [:map
                            [:id :int]
                            [:title :string]
@@ -52,7 +52,7 @@
                            [:content-type-id :int]
                            [:cadence-id :int]
                            [:baseline-id :int]
-                           [:ts-and-cs [:maybe :string]]
+                           [:ts-and-cs [:maybe :int]]
                            [:state [:enum "live" "not live" "pending"]]]}}}
 
   [{:keys [js ds store user body] :as _request}]

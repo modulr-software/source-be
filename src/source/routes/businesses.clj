@@ -4,11 +4,6 @@
 
 (defn get
   {:summary "get all businesses"
-   :parameters {:body [:map
-                       [:name :string]
-                       [:url {:optional true} :string]
-                       [:linkedin {:optional true} :string]
-                       [:twitter {:optional true} :string]]}
    :responses {200 {:body [:map
                            [:businesses
                             [:map

@@ -50,6 +50,13 @@
            :domain "www.medium.com"
            :content-type-id 3}]})
 
+(def categories-seed
+  {:tname :categories
+   :data [{:name "programming"}
+          {:name "game development"}
+          {:name "languages"}
+          {:name "technology"}]})
+
 (def sectors-seed
   {:tname :sectors
    :data [{:name "renewable energy"}
@@ -86,6 +93,7 @@
     (db/insert! ds-master cadences-seed)
     (db/insert! ds-master content-types-seed)
     (db/insert! ds-master providers-seed)
+    (db/insert! ds-master categories-seed)
     (db/insert! ds-master sectors-seed)
 
     (when (= (conf/read-value :env) "dev")
