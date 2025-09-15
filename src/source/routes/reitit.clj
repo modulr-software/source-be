@@ -11,6 +11,7 @@
             [source.routes.user :as user]
             [source.routes.users :as users]
             [source.routes.me :as me]
+            [source.routes.me-business :as me-business]
             [source.routes.login :as login]
             [source.routes.register :as register]
             [source.routes.google-launch :as google-launch]
@@ -93,7 +94,9 @@
                          :tags #{"me"}
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
-      [""               (route {:get me/get})]]
+      [""               (route {:get me/get
+                                :post me/post})]
+      ["/business"      (route {:post me-business/post})]]
 
      ["/mail"             {:middleware [[mw/apply-auth]]
                            :tags #{"mail"}

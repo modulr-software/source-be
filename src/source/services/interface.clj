@@ -12,7 +12,8 @@
              [source.services.content-types :as content-types]
              [source.services.categories :as categories]
              [source.services.feed-categories :as feed-categories]
-             [source.services.jobs :as jobs]))
+             [source.services.jobs :as jobs]
+             [source.services.businesses :as businesses]))
 
 (defn users
   [& args]
@@ -26,6 +27,17 @@
 
 (defn update-user! [ds {:keys [_id _values _where] :as opts}]
   (users/update-user! ds opts))
+
+(defn businesses
+  ([ds] (businesses ds {}))
+  ([ds opts]
+   (businesses/businesses ds opts)))
+
+(defn insert-business! [ds {:keys [_values _ret] :as opts}]
+  (businesses/insert-business! ds opts))
+
+(defn update-business! [ds {:keys [_id _values _where] :as opts}]
+  (businesses/update-business! ds opts))
 
 (defn login [ds {:keys [_email] :as opts}]
   (auth/login ds opts))
