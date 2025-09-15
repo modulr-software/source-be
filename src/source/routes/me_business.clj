@@ -7,6 +7,7 @@
   {:summary "add business for logged-in user"
    :parameters {:body [:map
                        [:name {:optional true} :string]
+                       [:address {:optional true} :string]
                        [:url {:optional true} :string]
                        [:linkedin {:optional true} :string]
                        [:twitter {:optional true} :string]]}
@@ -19,7 +20,8 @@
       (-> (res/response {:message error})
           (res/status 400))
 
-      (let [business (services/insert-business! ds data)]
+      (let [business (services/insert-business! ds {:data data
+                                                    :ret :1})]
         (services/update-user! ds {:id (:id user)
                                    :data {:business-id (:id business)}})
         (res/response {:message "successfully added business"})))))

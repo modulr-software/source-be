@@ -110,6 +110,7 @@
    :businesses
    (tables/table-id)
    [:name :text]
+   [:address :text [:default nil]]
    [:url :text [:default nil]]
    [:linkedin :text [:default nil]]
    [:twitter :text [:default nil]]))

@@ -9,6 +9,7 @@
                             [:map
                              [:id :int]
                              [:name :string]
+                             [:address [:maybe :string]]
                              [:url [:maybe :string]]
                              [:linkedin [:maybe :string]]
                              [:twitter [:maybe :string]]]]]}}}
