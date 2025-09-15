@@ -13,7 +13,8 @@
              [source.services.categories :as categories]
              [source.services.feed-categories :as feed-categories]
              [source.services.jobs :as jobs]
-             [source.services.businesses :as businesses]))
+             [source.services.businesses :as businesses]
+             [source.services.user-sectors :as user-sectors]))
 
 (defn users
   [& args]
@@ -180,6 +181,23 @@
 
 (defn category-id [ds {:keys [_feed-id _where] :as opts}]
   (feed-categories/category-id ds opts))
+
+(defn user-sectors
+  ([ds] (user-sectors ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (user-sectors/user-sectors ds opts)))
+
+(defn insert-user-sector! [ds {:keys [_data _ret] :as opts}]
+  (user-sectors/insert-user-sector! ds opts))
+
+(defn delete-user-sector! [ds {:keys [_id _where] :as opts}]
+  (user-sectors/delete-user-sector! ds opts))
+
+(defn sectors-by-user [ds {:keys [_sector-id _where] :as opts}]
+  (user-sectors/sectors-by-user ds opts))
+
+(defn sector-id [ds {:keys [_user-id _where] :as opts}]
+  (user-sectors/sector-id ds opts))
 
 (defn insert-job! [ds {:keys [_data _ret] :as opts}]
   (jobs/insert-job! ds opts))

@@ -28,13 +28,13 @@
 (defn post
   {:summary "update logged-in user by access token"
    :parameters {:body [:map
-                       [:address [:maybe :string]]
-                       [:profile-image [:maybe :string]]
-                       [:firstname [:maybe :string]]
-                       [:lastname [:maybe :string]]
-                       [:email-verified [:maybe :int]]
-                       [:onboarded [:maybe :int]]
-                       [:mobile [:maybe :string]]]}
+                       [:address {:optional true} :string]
+                       [:profile-image {:optional true} [:maybe :string]]
+                       [:firstname {:optional true} :string]
+                       [:lastname {:optional true} :string]
+                       [:email-verified {:optional true} :int]
+                       [:onboarded {:optional true} :int]
+                       [:mobile {:optional true} :string]]}
    :responses {200 {:body [:map [:message :string]]}
                400 {:body [:map [:message :string]]}}}
 
@@ -43,5 +43,7 @@
     (if (not success)
       (-> (res/response {:message error})
           (res/status 400))
-      (services/update-user! ds {:id (:id user)
-                                 :data data}))))
+      (do (services/update-user! ds {:id (:id user)
+                                     :data data})
+          (res/response {:message "successfully updated user"})))))
+

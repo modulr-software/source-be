@@ -12,6 +12,7 @@
             [source.routes.users :as users]
             [source.routes.me :as me]
             [source.routes.me-business :as me-business]
+            [source.routes.me-sectors :as me-sectors]
             [source.routes.login :as login]
             [source.routes.register :as register]
             [source.routes.google-launch :as google-launch]
@@ -96,7 +97,8 @@
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get me/get
                                 :post me/post})]
-      ["/business"      (route {:post me-business/post})]]
+      ["/business"      (route {:post me-business/post})]
+      ["/sectors"       (route {:post me-sectors/post})]]
 
      ["/mail"             {:middleware [[mw/apply-auth]]
                            :tags #{"mail"}
