@@ -80,6 +80,8 @@
       :bundles
       :feeds
       :feed-categories
+      :integrations
+      :integration-categories
       :providers
       :businesses
       :user-sectors

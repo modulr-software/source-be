@@ -156,7 +156,30 @@
    [:episode :integer]
    [:content-type-id :integer :not nil]
    [:redacted :integer]
-   [:posted-at :datetime]))
+   [:posted-at :datetime]
+   (tables/foreign-key :feed-id :feeds :id)
+   (tables/foreign-key :creator-id :users :id)
+   (tables/foreign-key :content-type-id :content-types :id)))
+
+(def integrations
+  (tables/create-table-sql
+   :integrations
+   (tables/table-id)
+   [:name :text :not nil]
+   [:content-type-id :integer :not nil]
+   [:bundle-id :integer :not nil]
+   [:ts-and-cs :integer]
+   (tables/foreign-key :content-type-id :content-types :id)
+   (tables/foreign-key :bundle-id :bundles :id)))
+
+(def integration-categories
+  (tables/create-table-sql
+   :integration-categories
+   (tables/table-id)
+   [:integration-id :int :not nil]
+   [:category-id :int :not nil]
+   (tables/foreign-key :integration-id :integrations :id)
+   (tables/foreign-key :category-id :categories :id)))
 
 (def jobs
   (tables/create-table-sql
@@ -197,6 +220,8 @@
   (sql/format bundles)
   (sql/format feeds)
   (sql/format feed-categories)
+  (sql/format integrations)
+  (sql/format integration-categories)
   (sql/format providers)
   (sql/format businesses)
   (sql/format user-sectors)
