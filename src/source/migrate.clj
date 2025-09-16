@@ -3,7 +3,8 @@
             [k16.mallard.store.sqlite :as store]
             [k16.mallard.loader.fs :as loader.fs]
             [next.jdbc :as jdbc]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [source.db.honey :as db]))
 
 ;; This is our interface for running migrations.
 ;;
@@ -16,6 +17,9 @@
 (def ^:private migrations
   (loader.fs/load! "src/source/migrations"))
 
+(def ^:private bundle-migrations
+  (loader.fs/load! "src/source/bundle_migrations"))
+
 (defn run-migrations [args]
   (let [context {:db-master (jdbc/get-datasource {:dbname (db.util/db-path "master") :dbtype "sqlite"})}
         db-migrate (jdbc/get-datasource {:dbname (db.util/db-path "migrate") :dbtype "sqlite"})
@@ -27,6 +31,27 @@
                   :operations migrations}
                  args)))
 
-(defn -main [& args]
-  (run-migrations args))
+(defn run-bundle-migrations [args]
+  (let [db-migrate (jdbc/get-datasource {:dbname (db.util/db-path "migrate") :dbtype "sqlite"})
+        datastore (store/create-datastore
+                   {:db db-migrate
+                    :table-name "bundle_migrations"})
+        ds-master (db.util/conn :master)
+        bundles (try
+                  (db/find ds-master {:tname :bundles
+                                      :ret :*})
+                  (catch Exception _ []))]
+    (run!
+     (fn [{:keys [id]}]
+       (let [db-name (db.util/db-name :bundle id)
+             context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-path db-name)
+                                                       :dbtype "sqlite"})}]
+         (mallard/run {:context context
+                       :store datastore
+                       :operations bundle-migrations}
+                      args)))
+     bundles)))
 
+(defn -main [& args]
+  (run-bundle-migrations args)
+  (run-migrations args))
