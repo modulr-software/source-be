@@ -7,6 +7,7 @@
   {:summary "insert a business"
    :parameters {:body [:map
                        [:name :string]
+                       [:address {:optional true} :string]
                        [:url {:optional true} :string]
                        [:linkedin {:optional true} :string]
                        [:twitter {:optional true} :string]]}
@@ -27,6 +28,7 @@
                                   :description "business id"} :int]]
                 :body [:map
                        [:name :string]
+                       [:address {:optional true} :string]
                        [:url {:optional true} :string]
                        [:linkedin {:optional true} :string]
                        [:twitter {:optional true} :string]]}

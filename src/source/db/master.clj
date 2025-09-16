@@ -14,7 +14,9 @@
    [:onboarded :integer [:default 0]]
    [:address :text]
    [:mobile :text]
-   [:profile-image :text]))
+   [:profile-image :text]
+   [:business-id :int]
+   (tables/foreign-key :business-id :businesses :id)))
 
 (def sectors
   (tables/create-table-sql
@@ -108,6 +110,7 @@
    :businesses
    (tables/table-id)
    [:name :text]
+   [:address :text [:default nil]]
    [:url :text [:default nil]]
    [:linkedin :text [:default nil]]
    [:twitter :text [:default nil]]))
