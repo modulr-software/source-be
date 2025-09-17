@@ -62,7 +62,7 @@
 (defn bundles
   ([ds] (bundles ds {}))
   ([ds {:keys [_where] :as opts}]
-   (bundles/bundles opts ds)))
+   (bundles/bundles ds opts)))
 
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
