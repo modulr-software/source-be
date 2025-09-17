@@ -55,13 +55,26 @@
   (tables/create-table-sql
    :bundles
    (tables/table-id)
+   [:name :text :not nil]
    [:uuid :text :not nil :unique]
    [:user-id :integer]
    [:video :integer :not nil [:default 0]]
    [:podcast :integer :not nil [:default 0]]
    [:blog :integer :not nil [:default 0]]
    [:hash :text]
+   [:content-type-id :integer :not nil]
+   [:ts-and-cs :integer]
+   (tables/foreign-key :content-type-id :content-types :id)
    (tables/foreign-key :user-id :users :id)))
+
+(def bundle-categories
+  (tables/create-table-sql
+   :bundle-categories
+   (tables/table-id)
+   [:bundle-id :int :not nil]
+   [:category-id :int :not nil]
+   (tables/foreign-key :bundle-id :bundles :id)
+   (tables/foreign-key :category-id :categories :id)))
 
 (def feeds
   (tables/create-table-sql
@@ -161,26 +174,6 @@
    (tables/foreign-key :creator-id :users :id)
    (tables/foreign-key :content-type-id :content-types :id)))
 
-(def integrations
-  (tables/create-table-sql
-   :integrations
-   (tables/table-id)
-   [:name :text :not nil]
-   [:content-type-id :integer :not nil]
-   [:bundle-id :integer :not nil]
-   [:ts-and-cs :integer]
-   (tables/foreign-key :content-type-id :content-types :id)
-   (tables/foreign-key :bundle-id :bundles :id)))
-
-(def integration-categories
-  (tables/create-table-sql
-   :integration-categories
-   (tables/table-id)
-   [:integration-id :int :not nil]
-   [:category-id :int :not nil]
-   (tables/foreign-key :integration-id :integrations :id)
-   (tables/foreign-key :category-id :categories :id)))
-
 (def jobs
   (tables/create-table-sql
    :jobs
@@ -218,10 +211,9 @@
   (sql/format categories)
   (sql/format baselines)
   (sql/format bundles)
+  (sql/format bundle-categories)
   (sql/format feeds)
   (sql/format feed-categories)
-  (sql/format integrations)
-  (sql/format integration-categories)
   (sql/format providers)
   (sql/format businesses)
   (sql/format user-sectors)

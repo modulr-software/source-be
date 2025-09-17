@@ -4,7 +4,8 @@
             [k16.mallard.loader.fs :as loader.fs]
             [next.jdbc :as jdbc]
             [source.db.util :as db.util]
-            [source.db.honey :as db]))
+            [source.db.honey :as db]
+            [source.db.tables :as tables]))
 
 ;; This is our interface for running migrations.
 ;;
@@ -37,10 +38,10 @@
                    {:db db-migrate
                     :table-name "bundle_migrations"})
         ds-master (db.util/conn :master)
-        bundles (try
+        bundles (if (some #(= % "bundles") (tables/table-names ds-master))
                   (db/find ds-master {:tname :bundles
                                       :ret :*})
-                  (catch Exception _ []))]
+                  [])]
     (run!
      (fn [{:keys [id]}]
        (let [db-name (db.util/db-name :bundle id)
