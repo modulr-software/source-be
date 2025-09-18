@@ -1,6 +1,9 @@
 (ns source.jobs.handlers
   (:require [source.services.interface :as services]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.services.incoming-posts :as incoming-posts]
+            [source.db.util :as db.util]
+            [clojure.set :as set]))
 
 (defmulti handler
   (fn [opts]
@@ -45,4 +48,52 @@
              (services/insert-incoming-post! ds {:data post})))
          extended-posts))
       (catch Exception _ :fail))))
+
+; run long heuristics and pull the highest scoring incoming posts into the bundle's outgoing posts
+(defmethod handler :update-bundle [_]
+  (fn [{:keys [args ds]}]
+    (println "hello" (get args :bundle-id) args)
+    (let [{:keys [bundle-id categories]} args
+          ds-bundle (db.util/conn :bundle bundle-id)
+          incoming-posts (services/incoming-posts-with-feeds (db.util/conn) {:where [:= :feeds.state "live"]})
+          posts-categories (incoming-posts/categories-by-posts ds {:where [:= :state "live"]})]
+      (run!
+       (fn [post]
+          ; calculate score for post
+          ; determine number of categories matched
+         (let [; get vector of category ids in the given post, e.g. [1 3]
+               post-categories-vec (reduce (fn [acc {:keys [post-id id]}]
+                                             (if (= post-id (:id post))
+                                               (conj acc id)
+                                               acc)) [] posts-categories)
+               ; get vector of category ids in categories to match, e.g. [1 2 3 4]
+               match-categories-vec (reduce (fn [acc {:keys [id]}]
+                                              (conj acc id)) [] categories)
+               ; get number of matches between the 2 vectors, e.g. #{1 3} intersect #{1 2 3 4} -> (count #{1 3}) -> 2
+               matches (count (set/intersection (set post-categories-vec)
+                                                (set match-categories-vec)))]
+            ; use matches as a score and upsert long-heuristic for this post
+           (services/upsert-post-heuristics! ds-bundle {:data [{:post-id (:id post)
+                                                                :long-heuristic matches}]})))
+       incoming-posts)
+
+      ; pull highest scored posts by long heuristics into outgoing posts
+      (let [; top 30 post-heuristics records ordered by long heuristic in descending order
+            top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
+                                                                    {:heuristic :long-heuristic
+                                                                     :limit 30})
+            ; convert into a vector of id numbers
+            ids (reduce (fn [acc {:keys [id]}]
+                          (conj acc id)) [] top-by-long-heuristics)
+
+            ; get all incoming posts with the above id numbers
+            posts-in (services/incoming-posts ds {:where [:in :id ids]})
+            ; remove redacted posts
+            outgoing-posts (reduce (fn [acc {:keys [redacted] :as post}]
+                                     (if (:= redacted 0)
+                                       (conj acc (dissoc post :redacted))
+                                       acc))
+                                   [] posts-in)]
+        (when (seq posts-in)
+          (services/upsert-outgoing-posts! ds-bundle {:data outgoing-posts}))))))
 
