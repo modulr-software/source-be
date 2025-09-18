@@ -27,7 +27,8 @@
    [:posted-at :datetime]
    (tables/foreign-key :feed-id :feeds :id)
    (tables/foreign-key :creator-id :users :id)
-   (tables/foreign-key :content-type-id :content-types :id)))
+   (tables/foreign-key :content-type-id :content-types :id)
+   [[:unique [:composite :post-id]]]))
 
 (def post-heuristics
   (tables/create-table-sql
@@ -35,7 +36,8 @@
    (tables/table-id)
    [:post-id :integer :not nil]
    [:long-heuristic :integer]
-   [:short-heuristic :integer]))
+   [:short-heuristic :integer]
+   [[:unique [:composite :post-id]]]))
 
 (def analytics
   (tables/create-table-sql
