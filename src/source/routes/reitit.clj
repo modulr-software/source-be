@@ -152,9 +152,9 @@
      ["/baselines"      {:tags #{"baselines"}}
       [""               (route {:get baselines/get})]]
 
-     ["/content-types"  {:tags #{"content types"}}
-      [""               {:get content-types/get}]
-      ["/:id"           {:get content-type/get}]]
+     ["/contentTypes"  {:tags #{"content types"}}
+      [""               (route {:get content-types/get})]
+      ["/:id"           (route {:get content-type/get})]]
 
      ["/integrations"   {:middleware [[mw/apply-auth]]
                          :tags #{"integrations"}}
