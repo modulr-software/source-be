@@ -30,6 +30,15 @@
    (tables/foreign-key :content-type-id :content-types :id)
    [[:unique [:composite :post-id]]]))
 
+(def bundle-categories
+  (tables/create-table-sql
+   :bundle-categories
+   (tables/table-id)
+   [:bundle-id :int :not nil]
+   [:category-id :int :not nil]
+   (tables/foreign-key :bundle-id :bundles :id)
+   (tables/foreign-key :category-id :categories :id)))
+
 (def post-heuristics
   (tables/create-table-sql
    :post-heuristics
@@ -50,6 +59,7 @@
 (comment
   (sql/format event-categories)
   (sql/format outgoing-posts)
+  (sql/format bundle-categories)
   (sql/format post-heuristics)
   (sql/format analytics)
   ())

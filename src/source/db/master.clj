@@ -67,15 +67,6 @@
    (tables/foreign-key :content-type-id :content-types :id)
    (tables/foreign-key :user-id :users :id)))
 
-(def bundle-categories
-  (tables/create-table-sql
-   :bundle-categories
-   (tables/table-id)
-   [:bundle-id :int :not nil]
-   [:category-id :int :not nil]
-   (tables/foreign-key :bundle-id :bundles :id)
-   (tables/foreign-key :category-id :categories :id)))
-
 (def feeds
   (tables/create-table-sql
    :feeds
@@ -211,7 +202,6 @@
   (sql/format categories)
   (sql/format baselines)
   (sql/format bundles)
-  (sql/format bundle-categories)
   (sql/format feeds)
   (sql/format feed-categories)
   (sql/format providers)

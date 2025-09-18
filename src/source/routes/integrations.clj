@@ -4,7 +4,8 @@
             [source.util :as utils]
             [source.migrate :as migrate]
             [congest.jobs :as congest]
-            [source.jobs.core :as jobs]))
+            [source.jobs.core :as jobs]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "get all integrations"
@@ -45,14 +46,16 @@
                                                        {:user-id (:id user)
                                                         :uuid (utils/uuid)})
                                                 :ret :1})
-        update-data (reduce (fn [acc {:keys [id]}]
-                              (conj acc {:bundle-id (:id new-bundle)
-                                         :category-id id})) [] (:categories body))
+        bundle-categories (reduce (fn [acc {:keys [id]}]
+                                    (conj acc {:bundle-id (:id new-bundle)
+                                               :category-id id})) [] (:categories body))
+        _ (migrate/migrate-bundle (:id new-bundle) ["up"])
         ; insert bundle categories
-        _ (services/insert-bundle-category! ds {:data update-data})
-        categories-by-bundle (services/categories-by-bundle ds {:bundle-id (:id new-bundle)})]
-
-    (migrate/migrate-bundle (:id new-bundle) ["up"])
+        bundle-ds (db.util/conn :bundle (:id new-bundle))
+        _ (services/insert-bundle-category! bundle-ds {:data bundle-categories})
+        category-ids (services/category-id-by-bundle bundle-ds {:bundle-id (:id new-bundle)})
+        id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
+        categories-by-bundle (services/categories ds {:where [:in :id id-vec]})]
 
     (->> (jobs/prepare-congest-metadata
           ds
@@ -72,4 +75,3 @@
          (congest/register! js))
 
     (res/response {:message "successfully added integration"})))
-

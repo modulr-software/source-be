@@ -8,6 +8,7 @@
      ds-bundle
      :source.db.bundle
      [:outgoing-posts
+      :bundle-categories
       :post-heuristics
       :analytics
       :event-categories])))
@@ -17,6 +18,7 @@
     (tables/drop-tables!
      ds-bundle
      [:outgoing-posts
+      :bundle-categories
       :post-heuristics
       :analytics
       :event-categories])))

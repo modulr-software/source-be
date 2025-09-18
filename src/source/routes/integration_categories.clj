@@ -1,6 +1,7 @@
 (ns source.routes.integration-categories
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "get all categories belonging to the integration with the given id"
@@ -9,13 +10,14 @@
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
-                            [:name :string]
-                            [:bundle-id :int]
-                            [:category-id :int]]]}}}
+                            [:name :string]]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (->> (services/categories-by-bundle ds {:bundle-id (:id path-params)})
-       (res/response)))
+  (let [bundle-ds (db.util/conn :bundle (:id path-params))
+        category-ids (services/category-id-by-bundle bundle-ds {:bundle-id (:id path-params)})
+        id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
+        categories (services/categories ds {:where [:in :id id-vec]})]
+    (res/response categories)))
 
 (defn post
   {:summary "update categories belonging to the integration with the given id"
