@@ -4,6 +4,7 @@
              [source.services.auth :as auth]
              [source.services.xml-schemas :as xml]
              [source.services.bundles :as bundles]
+             [source.services.bundle-categories :as bundle-categories]
              [source.services.providers :as providers]
              [source.services.feeds :as feeds]
              [source.services.incoming-posts :as incoming-posts]
@@ -52,8 +53,36 @@
 (defn selection-schema [ds {:keys [_id] :as opts}]
   (xml/selection-schema ds opts))
 
+(defn insert-bundle! [ds {:keys [_values _ret] :as opts}]
+  (bundles/insert-bundle! ds opts))
+
+(defn update-bundle! [ds {:keys [_id _data _where] :as opts}]
+  (bundles/update-bundle! ds opts))
+
+(defn bundles
+  ([ds] (bundles ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (bundles/bundles ds opts)))
+
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
+
+(defn bundle-categories
+  ([ds] (bundle-categories ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (bundle-categories/bundle-categories ds opts)))
+
+(defn insert-bundle-category! [ds {:keys [_data _ret] :as opts}]
+  (bundle-categories/insert-bundle-category! ds opts))
+
+(defn delete-bundle-category! [ds {:keys [_id _where] :as opts}]
+  (delete-bundle-category! ds opts))
+
+(defn categories-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
+  (bundle-categories/categories-by-bundle ds opts))
+
+(defn category-id-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
+  (bundle-categories/category-id ds opts))
 
 (defn selection-schemas
   ([ds]
@@ -179,7 +208,7 @@
 (defn categories-by-feed [ds {:keys [_feed-id _where] :as opts}]
   (feed-categories/categories-by-feed ds opts))
 
-(defn category-id [ds {:keys [_feed-id _where] :as opts}]
+(defn category-id-by-feed [ds {:keys [_feed-id _where] :as opts}]
   (feed-categories/category-id ds opts))
 
 (defn user-sectors

@@ -78,6 +78,7 @@
       :cadences
       :baselines
       :bundles
+      :bundle-categories
       :feeds
       :feed-categories
       :providers
