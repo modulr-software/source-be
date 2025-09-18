@@ -11,6 +11,7 @@
   {:summary "get all integrations"
    :responses {200 {:body [:vector
                            [:map
+                            [:id :int]
                             [:name :string]
                             [:uuid :string]
                             [:user-id :int]

@@ -7,6 +7,7 @@
    :parameters {:path [:map [:id {:title "id"
                                   :description "integration id"} :int]]}
    :responses {200 {:body [:map
+                           [:id :int]
                            [:name :string]
                            [:uuid :string]
                            [:user-id :int]
