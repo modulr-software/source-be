@@ -5,9 +5,11 @@
              [source.services.xml-schemas :as xml]
              [source.services.bundles :as bundles]
              [source.services.bundle-categories :as bundle-categories]
+             [source.services.post-heuristics :as post-heuristics]
              [source.services.providers :as providers]
              [source.services.feeds :as feeds]
              [source.services.incoming-posts :as incoming-posts]
+             [source.services.outgoing-posts :as outgoing-posts]
              [source.services.cadences :as cadences]
              [source.services.baselines :as baselines]
              [source.services.content-types :as content-types]
@@ -84,6 +86,29 @@
 (defn category-id-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
   (bundle-categories/category-id ds opts))
 
+(defn insert-post-heuristics! [ds {:keys [_data] :as opts}]
+  (post-heuristics/insert-post-heuristics! ds opts))
+
+(defn update-post-heuristics! [ds {:keys [_id _data _where] :as opts}]
+  (post-heuristics/update-post-heuristics! ds opts))
+
+(defn post-heuristics
+  ([ds] (post-heuristics ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (post-heuristics/post-heuristics ds opts)))
+
+(defn upsert-post-heuristics! [ds {:keys [_data] :as opts}]
+  (post-heuristics/upsert-post-heuristics! ds opts))
+
+(defn post-heuristic [ds {:keys [_id _where] :as opts}]
+  (post-heuristics/post-heuristic ds opts))
+
+(defn top-posts-by-heuristic [ds {:keys [_select _limit _heuristic] :as opts}]
+  (post-heuristics/top-posts-by-heuristic ds opts))
+
+(defn upsert-outgoing-posts! [ds {:keys [_data] :as opts}]
+  (outgoing-posts/upsert-outgoing-posts! ds opts))
+
 (defn selection-schemas
   ([ds]
    (selection-schemas ds {}))
@@ -155,6 +180,10 @@
    (incoming-posts/incoming-posts ds))
   ([ds {:keys [_where] :as opts}]
    (incoming-posts/incoming-posts ds opts)))
+
+(defn incoming-posts-with-feeds
+  [ds {:keys [_where] :as opts}]
+  (incoming-posts/incoming-posts-with-feeds ds opts))
 
 (defn incoming-post [ds id]
   (incoming-posts/incoming-post ds id))

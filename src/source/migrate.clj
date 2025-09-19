@@ -32,26 +32,25 @@
                   :operations migrations}
                  args)))
 
-(defn run-bundle-migrations [args]
-  (let [db-migrate (jdbc/get-datasource {:dbname (db.util/db-path "migrate") :dbtype "sqlite"})
+(defn migrate-bundle [bundle-id args]
+  (let [db-name (db.util/db-name :bundle bundle-id)
+        context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-path db-name)
+                                                  :dbtype "sqlite"})}
         datastore (store/create-datastore
-                   {:db db-migrate
-                    :table-name "bundle_migrations"})
-        ds-master (db.util/conn :master)
+                   {:db (:db-bundle context)
+                    :table-name "migrations"})]
+    (mallard/run {:context context
+                  :store datastore
+                  :operations bundle-migrations}
+                 args)))
+
+(defn run-bundle-migrations [args]
+  (let [ds-master (db.util/conn :master)
         bundles (if (some #(= % "bundles") (tables/table-names ds-master))
                   (db/find ds-master {:tname :bundles
                                       :ret :*})
                   [])]
-    (run!
-     (fn [{:keys [id]}]
-       (let [db-name (db.util/db-name :bundle id)
-             context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-path db-name)
-                                                       :dbtype "sqlite"})}]
-         (mallard/run {:context context
-                       :store datastore
-                       :operations bundle-migrations}
-                      args)))
-     bundles)))
+    (run! #(migrate-bundle (:id %) args) bundles)))
 
 (defn -main [& args]
   (run-bundle-migrations args)

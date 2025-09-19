@@ -40,6 +40,6 @@
         :where (if (some? bundle-id)
                  [:= :bundle-id bundle-id]
                  where)
-        :ret :1}
+        :ret :*}
        (merge opts)
        (db/find ds)))

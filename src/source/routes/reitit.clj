@@ -38,6 +38,9 @@
             [source.routes.feeds :as feeds]
             [source.routes.feed :as feed]
             [source.routes.feed-categories :as feed-categories]
+            [source.routes.integrations :as integrations]
+            [source.routes.integration :as integration]
+            [source.routes.integration-categories :as integration-categories]
             [source.routes.posts :as posts]
             [source.routes.admin-feeds :as admin-feeds]
             [source.routes.xml :as xml]
@@ -149,9 +152,18 @@
      ["/baselines"      {:tags #{"baselines"}}
       [""               (route {:get baselines/get})]]
 
-     ["/content-types"  {:tags #{"content types"}}
-      [""               {:get content-types/get}]
-      ["/:id"           {:get content-type/get}]]
+     ["/contentTypes"  {:tags #{"content types"}}
+      [""               (route {:get content-types/get})]
+      ["/:id"           (route {:get content-type/get})]]
+
+     ["/integrations"   {:middleware [[mw/apply-auth]]
+                         :tags #{"integrations"}}
+      [""               (route {:get integrations/get
+                                :post integrations/post})]
+      ["/:id"
+       [""              (route {:get integration/get})]
+       ["/categories"   (route {:get integration-categories/get
+                                :post integration-categories/post})]]]
 
      ["/feeds"          {:middleware [[mw/apply-auth]]
                          :tags #{"feeds"}}

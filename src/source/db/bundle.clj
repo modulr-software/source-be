@@ -27,7 +27,17 @@
    [:posted-at :datetime]
    (tables/foreign-key :feed-id :feeds :id)
    (tables/foreign-key :creator-id :users :id)
-   (tables/foreign-key :content-type-id :content-types :id)))
+   (tables/foreign-key :content-type-id :content-types :id)
+   [[:unique [:composite :post-id]]]))
+
+(def bundle-categories
+  (tables/create-table-sql
+   :bundle-categories
+   (tables/table-id)
+   [:bundle-id :int :not nil]
+   [:category-id :int :not nil]
+   (tables/foreign-key :bundle-id :bundles :id)
+   (tables/foreign-key :category-id :categories :id)))
 
 (def post-heuristics
   (tables/create-table-sql
@@ -35,7 +45,8 @@
    (tables/table-id)
    [:post-id :integer :not nil]
    [:long-heuristic :integer]
-   [:short-heuristic :integer]))
+   [:short-heuristic :integer]
+   [[:unique [:composite :post-id]]]))
 
 (def analytics
   (tables/create-table-sql
@@ -48,6 +59,7 @@
 (comment
   (sql/format event-categories)
   (sql/format outgoing-posts)
+  (sql/format bundle-categories)
   (sql/format post-heuristics)
   (sql/format analytics)
   ())

@@ -8,10 +8,17 @@
      ds-bundle
      :source.db.bundle
      [:outgoing-posts
+      :bundle-categories
       :post-heuristics
       :analytics
       :event-categories])))
 
 (defn run-down! [context]
   (let [ds-bundle (:db-bundle context)]
-    (tables/drop-all-tables! ds-bundle)))
+    (tables/drop-tables!
+     ds-bundle
+     [:outgoing-posts
+      :bundle-categories
+      :post-heuristics
+      :analytics
+      :event-categories])))
