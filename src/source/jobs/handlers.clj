@@ -52,7 +52,6 @@
 ; run long heuristics and pull the highest scoring incoming posts into the bundle's outgoing posts
 (defmethod handler :update-bundle [_]
   (fn [{:keys [args ds]}]
-    (println "hello" (get args :bundle-id) args)
     (let [{:keys [bundle-id categories]} args
           ds-bundle (db.util/conn :bundle bundle-id)
           incoming-posts (services/incoming-posts-with-feeds (db.util/conn) {:where [:= :feeds.state "live"]})

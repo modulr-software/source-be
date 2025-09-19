@@ -24,8 +24,8 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [ds] :as _request}]
-  (res/response (services/bundles ds)))
+  [{:keys [ds user] :as _request}]
+  (res/response (services/bundles ds {:where [:= :user-id (:id user)]})))
 
 (defn post
   {:summary "add an integration"
@@ -62,10 +62,10 @@
           ds
           store
           {:id (str "bundle_" (:id new-bundle))
-           :initial-delay #_(* 1000 60 60 24) 0
+           :initial-delay (* 1000 60 60 24)
            :auto-start true
            :stop-after-fail false,
-           :interval #_(* 1000 60 60 24) (* 1000 60)
+           :interval (* 1000 60 60 24)
            :recurring? true
            :ds ds
            :args {:bundle-id (:id new-bundle)
