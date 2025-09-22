@@ -49,15 +49,16 @@
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
-          bundle-uuid (get-in request [:query-params "uuid"])]
-
-      (if (db/exists? ds {:tname :bundles
-                          :where [:= :uuid bundle-uuid]})
-        (handler request)
-
+          bundle-uuid (get-in request [:query-params "uuid"])
+          {:keys [id]} (db/find-one ds {:tname :bundles
+                                        :where [:= :uuid bundle-uuid]})]
+      (if (some? id)
+        (-> request
+            (assoc :bundle-id id)
+            (handler))
         (->
-         (res/response {:message "Unauthorized"})
-         (res/status 403))))))
+         (res/response {:message "The bundle you are looking for does not exist"})
+         (res/status 404))))))
 
 (comment
   (let [authed-request {:headers {"Authorization"
@@ -89,18 +90,20 @@
 
   (require '[source.util :as utils])
   (let [garbage-request {:query-params {"uuid" "garbage"}}
+        ds (db.util/conn)
         uuid (utils/uuid)
         bundle-request {:query-params {"uuid" uuid}}
         test-handler (-> (fn [request]
                            request)
                          (wrap-bundle-id))]
-
-    (bundles/insert-bundle! (db.util/conn :master) {:data {:uuid uuid
+    (bundles/insert-bundle! (db.util/conn :master) {:data {:name (str "test-bundle-" uuid)
+                                                           :uuid uuid
+                                                           :content-type-id 1
                                                            :video 0
                                                            :podcast 0
                                                            :blog 0}})
     (assert (=
-             403
+             404
              (-> garbage-request
                  (test-handler)
                  (:status))))
@@ -110,6 +113,10 @@
              (-> bundle-request
                  (test-handler)
                  (:bundle-id))))
-    (println "tests passed"))
-  ())
+    (println "tests passed")
+    (db/delete! ds
+             {:tname :bundles
+              :where [:like :name "test-bundle-%"]
+              :ret :*}))
 
+  ())
