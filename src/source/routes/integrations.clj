@@ -37,7 +37,17 @@
                                      [:map
                                       [:id :int]
                                       [:name :string]]]]]}
-   :responses {201 {:body [:map [:message :string]]}
+   :responses {201 {:body [:map
+                           [:id :int]
+                           [:name :string]
+                           [:uuid :string]
+                           [:user-id :int]
+                           [:video :int]
+                           [:podcast :int]
+                           [:blog :int]
+                           [:hash {:optional true} [:maybe :string]]
+                           [:content-type-id :int]
+                           [:ts-and-cs {:optional true} :int]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
@@ -62,7 +72,7 @@
           ds
           store
           {:id (str "bundle_" (:id new-bundle))
-           :initial-delay (* 1000 60 60 24)
+           :initial-delay 0
            :auto-start true
            :stop-after-fail false,
            :interval (* 1000 60 60 24)
@@ -75,4 +85,4 @@
            :sleep false})
          (congest/register! js))
 
-    (res/response {:message "successfully added integration"})))
+    (res/response new-bundle)))

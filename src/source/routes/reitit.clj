@@ -161,7 +161,8 @@
       [""               (route {:get integrations/get
                                 :post integrations/post})]
       ["/:id"
-       [""              (route {:get integration/get})]
+       [""              (route {:get integration/get
+                                :post integration/post})]
        ["/categories"   (route {:get integration-categories/get
                                 :post integration-categories/post})]]]
 

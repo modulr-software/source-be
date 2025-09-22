@@ -94,7 +94,7 @@
           [:br] [:br]
           "Click on the link below to go to your dashboard and view your feed."]]
         (button {:text "View your feed"
-                 :redirect (str (conf/read-value :cors-origin) "/dashboard/feeds/" feed-id)})
+                 :redirect (str (conf/read-value :cors-origin) "/dashboard/feed/" feed-id)})
         [:tr
          [:td {:class "body"
                :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
