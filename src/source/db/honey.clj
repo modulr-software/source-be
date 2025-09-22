@@ -29,10 +29,12 @@
   clause follows the same data DSL as honeysql. Automatically transforms kebab
   case keys into snake case for sql. e.g. :provider-id becomes \"provider_id\"
   when honey sql prepares the statement in execute!"
-  [ds {:keys [tname where ret]}]
+  [ds {:keys [tname where order-by limit ret]}]
   (execute! ds
             (-> (hsql/select :*)
                 (hsql/from (csk/->snake_case_keyword tname))
+                (merge (if (some? order-by) {:order-by order-by} {}))
+                (merge (if (some? limit) (hsql/limit limit) {}))
                 (hsql/where
                  (or (cske/transform-keys
                       csk/->snake_case_keyword where)
@@ -98,21 +100,23 @@
 
   (def ds (db.util/conn :master))
 
-  (find ds {:tname :users
-            :ret :1})
+  (find ds {:tname :incoming-posts
+            :limit 5
+            :order-by [[:id :asc]]
+            :ret :*})
 
   (insert! ds {:tname :sectors
                :values {:name "something"}
                :ret :*})
 
   (delete! ds
-           {:tname :sectors
-            :where [:> :id 3]
+           {:tname :feeds
+            :where [:= :id 6]
             :ret :*})
 
   (update! ds
-           {:tname :sectors
-            :where [:= :id 7]
-            :values {:name "something else"}})
+           {:tname :users
+            :where [:= :id 3]
+            :values {:type "creator"}})
 
   ())
