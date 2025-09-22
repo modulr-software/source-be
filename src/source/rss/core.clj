@@ -7,6 +7,21 @@
   [xml]
   (-> xml h/parse h/as-hickory))
 
+(def cdata-prefix (count "<![CDATA["))
+(def cdata-postfix (count "]]>"))
+
+(defn cdata-content [cdata-node]
+  (let [front-removed (subs cdata-node cdata-prefix)]
+    (subs front-removed 0 (- (count front-removed) cdata-postfix))))
+
+(defn unwrap-cdata [maybe-cdata-node]
+  (if (and
+       (string? maybe-cdata-node)
+       (> (count maybe-cdata-node) 9)
+       (= (subs maybe-cdata-node 0 9) "<![CDATA["))
+    (cdata-content maybe-cdata-node)
+    maybe-cdata-node))
+
 (defn collect-leaf-paths
   "This function does a DFS on a hickory tree and assigns paths to each node relative to the root and
   then returns the ast with paths.
@@ -67,8 +82,8 @@
       (-> (:attrs node)
           (get seg-val))
 
-      (-> (:content node)
-          (get (Integer/parseInt (name seg-val)))))))
+      (unwrap-cdata (-> (:content node)
+                        (get (Integer/parseInt (name seg-val))))))))
 
 (defn extract-data
   "Recursively extracts data from a hickory xml tree according to the input selection schema.
