@@ -7,9 +7,12 @@
   [xml]
   (-> xml h/parse h/as-hickory))
 
+(def cdata-prefix (count "<![CDATA["))
+(def cdata-postfix (count "]]>"))
+
 (defn cdata-content [cdata-node]
-  (let [front-removed (subs cdata-node 9)]
-    (subs front-removed 0 (- (count front-removed) 3))))
+  (let [front-removed (subs cdata-node cdata-prefix)]
+    (subs front-removed 0 (- (count front-removed) cdata-postfix))))
 
 (defn unwrap-cdata [maybe-cdata-node]
   (if (and
