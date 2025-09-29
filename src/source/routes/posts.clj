@@ -14,6 +14,7 @@
                             [:creator-id :int]
                             [:content-type-id :int]
                             [:title :string]
+                            [:thumbnail [:maybe :string]]
                             [:info [:maybe :string]]
                             [:url [:maybe :string]]
                             [:stream-url [:maybe :string]]
