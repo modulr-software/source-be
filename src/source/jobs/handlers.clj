@@ -60,8 +60,8 @@
        (fn [post]
           ; calculate score for post
           ; determine number of categories matched
-         (let [; get vector of category ids in the given post, e.g. [1 3]
-               post-categories-vec (reduce (fn [acc {:keys [post-id id]}]
+              ; get vector of category ids in the given post, e.g. [1 3]
+         (let [post-categories-vec (reduce (fn [acc {:keys [post-id id]}]
                                              (if (= post-id (:id post))
                                                (conj acc id)
                                                acc)) [] posts-categories)
@@ -77,13 +77,12 @@
        incoming-posts)
 
       ; pull highest scored posts by long heuristics into outgoing posts
-      (let [; top 30 post-heuristics records ordered by long heuristic in descending order
-            top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
+            ; top 30 post-heuristics records ordered by long heuristic in descending order
+      (let [top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
                                                                     {:heuristic :long-heuristic
-                                                                     :limit 30})
+                                                                     :limit 100})
             ; convert into a vector of id numbers
-            ids (reduce (fn [acc {:keys [id]}]
-                          (conj acc id)) [] top-by-long-heuristics)
+            ids (mapv (fn [{:keys [post-id]}] post-id) top-by-long-heuristics)
 
             ; get all incoming posts with the above id numbers
             posts-in (services/incoming-posts ds {:where [:in :id ids]})
@@ -95,4 +94,3 @@
                                    [] posts-in)]
         (when (seq posts-in)
           (services/upsert-outgoing-posts! ds-bundle {:data outgoing-posts}))))))
-
