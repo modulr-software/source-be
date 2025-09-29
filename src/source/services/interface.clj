@@ -106,6 +106,14 @@
 (defn top-posts-by-heuristic [ds {:keys [_select _limit _heuristic] :as opts}]
   (post-heuristics/top-posts-by-heuristic ds opts))
 
+(defn outgoing-posts
+  ([ds] (outgoing-posts ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (outgoing-posts/outgoing-posts ds opts)))
+
+(defn outgoing-post [ds {:keys [_id _where] :as opts}]
+  (outgoing-posts/outgoing-post ds opts))
+
 (defn upsert-outgoing-posts! [ds {:keys [_data] :as opts}]
   (outgoing-posts/upsert-outgoing-posts! ds opts))
 

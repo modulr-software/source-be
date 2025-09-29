@@ -3,6 +3,15 @@
             [source.db.honey :as hon]
             [honey.sql.helpers :as hsql]))
 
+(defn outgoing-posts
+  ([ds] (outgoing-posts ds {}))
+  ([ds {:keys [where] :as opts}]
+   (->> {:tname :outgoing-posts
+         :where where
+         :ret :*}
+        (merge opts)
+        (db/find ds))))
+
 (defn outgoing-post [ds {:keys [id where] :as opts}]
   (->> {:tname :outgoing-posts
         :where (if (some? id)
@@ -20,6 +29,7 @@
        (assoc :on-conflict [:post-id])
        (assoc :do-update-set {:feed-id          :excluded.feed-id
                               :title            :excluded.title
+                              :thumbnail        :excluded.thumbnail
                               :info             :excluded.info
                               :url              :excluded.url
                               :stream-url       :excluded.stream-url
