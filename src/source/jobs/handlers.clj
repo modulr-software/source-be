@@ -77,7 +77,7 @@
        incoming-posts)
 
       ; pull highest scored posts by long heuristics into outgoing posts
-            ; top 30 post-heuristics records ordered by long heuristic in descending order
+            ; top 100 post-heuristics records ordered by long heuristic in descending order
       (let [top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
                                                                     {:heuristic :long-heuristic
                                                                      :limit 100})
