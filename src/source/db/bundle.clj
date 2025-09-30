@@ -17,6 +17,7 @@
    [:post-id :text :not nil]
    [:feed-id :integer :not nil]
    [:title :text :not nil]
+   [:thumbnail :text]
    [:info :text]
    [:url :text]
    [:stream-url :text]

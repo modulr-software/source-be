@@ -41,6 +41,8 @@
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
             [source.routes.integration-categories :as integration-categories]
+            [source.routes.bundle-posts :as bundle-posts]
+            [source.routes.bundle-post :as bundle-post]
             [source.routes.posts :as posts]
             [source.routes.admin-feeds :as admin-feeds]
             [source.routes.xml :as xml]
@@ -176,6 +178,12 @@
        ["/posts"        (route {:get posts/get})]
        ["/categories"   (route {:get feed-categories/get
                                 :post feed-categories/post})]]]
+
+     ["/bundles"        {:middleware [[mw/apply-bundle]]
+                         :tags #{"bundles"}}
+      ["/posts"
+       [""              (route {:get bundle-posts/get})]
+       ["/:id"          (route {:get bundle-post/get})]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                  :tags #{"admin"}

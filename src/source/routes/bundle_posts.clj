@@ -1,11 +1,15 @@
-(ns source.routes.posts
+(ns source.routes.bundle-posts
   (:require [source.services.interface :as services]
+            [source.db.util :as db.util]
+            [clojure.walk :as walk]
             [ring.util.response :as res]))
 
 (defn get
-  {:summary "get all posts by feed id"
-   :parameters {:path [:map [:id {:title "id"
-                                  :description "feed id"} :int]]}
+  {:summary "get all outgoing posts in the uuid-authorized bundle"
+   :parameters {:query [:map
+                        [:uuid :string]
+                        [:limit :int]
+                        [:start :int]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
@@ -22,9 +26,12 @@
                             [:episode [:maybe :int]]
                             [:redacted [:maybe :int]]
                             [:posted-at [:maybe :string]]]]}
-               401 {:body [:map [:message :string]]}
-               403 {:body [:map [:message :string]]}}}
+               404 {:body [:map [:message :string]]}}}
 
-  [{:keys [ds path-params] :as _request}]
-  (-> (services/incoming-posts ds {:where [:= :feed-id (:id path-params)]})
-      (res/response)))
+  [{:keys [bundle-id query-params] :as _request}]
+  (let [bundle-ds (db.util/conn :bundle bundle-id)
+        {:keys [limit start]} (walk/keywordize-keys query-params)]
+    (res/response (services/outgoing-posts bundle-ds {:where (when start [:>= :id start])
+                                                      :limit limit
+                                                      :order-by [[:id :asc]]}))))
+
