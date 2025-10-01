@@ -8,8 +8,8 @@
   {:summary "get all outgoing posts in the uuid-authorized bundle"
    :parameters {:query [:map
                         [:uuid :string]
-                        [:limit :int]
-                        [:start :int]]}
+                        [:limit {:optional true} :int]
+                        [:start {:optional true} :int]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
@@ -24,9 +24,9 @@
                             [:stream-url [:maybe :string]]
                             [:season [:maybe :int]]
                             [:episode [:maybe :int]]
-                            [:redacted [:maybe :int]]
+                            [:redacted {:optional true} [:maybe :int]]
                             [:posted-at [:maybe :string]]]]}
-               404 {:body [:map [:message :string]]}}}
+               404 {:boy [:map [:message :string]]}}}
 
   [{:keys [bundle-id query-params] :as _request}]
   (let [bundle-ds (db.util/conn :bundle bundle-id)
@@ -34,4 +34,3 @@
     (res/response (services/outgoing-posts bundle-ds {:where (when start [:>= :id start])
                                                       :limit limit
                                                       :order-by [[:id :asc]]}))))
-
