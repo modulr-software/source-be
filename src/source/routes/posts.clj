@@ -20,7 +20,7 @@
                             [:stream-url [:maybe :string]]
                             [:season [:maybe :int]]
                             [:episode [:maybe :int]]
-                            [:redacted [:maybe :int]]
+                            [:redacted {:optional true} [:maybe :int]]
                             [:posted-at [:maybe :string]]]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}

@@ -41,6 +41,8 @@
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
             [source.routes.integration-categories :as integration-categories]
+            [source.routes.bundle :as bundle]
+            [source.routes.bundle-feeds :as bundle-feeds]
             [source.routes.bundle-posts :as bundle-posts]
             [source.routes.bundle-post :as bundle-post]
             [source.routes.posts :as posts]
@@ -179,8 +181,10 @@
        ["/categories"   (route {:get feed-categories/get
                                 :post feed-categories/post})]]]
 
-     ["/bundles"        {:middleware [[mw/apply-bundle]]
+     ["/bundle"        {:middleware [[mw/apply-bundle]]
                          :tags #{"bundles"}}
+      [""               (route {:get bundle/get})]
+      ["/feeds"         (route {:get bundle-feeds/get})]
       ["/posts"
        [""              (route {:get bundle-posts/get})]
        ["/:id"          (route {:get bundle-post/get})]]]
