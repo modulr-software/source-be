@@ -5,7 +5,9 @@
 
 (defn get
   {:summary "get a single outgoing post in the uuid-authorized bundle by post id"
-   :parameters {:query [:map [:uuid :string]]
+   :parameters {:query [:map
+                        [:uuid :string]
+                        [:key :string]]
                 :path [:map [:id {:title "id"
                                   :description "post id"} :int]]}
    :responses {200 {:body [:map

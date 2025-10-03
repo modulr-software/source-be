@@ -8,6 +8,7 @@
   {:summary "get all outgoing posts in the uuid-authorized bundle"
    :parameters {:query [:map
                         [:uuid :string]
+                        [:key :string]
                         [:limit {:optional true} :int]
                         [:start {:optional true} :int]]}
    :responses {200 {:body [:vector

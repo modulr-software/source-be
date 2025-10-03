@@ -4,7 +4,9 @@
 
 (defn get
   {:summary "get bundle metadata by authorized uuid"
-   :parameters {:query [:map [:uuid :string]]}
+   :parameters {:query [:map 
+                        [:uuid :string]
+                        [:key :string]]}
    :responses {200 {:body [:map
                            [:id :int]
                            [:name :string]

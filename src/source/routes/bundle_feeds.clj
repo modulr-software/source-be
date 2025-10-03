@@ -5,7 +5,9 @@
 
 (defn get
   {:summary "get all feeds present in the bundle authorised by uuid"
-   :parameters {:query [:map [:uuid :string]]}
+   :parameters {:query [:map
+                        [:uuid :string]
+                        [:key :string]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
