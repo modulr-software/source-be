@@ -41,6 +41,7 @@
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
             [source.routes.integration-categories :as integration-categories]
+            [source.routes.integration-key :as integration-key]
             [source.routes.bundle :as bundle]
             [source.routes.bundle-feeds :as bundle-feeds]
             [source.routes.bundle-posts :as bundle-posts]
@@ -168,7 +169,8 @@
        [""              (route {:get integration/get
                                 :post integration/post})]
        ["/categories"   (route {:get integration-categories/get
-                                :post integration-categories/post})]]]
+                                :post integration-categories/post})]
+       ["/key"          (route {:post integration-key/post})]]]
 
      ["/feeds"          {:middleware [[mw/apply-auth]]
                          :tags #{"feeds"}}

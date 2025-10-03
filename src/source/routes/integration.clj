@@ -18,14 +18,16 @@
                            [:video :int]
                            [:podcast :int]
                            [:blog :int]
-                           [:hash [:maybe :string]]
+                           [:hash {:optional true} [:maybe :string]]
                            [:content-type-id :int]
                            [:ts-and-cs [:maybe :int]]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (res/response (services/bundle ds {:id (:id path-params)})))
+  (res/response (dissoc
+                 (services/bundle ds {:id (:id path-params)})
+                 :hash)))
 
 (defn post
   {:summary "update an integration by id"

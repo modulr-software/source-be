@@ -13,7 +13,7 @@
                            [:video :int]
                            [:podcast :int]
                            [:blog :int]
-                           [:hash [:maybe :string]]
+                           [:hash {:optional true} [:maybe :string]]
                            [:content-type-id :int]
                            [:ts-and-cs [:maybe :int]]]}
                404 {:body [:map [:message :string]]}}}

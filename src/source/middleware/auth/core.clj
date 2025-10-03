@@ -44,14 +44,17 @@
                (res/status 403))))))
 
 (defn wrap-bundle-id
-  "validates the bundle uuid in the query parameters of the request for 
+  "validates the bundle uuid and API key (bundle hash) in the query parameters of the request for 
   unauthenticated users and attaches the bundle-id to the request"
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
           bundle-uuid (get-in request [:query-params "uuid"])
+          bundle-api-key (get-in request [:query-params "key"])
           {:keys [id]} (db/find-one ds {:tname :bundles
-                                        :where [:= :uuid bundle-uuid]})]
+                                        :where [:and
+                                                [:= :uuid bundle-uuid]
+                                                [:= :hash bundle-api-key]]})]
       (if (some? id)
         (-> request
             (assoc :bundle-id id)
@@ -89,15 +92,19 @@
     (println "Test passed"))
 
   (require '[source.util :as utils])
-  (let [garbage-request {:query-params {"uuid" "garbage"}}
+  (let [garbage-request {:query-params {"uuid" "garbage"
+                                        "key" "garbage"}}
         ds (db.util/conn)
         uuid (utils/uuid)
-        bundle-request {:query-params {"uuid" uuid}}
+        api-key (utils/uuid)
+        bundle-request {:query-params {"uuid" uuid
+                                       "key" api-key}}
         test-handler (-> (fn [request]
                            request)
                          (wrap-bundle-id))]
     (bundles/insert-bundle! (db.util/conn :master) {:data {:name (str "test-bundle-" uuid)
                                                            :uuid uuid
+                                                           :hash api-key
                                                            :content-type-id 1
                                                            :video 0
                                                            :podcast 0
@@ -115,8 +122,8 @@
                  (:bundle-id))))
     (println "tests passed")
     (db/delete! ds
-             {:tname :bundles
-              :where [:like :name "test-bundle-%"]
-              :ret :*}))
+                {:tname :bundles
+                 :where [:like :name "test-bundle-%"]
+                 :ret :*}))
 
   ())

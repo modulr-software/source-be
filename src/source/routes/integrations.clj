@@ -18,14 +18,15 @@
                             [:video :int]
                             [:podcast :int]
                             [:blog :int]
-                            [:hash [:maybe :string]]
+                            [:hash {:optional true} [:maybe :string]]
                             [:content-type-id :int]
                             [:ts-and-cs [:maybe :int]]]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user] :as _request}]
-  (res/response (services/bundles ds {:where [:= :user-id (:id user)]})))
+  (let [integrations (services/bundles ds {:where [:= :user-id (:id user)]})]
+    (res/response (mapv #(dissoc % :hash) integrations))))
 
 (defn post
   {:summary "add an integration"
@@ -45,7 +46,6 @@
                            [:video :int]
                            [:podcast :int]
                            [:blog :int]
-                           [:hash {:optional true} [:maybe :string]]
                            [:content-type-id :int]
                            [:ts-and-cs {:optional true} :int]]}
                401 {:body [:map [:message :string]]}
@@ -85,4 +85,4 @@
            :sleep false})
          (congest/register! js))
 
-    (res/response new-bundle)))
+    (res/response (dissoc new-bundle :hash))))
