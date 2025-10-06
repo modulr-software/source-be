@@ -1,6 +1,7 @@
 (ns source.routes.feed-categories
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.middleware.interface :as mw]))
 
 (defn get
   {:summary "get all categories belonging to the feed with the given id"
@@ -17,7 +18,8 @@
        (res/response)))
 
 (defn post
-  {:summary "update categories belonging to the feed with the given id"
+  {:middleware [[mw/apply-auth]]
+   :summary "update categories belonging to the feed with the given id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]
                 :body [:vector

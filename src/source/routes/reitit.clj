@@ -61,8 +61,9 @@
 
 (defn route [handlers]
   (reduce (fn [acc [k v]]
-            (let [{:keys [summary parameters responses]} (util/metadata v)]
-              (merge acc {k {:summary summary
+            (let [{:keys [middleware summary parameters responses]} (util/metadata v)]
+              (merge acc {k {:middleware middleware
+                             :summary summary
                              :parameters parameters
                              :responses responses
                              :handler v}})))
@@ -170,8 +171,7 @@
        ["/categories"   (route {:get integration-categories/get
                                 :post integration-categories/post})]]]
 
-     ["/feeds"          {:middleware [[mw/apply-auth]]
-                         :tags #{"feeds"}}
+     ["/feeds"          {:tags #{"feeds"}}
       [""               (route {:get feeds/get
                                 :post feeds/post})]
       ["/:id"
@@ -182,7 +182,7 @@
                                 :post feed-categories/post})]]]
 
      ["/bundle"        {:middleware [[mw/apply-bundle]]
-                         :tags #{"bundles"}}
+                        :tags #{"bundles"}}
       [""               (route {:get bundle/get})]
       ["/feeds"         (route {:get bundle-feeds/get})]
       ["/posts"

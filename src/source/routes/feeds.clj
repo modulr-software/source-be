@@ -3,7 +3,8 @@
             [source.util :as utils]
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.middleware.interface :as mw]))
 
 (defn get
   {:summary "get all feeds"
@@ -24,12 +25,13 @@
                              [:ts-and-cs [:maybe :int]]
                              [:state [:enum "live" "not live" "pending"]]]]}}}
 
-  [{:keys [ds user] :as _request}]
-  (-> (services/feeds ds {:where [:= :user-id (:id user)]})
+  [{:keys [ds] :as _request}]
+  (-> (services/feeds ds)
       (res/response)))
 
 (defn post
-  {:summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
+  {:middleware [[mw/apply-auth]]
+   :summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
    :parameters {:body [:map
                        [:display-picture {:optional true} :string]
                        [:url {:optional true} :string]
