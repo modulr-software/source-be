@@ -43,6 +43,8 @@
             [source.routes.integration-categories :as integration-categories]
             [source.routes.bundle :as bundle]
             [source.routes.bundle-feeds :as bundle-feeds]
+            [source.routes.bundle-feed :as bundle-feed]
+            [source.routes.bundle-feed-posts :as bundle-feed-posts]
             [source.routes.bundle-posts :as bundle-posts]
             [source.routes.bundle-post :as bundle-post]
             [source.routes.posts :as posts]
@@ -61,8 +63,9 @@
 
 (defn route [handlers]
   (reduce (fn [acc [k v]]
-            (let [{:keys [summary parameters responses]} (util/metadata v)]
-              (merge acc {k {:summary summary
+            (let [{:keys [middleware summary parameters responses]} (util/metadata v)]
+              (merge acc {k {:middleware middleware
+                             :summary summary
                              :parameters parameters
                              :responses responses
                              :handler v}})))
@@ -182,9 +185,13 @@
                                 :post feed-categories/post})]]]
 
      ["/bundle"        {:middleware [[mw/apply-bundle]]
-                         :tags #{"bundles"}}
+                        :tags #{"bundles"}}
       [""               (route {:get bundle/get})]
-      ["/feeds"         (route {:get bundle-feeds/get})]
+      ["/feeds"
+       [""              (route {:get bundle-feeds/get})]
+       ["/:id"
+        [""             (route {:get bundle-feed/get})]
+        ["/posts"       (route {:get bundle-feed-posts/get})]]]
       ["/posts"
        [""              (route {:get bundle-posts/get})]
        ["/:id"          (route {:get bundle-post/get})]]]
