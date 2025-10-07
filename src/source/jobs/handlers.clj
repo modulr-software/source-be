@@ -31,14 +31,25 @@
             extracted (services/extract-data store {:schema-id latest-ss
                                                     :url url})
             extracted-posts (get-in extracted [:feed :posts])
-            extended-posts (mapv (fn [post]
+            extracted-display (get-in extracted [:feed :display-picture])
+            extended-posts (mapv (fn [{:keys [thumbnail] :as post}]
                                    (merge post
                                           {:feed-id feed-id
                                            :creator-id creator-id
-                                           :content-type-id content-type-id})) extracted-posts)
-            existing-posts (services/incoming-posts ds {:where [:= :creator-id creator-id]})]
+                                           :content-type-id content-type-id
+                                           :thumbnail (if (and thumbnail
+                                                               (seq thumbnail))
+                                                        thumbnail
+                                                        extracted-display)}))
+                                 extracted-posts)
+            existing-posts (services/incoming-posts ds {:where [:= :creator-id creator-id]})
+            existing-feed (services/feed ds {:id feed-id})]
         (services/update-feed! ds {:id feed-id
                                    :data {:title (get-in extracted [:feed :title])
+                                          :display-picture (if (and (:display-picture existing-feed)
+                                                                    (seq (:display-picture existing-feed)))
+                                                             (:display-picture existing-feed)
+                                                             extracted-display)
                                           :updated-at (util/get-utc-timestamp-string)}})
         (run!
          (fn [post]
@@ -77,10 +88,10 @@
        incoming-posts)
 
       ; pull highest scored posts by long heuristics into outgoing posts
-            ; top 100 post-heuristics records ordered by long heuristic in descending order
+            ; top 1000 post-heuristics records ordered by long heuristic in descending order
       (let [top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
                                                                     {:heuristic :long-heuristic
-                                                                     :limit 100})
+                                                                     :limit 1000})
             ; convert into a vector of id numbers
             ids (mapv :post-id top-by-long-heuristics)
 
@@ -93,4 +104,5 @@
                                        acc))
                                    [] posts-in)]
         (when (seq posts-in)
-          (services/upsert-outgoing-posts! ds-bundle {:data outgoing-posts}))))))
+          (services/delete-outgoing-post! ds-bundle {})
+          (services/insert-outgoing-post! ds-bundle {:data outgoing-posts}))))))

@@ -29,6 +29,7 @@
   (let [update-data (reduce (fn [acc {:keys [id]}]
                               (conj acc {:feed-id (:id path-params)
                                          :category-id id})) [] body)]
-    (services/delete-feed-category! ds {:where [:= :feed-id (:id path-params)]})
-    (services/insert-feed-category! ds {:data update-data})
+    (when (seq update-data)
+      (services/delete-feed-category! ds {:where [:= :feed-id (:id path-params)]})
+      (services/insert-feed-category! ds {:data update-data}))
     (res/response {:message "successfully updated feed categories"})))
