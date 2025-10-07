@@ -72,6 +72,7 @@
         new-feed (services/insert-feed!
                   ds
                   {:data (merge body {:title (get-in extracted [:feed :title])
+                                      :display-picture (get-in extracted [:feed :display-picture])
                                       :user-id (:id user)
                                       :created-at datetime
                                       :state "pending"})})
@@ -79,7 +80,9 @@
                                (merge post
                                       {:feed-id (:id new-feed)
                                        :creator-id (:id user)
-                                       :content-type-id content-type-id})) extracted-posts)
+                                       :content-type-id content-type-id
+                                       :thumbnail (or (:thumbnail post) (:display-picture new-feed))}))
+                             extracted-posts)
         {:keys [email]} (services/user ds {:id (:id user)})]
 
     (if (some? extracted-posts)

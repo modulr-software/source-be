@@ -114,6 +114,12 @@
 (defn outgoing-post [ds {:keys [_id _where] :as opts}]
   (outgoing-posts/outgoing-post ds opts))
 
+(defn insert-outgoing-post! [ds {:keys [_values _ret] :as opts}]
+  (outgoing-posts/insert-outgoing-post! ds opts))
+
+(defn delete-outgoing-post! [ds {:keys [_id _where] :as opts}]
+  (outgoing-posts/delete-outgoing-post! ds opts))
+
 (defn upsert-outgoing-posts! [ds {:keys [_data] :as opts}]
   (outgoing-posts/upsert-outgoing-posts! ds opts))
 
