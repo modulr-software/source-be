@@ -43,6 +43,8 @@
             [source.routes.integration-categories :as integration-categories]
             [source.routes.bundle :as bundle]
             [source.routes.bundle-feeds :as bundle-feeds]
+            [source.routes.bundle-feed :as bundle-feed]
+            [source.routes.bundle-feed-posts :as bundle-feed-posts]
             [source.routes.bundle-posts :as bundle-posts]
             [source.routes.bundle-post :as bundle-post]
             [source.routes.posts :as posts]
@@ -171,7 +173,8 @@
        ["/categories"   (route {:get integration-categories/get
                                 :post integration-categories/post})]]]
 
-     ["/feeds"          {:tags #{"feeds"}}
+     ["/feeds"          {:middleware [[mw/apply-auth]]
+                         :tags #{"feeds"}}
       [""               (route {:get feeds/get
                                 :post feeds/post})]
       ["/:id"
@@ -184,7 +187,11 @@
      ["/bundle"        {:middleware [[mw/apply-bundle]]
                         :tags #{"bundles"}}
       [""               (route {:get bundle/get})]
-      ["/feeds"         (route {:get bundle-feeds/get})]
+      ["/feeds"
+       [""              (route {:get bundle-feeds/get})]
+       ["/:id"
+        [""             (route {:get bundle-feed/get})]
+        ["/posts"       (route {:get bundle-feed-posts/get})]]]
       ["/posts"
        [""              (route {:get bundle-posts/get})]
        ["/:id"          (route {:get bundle-post/get})]]]

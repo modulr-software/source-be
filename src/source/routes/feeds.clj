@@ -3,8 +3,7 @@
             [source.util :as utils]
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
-            [ring.util.response :as res]
-            [source.middleware.interface :as mw]))
+            [ring.util.response :as res]))
 
 (defn get
   {:summary "get all feeds"
@@ -30,8 +29,7 @@
       (res/response)))
 
 (defn post
-  {:middleware [[mw/apply-auth]]
-   :summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
+  {:summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
    :parameters {:body [:map
                        [:display-picture {:optional true} :string]
                        [:url {:optional true} :string]

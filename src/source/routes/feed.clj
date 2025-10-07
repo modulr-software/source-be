@@ -1,7 +1,6 @@
 (ns source.routes.feed
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.middleware.interface :as mw]))
+            [ring.util.response :as res]))
 
 (defn get
   {:summary "get feed by id"
@@ -28,8 +27,7 @@
       (res/response)))
 
 (defn post
-  {:middleware [[mw/apply-auth]]
-   :summary "update feed by id"
+  {:summary "update feed by id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]
                 :body [:map
