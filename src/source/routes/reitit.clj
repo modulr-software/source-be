@@ -45,6 +45,7 @@
             [source.routes.bundle-feeds :as bundle-feeds]
             [source.routes.bundle-feed :as bundle-feed]
             [source.routes.bundle-feed-posts :as bundle-feed-posts]
+            [source.routes.bundle-feed-post :as bundle-feed-post]
             [source.routes.bundle-posts :as bundle-posts]
             [source.routes.bundle-post :as bundle-post]
             [source.routes.posts :as posts]
@@ -191,7 +192,9 @@
        [""              (route {:get bundle-feeds/get})]
        ["/:id"
         [""             (route {:get bundle-feed/get})]
-        ["/posts"       (route {:get bundle-feed-posts/get})]]]
+        ["/posts"
+         [""            (route {:get bundle-feed-posts/get})]
+         ["/:post-id"   (route {:get bundle-feed-post/get})]]]]
       ["/posts"
        [""              (route {:get bundle-posts/get})]
        ["/:id"          (route {:get bundle-post/get})]]]

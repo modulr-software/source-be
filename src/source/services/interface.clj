@@ -199,8 +199,8 @@
   [ds {:keys [_where] :as opts}]
   (incoming-posts/incoming-posts-with-feeds ds opts))
 
-(defn incoming-post [ds id]
-  (incoming-posts/incoming-post ds id))
+(defn incoming-post [ds opts]
+  (incoming-posts/incoming-post ds opts))
 
 (defn insert-cadence! [ds {:keys [_values _ret] :as opts}]
   (cadences/insert-cadence! ds opts))
