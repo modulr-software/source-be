@@ -39,7 +39,7 @@
         start (when start (try (Integer/parseInt start) (catch Exception _)))
         limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
 
-        filtered-posts (services/outgoing-posts bundle-ds {:where content-type-comp})
+        filtered-posts (shuffle (services/outgoing-posts bundle-ds {:where content-type-comp}))
 
         categorised-posts (vec (if (seq category-ids)
                                  (->> filtered-posts
