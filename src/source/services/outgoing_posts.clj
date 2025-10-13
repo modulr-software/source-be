@@ -5,10 +5,10 @@
 
 (defn outgoing-posts
   ([ds] (outgoing-posts ds {}))
-  ([ds {:keys [where] :as opts}]
+  ([ds {:keys [where ret] :as opts}]
    (->> {:tname :outgoing-posts
          :where where
-         :ret :*}
+         :ret (or ret :*)}
         (merge opts)
         (db/find ds))))
 

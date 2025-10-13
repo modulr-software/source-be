@@ -196,7 +196,7 @@
          [""            (route {:get bundle-feed-posts/get})]
          ["/:post-id"   (route {:get bundle-feed-post/get})]]]]
       ["/posts"
-       [""              (route {:get bundle-posts/get})]
+       [""              (route {:post bundle-posts/post})]
        ["/:id"          (route {:get bundle-post/get})]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
