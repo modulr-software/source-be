@@ -2,7 +2,8 @@
   (:require [source.services.interface :as services]
             [source.db.util :as db.util]
             [clojure.walk :as walk]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [clojure.set :as set]))
 
 (defn post
   {:summary "get all outgoing posts in the uuid-authorized bundle"
@@ -45,9 +46,12 @@
                                  (->> filtered-posts
                                       (mapv
                                        (fn [post]
-                                         (when (some (set category-ids) (->> {:feed-id (:feed-id post)}
-                                                                             (services/categories-by-feed ds)
-                                                                             (mapv :id)))
+                                         (when (seq (set/intersection
+                                                     (set category-ids)
+                                                     (->> {:feed-id (:feed-id post)}
+                                                          (services/categories-by-feed ds)
+                                                          (mapv :id)
+                                                          (set))))
                                            post)))
                                       (remove nil?))
                                  filtered-posts))
