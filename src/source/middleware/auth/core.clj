@@ -4,8 +4,7 @@
             [ring.util.response :as res]
             [source.services.users :as users]
             [source.services.bundles :as bundles]
-            [source.db.honey :as db]
-            [source.services.interface :as services]))
+            [source.db.honey :as db]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -68,9 +67,9 @@
   (fn [request]
     (let [ds (db.util/conn :master)
           {:keys [bundle-id user-id]} (validate-request request)
-          existing-bundle (services/bundle ds {:where [:and
-                                                       [:= :id bundle-id]
-                                                       [:= :user-id user-id]]})]
+          existing-bundle (bundles/bundle ds {:where [:and
+                                                      [:= :id bundle-id]
+                                                      [:= :user-id user-id]]})]
       (if (some? existing-bundle)
         (-> request
             (assoc :bundle-id bundle-id)
