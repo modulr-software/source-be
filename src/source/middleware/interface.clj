@@ -11,3 +11,6 @@
 
 (defn apply-bundle [app]
   (mw/apply-bundle app))
+
+(defn apply-api-key [app]
+  (mw/apply-api-key app))

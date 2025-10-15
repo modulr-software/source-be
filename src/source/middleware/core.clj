@@ -23,7 +23,7 @@
         (assoc :store store)
         (handler))))
 
-(defn wrap-js 
+(defn wrap-js
   "attaches the provided job service to the handler's request"
   [handler js]
   (fn [request]
@@ -39,7 +39,7 @@
   (-> app
       (wrap-store store)))
 
-(defn apply-js 
+(defn apply-js
   "middleware for attaching the job service to the request"
   [app js]
   (-> app
@@ -96,3 +96,7 @@
 (defn apply-bundle [app]
   (-> app
       (auth/wrap-bundle-id)))
+
+(defn apply-api-key [app]
+  (-> app
+      (auth/wrap-auth-api-key)))
