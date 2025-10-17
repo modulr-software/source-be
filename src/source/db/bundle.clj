@@ -28,8 +28,7 @@
    [:posted-at :datetime]
    (tables/foreign-key :feed-id :feeds :id)
    (tables/foreign-key :creator-id :users :id)
-   (tables/foreign-key :content-type-id :content-types :id)
-   [[:unique [:composite :post-id]]]))
+   (tables/foreign-key :content-type-id :content-types :id)))
 
 (def bundle-categories
   (tables/create-table-sql

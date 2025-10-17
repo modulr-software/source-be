@@ -34,21 +34,3 @@
         :ret :1}
        (merge opts)
        (db/delete! ds)))
-
-(defn upsert-outgoing-posts! [ds {:keys [data]}]
-  (hon/execute!
-   ds
-   (-> (hsql/insert-into :outgoing-posts)
-       (hsql/values data)
-       (assoc :on-conflict [:post-id])
-       (assoc :do-update-set {:feed-id          :excluded.feed-id
-                              :title            :excluded.title
-                              :thumbnail        :excluded.thumbnail
-                              :info             :excluded.info
-                              :url              :excluded.url
-                              :stream-url       :excluded.stream-url
-                              :creator-id       :excluded.creator-id
-                              :season           :excluded.season
-                              :episode          :excluded.episode
-                              :content-type-id  :excluded.content-type-id
-                              :posted-at        :excluded.posted-at}))))
