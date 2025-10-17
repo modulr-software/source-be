@@ -120,9 +120,6 @@
 (defn delete-outgoing-post! [ds {:keys [_id _where] :as opts}]
   (outgoing-posts/delete-outgoing-post! ds opts))
 
-(defn upsert-outgoing-posts! [ds {:keys [_data] :as opts}]
-  (outgoing-posts/upsert-outgoing-posts! ds opts))
-
 (defn selection-schemas
   ([ds]
    (selection-schemas ds {}))
