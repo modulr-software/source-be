@@ -57,8 +57,25 @@
             (assoc :bundle-id id)
             (handler))
         (->
-         (res/response {:message "The bundle you are looking for does not exist"})
+         (res/response {:message "The bundle you are looking for does not exist."})
          (res/status 404))))))
+
+(defn wrap-auth-api-key
+  "validates the api key from the Authorization header for unauthenticated 
+  users and attaches the bundle-id to the request"
+  [handler]
+  (fn [request]
+    (let [ds (db.util/conn :master)
+          {:keys [bundle-id user-id]} (validate-request request)
+          existing-bundle (bundles/bundle ds {:where [:and
+                                                      [:= :id bundle-id]
+                                                      [:= :user-id user-id]]})]
+      (if (some? existing-bundle)
+        (-> request
+            (assoc :bundle-id bundle-id)
+            (handler))
+        (-> (res/response {:message "The bundle you are looking for does not exist."})
+            (res/status 404))))))
 
 (comment
   (let [authed-request {:headers {"Authorization"
@@ -115,8 +132,8 @@
                  (:bundle-id))))
     (println "tests passed")
     (db/delete! ds
-             {:tname :bundles
-              :where [:like :name "test-bundle-%"]
-              :ret :*}))
+                {:tname :bundles
+                 :where [:like :name "test-bundle-%"]
+                 :ret :*}))
 
   ())

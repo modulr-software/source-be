@@ -40,6 +40,7 @@
             [source.routes.feed-categories :as feed-categories]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
+            [source.routes.integration-key :as integration-key]
             [source.routes.integration-categories :as integration-categories]
             [source.routes.bundle :as bundle]
             [source.routes.bundle-feeds :as bundle-feeds]
@@ -171,6 +172,7 @@
       ["/:id"
        [""              (route {:get integration/get
                                 :post integration/post})]
+       ["/key"          (route {:post integration-key/post})]
        ["/categories"   (route {:get integration-categories/get
                                 :post integration-categories/post})]]]
 
