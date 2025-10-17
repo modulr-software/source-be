@@ -31,8 +31,11 @@
   {:summary "add an integration"
    :parameters {:body [:map
                        [:name :string]
-                       [:content-type-id :int]
                        [:ts-and-cs {:optional true} :int]
+                       [:content-types [:vector
+                                        [:map
+                                         [:id :int]
+                                         [:name :string]]]]
                        [:categories [:vector
                                      [:map
                                       [:id :int]
@@ -53,17 +56,25 @@
 
   [{:keys [js ds store user body] :as _request}]
   (let [new-bundle (services/insert-bundle! ds {:data (merge
-                                                       (dissoc body :categories)
+                                                       (dissoc body :categories :content-types)
                                                        {:user-id (:id user)
+                                                        :content-type-id 1 ; temporarily assign garbo id
                                                         :uuid (utils/uuid)})
                                                 :ret :1})
-        bundle-categories (reduce (fn [acc {:keys [id]}]
-                                    (conj acc {:bundle-id (:id new-bundle)
-                                               :category-id id})) [] (:categories body))
+        bundle-categories (mapv (fn [{:keys [id]}]
+                                  {:bundle-id (:id new-bundle)
+                                   :category-id id}) (:categories body))
+        bundle-content-types (mapv (fn [{:keys [id]}]
+                                     {:bundle-id (:id new-bundle)
+                                      :content-type-id id}) (:content-types body))
+
         _ (migrate/migrate-bundle (:id new-bundle) ["up"])
         ; insert bundle categories
         bundle-ds (db.util/conn :bundle (:id new-bundle))
+
         _ (services/insert-bundle-category! bundle-ds {:data bundle-categories})
+        _ (services/insert-bundle-content-types! ds {:data bundle-content-types})
+
         category-ids (services/category-id-by-bundle bundle-ds {:bundle-id (:id new-bundle)})
         id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
         categories-by-bundle (services/categories ds {:where [:in :id id-vec]})]

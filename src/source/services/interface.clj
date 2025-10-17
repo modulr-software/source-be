@@ -5,6 +5,7 @@
              [source.services.xml-schemas :as xml]
              [source.services.bundles :as bundles]
              [source.services.bundle-categories :as bundle-categories]
+             [source.services.bundle-content-types :as bundle-content-types]
              [source.services.post-heuristics :as post-heuristics]
              [source.services.providers :as providers]
              [source.services.feeds :as feeds]
@@ -85,6 +86,23 @@
 
 (defn category-id-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
   (bundle-categories/category-id ds opts))
+
+(defn bundle-content-types
+  ([ds] (bundle-content-types ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (bundle-content-types/bundle-content-types ds opts)))
+
+(defn insert-bundle-content-types! [ds {:keys [_data _ret] :as opts}]
+  (bundle-content-types/insert-bundle-content-types! ds opts))
+
+(defn delete-bundle-content-types! [ds {:keys [_id _where] :as opts}]
+  (bundle-content-types/delete-bundle-content-types! ds opts))
+
+(defn content-types-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
+  (bundle-content-types/content-types-by-bundle ds opts))
+
+(defn content-type-id [ds {:keys [_bundle-id _where] :as opts}]
+  (bundle-content-types/content-type-id ds opts))
 
 (defn insert-post-heuristics! [ds {:keys [_data] :as opts}]
   (post-heuristics/insert-post-heuristics! ds opts))
