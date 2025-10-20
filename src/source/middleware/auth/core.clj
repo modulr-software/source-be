@@ -66,13 +66,11 @@
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
-          {:keys [bundle-id user-id]} (validate-request request)
-          existing-bundle (bundles/bundle ds {:where [:and
-                                                      [:= :id bundle-id]
-                                                      [:= :user-id user-id]]})]
+          token (util/auth-token request)
+          existing-bundle (bundles/bundle ds {:where [:= :hash token]})]
       (if (some? existing-bundle)
         (-> request
-            (assoc :bundle-id bundle-id)
+            (assoc :bundle-id (:id existing-bundle))
             (handler))
         (-> (res/response {:message "The bundle you are looking for does not exist."})
             (res/status 404))))))
