@@ -3,8 +3,9 @@
             [buddy.core.nonce :as nonce]
             [clojure.main :refer [demunge]]
             [malli.core :as m]
-            [malli.transform :as mt]
-            [malli.error :as me]))
+            [malli.error :as me])
+  (:import (java.math BigInteger)
+           (java.security MessageDigest)))
 
 (defn vectors?
   "Returns true if coll is a 2d vector"
@@ -44,6 +45,14 @@
       (find-var)
       (meta)))
 
+(defn sha256
+  "Computes SHA256 hash of given string and returns it as a hex string"
+  [s]
+  (let [digest (MessageDigest/getInstance "SHA-256")
+        bytes (.getBytes s "UTF-8")
+        hash-bytes (.digest digest bytes)]
+    (format "%064x" (BigInteger. 1 hash-bytes))))
+
 (defn validate [handler data]
   (let [schema (get-in (metadata handler) [:parameters :body])
         success (m/validate schema data)]
@@ -53,8 +62,9 @@
                                    (m/explain schema)
                                    (me/humanize)))}))
 
-(comment 
+(comment
   (require '[source.routes.business :as business])
   (validate business/post {:cheese "modulr"})
+  (sha256 "1")
   ())
 
