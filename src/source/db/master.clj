@@ -28,7 +28,8 @@
   (tables/create-table-sql
    :categories
    (tables/table-id)
-   [:name :text]))
+   [:name :text]
+   [:display-picture :string]))
 
 (def content-types
   (tables/create-table-sql
