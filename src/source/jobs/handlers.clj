@@ -3,7 +3,8 @@
             [source.util :as util]
             [source.services.incoming-posts :as incoming-posts]
             [source.db.util :as db.util]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.string :as string]))
 
 (defmulti handler
   (fn [opts]
@@ -38,7 +39,8 @@
                                            :creator-id creator-id
                                            :content-type-id content-type-id
                                            :thumbnail (if (and thumbnail
-                                                               (seq thumbnail))
+                                                               (seq thumbnail)
+                                                               (not (string/includes? thumbnail ".mp3")))
                                                         thumbnail
                                                         extracted-display)}))
                                  extracted-posts)
