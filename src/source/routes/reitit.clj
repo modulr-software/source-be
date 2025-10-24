@@ -8,6 +8,7 @@
             [malli.util :as mu]
             [source.middleware.interface :as mw]
             [clojure.data.json :as json]
+            [source.util :as util]
             [source.routes.user :as user]
             [source.routes.users :as users]
             [source.routes.me :as me]
@@ -32,6 +33,7 @@
             [source.routes.provider :as provider]
             [source.routes.cadences :as cadences]
             [source.routes.categories :as categories]
+            [source.routes.category :as category]
             [source.routes.baselines :as baselines]
             [source.routes.content-types :as content-types]
             [source.routes.content-type :as content-type]
@@ -43,6 +45,7 @@
             [source.routes.integration-key :as integration-key]
             [source.routes.integration-categories :as integration-categories]
             [source.routes.bundle :as bundle]
+            [source.routes.bundle-categories :as bundle-categories]
             [source.routes.bundle-feeds :as bundle-feeds]
             [source.routes.bundle-feed :as bundle-feed]
             [source.routes.bundle-feed-posts :as bundle-feed-posts]
@@ -60,8 +63,7 @@
             [source.routes.job-stop :as job-stop]
             [source.routes.report :as report]
             [source.routes.approve-feed :as approve-feed]
-            [source.routes.reject-feed :as reject-feed]
-            [source.util :as util]))
+            [source.routes.reject-feed :as reject-feed]))
 
 (defn route [handlers]
   (reduce (fn [acc [k v]]
@@ -82,7 +84,10 @@
                                                 :version "0.0.1"}
                                          :securityDefinitions {"auth" {:type :apiKey
                                                                        :in :header
-                                                                       :name "Authorization"}}}
+                                                                       :name "Authorization"}
+                                                               "apiKey" {:type :apiKey
+                                                                         :in :header
+                                                                         :name "Authorization"}}}
                                :handler (swagger/create-swagger-handler)}}]
 
      ["/openapi.json"   {:get {:no-doc true
@@ -92,7 +97,10 @@
                                          :components {:securitySchemes {"bearerAuth" {:type :http
                                                                                       :scheme :bearer
                                                                                       :bearerFormat "JWT"
-                                                                                      :description "JWT Authorization using the Bearer scheme"}}}}
+                                                                                      :description "JWT Authorization using the Bearer scheme"}
+                                                                        "apiKey" {:type :http
+                                                                                  :scheme :bearer
+                                                                                  :description "API Key authorization using the Bearer scheme"}}}}
                                :handler (openapi/create-openapi-handler)}}]
 
      ["/users"          {:middleware [[mw/apply-auth {:required-type :admin}]]
@@ -152,11 +160,12 @@
       [""               (route {:get providers/get})]
       ["/:id"           (route {:get provider/get})]]
 
-     ["/cadences"      {:tags #{"cadences"}}
+     ["/cadences"       {:tags #{"cadences"}}
       [""               (route {:get cadences/get})]]
 
-     ["/categories"      {:tags #{"categories"}}
-      [""               (route {:get categories/get})]]
+     ["/categories"     {:tags #{"categories"}}
+      [""               (route {:get categories/get})]
+      ["/:id"           (route {:get category/get})]]
 
      ["/baselines"      {:tags #{"baselines"}}
       [""               (route {:get baselines/get})]]
@@ -190,6 +199,8 @@
      ["/bundle"        {:middleware [[mw/apply-bundle]]
                         :tags #{"bundles"}}
       [""               (route {:get bundle/get})]
+      ["/categories"
+       [""              (route {:get bundle-categories/get})]]
       ["/feeds"
        [""              (route {:post bundle-feeds/post})]
        ["/:id"
