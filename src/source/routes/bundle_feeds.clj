@@ -2,7 +2,8 @@
   (:require [ring.util.response :as res]
             [source.services.interface :as services]
             [source.db.util :as db.util]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [honey.sql.helpers :as hsql]))
 
 (defn post
   {:summary "get all feeds present in the bundle authorised by uuid"
@@ -35,15 +36,13 @@
         feed-ids (mapv :feed-id (services/outgoing-posts bundle-ds))
         category-filtered-feed-ids (if (empty? category-ids)
                                      feed-ids
-                                     (->> {:where [:and
-                                                   [:in :feed-id feed-ids]
-                                                   [:in :category-id category-ids]]}
+                                     (->> (hsql/where
+                                           [:in :feed-id feed-ids]
+                                           [:in :category-id category-ids])
                                           (services/feed-categories ds)
                                           (mapv :feed-id)))
-        id-comp [:in :id category-filtered-feed-ids]
-        where-clause (if (some? type)
-                       [:and id-comp [:= :content-type-id type]]
-                       id-comp)
-        type-filtered (services/feeds ds {:where where-clause})]
+        type-filtered (->> (when type [:= :content-type-id type])
+                           (hsql/where [:in :id category-filtered-feed-ids])
+                           (services/feeds ds))]
 
     (res/response type-filtered)))
