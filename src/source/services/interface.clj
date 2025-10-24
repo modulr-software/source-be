@@ -81,9 +81,6 @@
 (defn delete-bundle-category! [ds {:keys [_id _where] :as opts}]
   (bundle-categories/delete-bundle-category! ds opts))
 
-(defn categories-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
-  (bundle-categories/categories-by-bundle ds opts))
-
 (defn category-id-by-bundle [ds {:keys [_bundle-id _where] :as opts}]
   (bundle-categories/category-id ds opts))
 
