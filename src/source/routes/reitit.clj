@@ -191,7 +191,7 @@
                         :tags #{"bundles"}}
       [""               (route {:get bundle/get})]
       ["/feeds"
-       [""              (route {:get bundle-feeds/get})]
+       [""              (route {:post bundle-feeds/post})]
        ["/:id"
         [""             (route {:get bundle-feed/get})]
         ["/posts"
