@@ -32,13 +32,14 @@
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [bundle-ds (db.util/conn :bundle bundle-id)
         {:keys [category-ids]} body
-        {:keys [type]} (walk/keywordize-keys query-params)
+        {:keys [type latest]} (walk/keywordize-keys query-params)
         feed-ids (mapv :feed-id (services/outgoing-posts bundle-ds))
         category-filtered-feed-ids (if (empty? category-ids)
                                      feed-ids
                                      (->> (hsql/where
                                            [:in :feed-id feed-ids]
                                            [:in :category-id category-ids])
+                                          (hsql/order-by (when latest [:created-at :desc]))
                                           (services/feed-categories ds)
                                           (mapv :feed-id)))
         type-filtered (->> (when type [:= :content-type-id type])

@@ -12,7 +12,8 @@
                         [:uuid :string]
                         [:limit {:optional true} :int]
                         [:start {:optional true} :int]
-                        [:type {:optional true} :int]]}
+                        [:type {:optional true} :int]
+                        [:latest {:optional true} [:enum "true" "false"]]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
@@ -33,14 +34,15 @@
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [bundle-ds (db.util/conn :bundle bundle-id)
-        {:keys [limit start type]} (walk/keywordize-keys query-params)
+        {:keys [limit start type latest]} (walk/keywordize-keys query-params)
         {:keys [category-ids]} body
 
         content-type-comp (when type [:= :content-type-id type])
         start (when start (try (Integer/parseInt start) (catch Exception _)))
         limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
 
-        filtered-posts (shuffle (services/outgoing-posts bundle-ds {:where content-type-comp}))
+        filtered-posts (services/outgoing-posts bundle-ds {:where content-type-comp
+                                                           :order-by (when (= latest "true") [[:posted-at :desc]])})
 
         categorised-posts (vec (if (seq category-ids)
                                  (->> filtered-posts
