@@ -62,6 +62,17 @@
                                    (m/explain schema)
                                    (me/humanize)))}))
 
+(defn format-rfc-1123-date
+  "Takes a date as a string in RFC 1123 format and returns it in a format that meets ISO 8601 standards for SQLite. 
+  Returns the original string if it is not in this format."
+  [s]
+  (try
+    (let [zdt (java.time.ZonedDateTime/parse s java.time.format.DateTimeFormatter/RFC_1123_DATE_TIME)
+          zdt-utc (.withZoneSameInstant zdt (java.time.ZoneId/of "UTC"))
+          out (.format zdt-utc (java.time.format.DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss"))]
+      out)
+    (catch Exception _ s)))
+
 (comment
   (require '[source.routes.business :as business])
   (validate business/post {:cheese "modulr"})

@@ -33,11 +33,12 @@
                                                     :url url})
             extracted-posts (get-in extracted [:feed :posts])
             extracted-display (get-in extracted [:feed :display-picture])
-            extended-posts (mapv (fn [{:keys [thumbnail] :as post}]
+            extended-posts (mapv (fn [{:keys [posted-at thumbnail] :as post}]
                                    (merge post
                                           {:feed-id feed-id
                                            :creator-id creator-id
                                            :content-type-id content-type-id
+                                           :posted-at (util/format-rfc-1123-date posted-at)
                                            :thumbnail (if (and thumbnail
                                                                (seq thumbnail)
                                                                (not (string/includes? thumbnail ".mp3")))
