@@ -62,8 +62,9 @@
                                    (m/explain schema)
                                    (me/humanize)))}))
 
-(defn format-rfc-1123-date
-  "Takes a date as a string in RFC 1123 format and returns it in a format that meets ISO 8601 standards for SQLite. 
+(defn format-rss-date
+  "Takes a date as a string in RFC 1123 format and returns it in a format that meets ISO 8601 standards for SQLite.
+  This is necessary because some RSS feeds use a different date than what is accepted by SQLite.
   Returns the original string if it is not in this format."
   [s]
   (try
