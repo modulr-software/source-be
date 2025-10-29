@@ -212,6 +212,28 @@
        [""              (route {:post bundle-posts/post})]
        ["/:id"          (route {:get bundle-post/get})]]]
 
+     ["/api"             {:middleware [[mw/apply-api-key]]
+                          :tags #{"api"}
+                          :swagger {:security [{"apiKey" []}]}
+                          :openapi {:security [{:apiKey []}]}}
+      ["/bundle"         {:middleware [[mw/apply-bundle]]}
+       [""               (route {:get bundle/get})]
+       ["/categories"
+        [""              (route {:get bundle-categories/get})]]
+       ["/feeds"
+        [""              (route {:post bundle-feeds/post})]
+        ["/:id"
+         [""             (route {:get bundle-feed/get})]
+         ["/posts"
+          [""            (route {:get bundle-feed-posts/get})]
+          ["/:post-id"   (route {:get bundle-feed-post/get})]]]]
+       ["/posts"
+        [""              (route {:post bundle-posts/post})]
+        ["/:id"          (route {:get bundle-post/get})]]]
+      ["/categories"
+       [""               (route {:get categories/get})]
+       ["/:id"           (route {:get category/get})]]]
+
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                  :tags #{"admin"}
                                  :swagger {:security [{"auth" []}]}
