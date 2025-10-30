@@ -39,11 +39,11 @@
                                      (->> (hsql/where
                                            [:in :feed-id feed-ids]
                                            [:in :category-id category-ids])
-                                          (hsql/order-by (when latest [:created-at :desc]))
                                           (services/feed-categories ds)
                                           (mapv :feed-id)))
-        type-filtered (->> (when type [:= :content-type-id type])
-                           (hsql/where [:in :id category-filtered-feed-ids])
-                           (services/feeds ds))]
+        query (-> (when type [:= :content-type-id type])
+                  (hsql/where [:in :id category-filtered-feed-ids])
+                  (hsql/order-by (when latest [:created-at :desc])))
+        type-filtered (services/feeds ds query)]
 
     (res/response type-filtered)))
