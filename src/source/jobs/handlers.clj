@@ -38,7 +38,7 @@
                                           {:feed-id feed-id
                                            :creator-id creator-id
                                            :content-type-id content-type-id
-                                           :posted-at (util/format-rfc-1123-date posted-at)
+                                           :posted-at (util/format-rss-date posted-at)
                                            :thumbnail (if (and thumbnail
                                                                (seq thumbnail)
                                                                (not (string/includes? thumbnail ".mp3")))

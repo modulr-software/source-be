@@ -24,8 +24,8 @@
                              [:ts-and-cs [:maybe :int]]
                              [:state [:enum "live" "not live" "pending"]]]]}}}
 
-  [{:keys [ds] :as _request}]
-  (-> (services/feeds ds)
+  [{:keys [ds user] :as _request}]
+  (-> (services/feeds ds {:where [:= :user-id (:id user)]})
       (res/response)))
 
 (defn post
