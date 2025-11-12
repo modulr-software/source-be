@@ -18,7 +18,9 @@
              [source.services.feed-categories :as feed-categories]
              [source.services.jobs :as jobs]
              [source.services.businesses :as businesses]
-             [source.services.user-sectors :as user-sectors]))
+             [source.services.user-sectors :as user-sectors]
+             [source.services.filtered-feeds :as filtered-feeds]
+             [source.services.filtered-posts :as filtered-posts]))
 
 (defn users
   [& args]
@@ -311,6 +313,34 @@
 
 (defn job-metadata [ds {:keys [_id _where] :as opts}]
   (jobs/job-metadata ds opts))
+
+(defn insert-filtered-feeds! [ds {:keys [_data _ret] :as opts}]
+  (filtered-feeds/insert-filtered-feeds! ds opts))
+
+(defn update-filtered-feeds! [ds {:keys [_id _data _where] :as opts}]
+  (filtered-feeds/update-filtered-feeds! ds opts))
+
+(defn filtered-feeds
+  ([ds] (filtered-feeds ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (filtered-feeds/filtered-feeds ds opts)))
+
+(defn delete-filtered-feed! [ds {:keys [_id _where] :as opts}]
+  (filtered-feeds/delete-filtered-feed! ds opts))
+
+(defn insert-filtered-posts! [ds {:keys [_data _ret] :as opts}]
+  (filtered-posts/insert-filtered-posts! ds opts))
+
+(defn update-filtered-posts! [ds {:keys [_id _data _where] :as opts}]
+  (filtered-posts/update-filtered-posts! ds opts))
+
+(defn filtered-posts
+  ([ds] (filtered-posts ds {}))
+  ([ds {:keys [_where] :as opts}]
+   (filtered-posts/filtered-posts ds opts)))
+
+(defn delete-filtered-post! [ds {:keys [_id _where] :as opts}]
+  (filtered-posts/delete-filtered-post! ds opts))
 
 (comment
   (users (db/ds :master))

@@ -3,7 +3,8 @@
             [source.db.util :as db.util]
             [clojure.walk :as walk]
             [ring.util.response :as res]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [honey.sql.helpers :as hsql]))
 
 (defn post
   {:summary "get all outgoing posts in the uuid-authorized bundle"
@@ -41,8 +42,13 @@
         start (when start (try (Integer/parseInt start) (catch Exception _)))
         limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
 
-        filtered-posts (services/outgoing-posts bundle-ds {:where content-type-comp
-                                                           :order-by (when (= latest "true") [[:posted-at :desc]])})
+        blocked-feed-ids (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]}))
+        blocked-post-ids (mapv :post-id (services/filtered-posts ds {:where [:= :bundle-id bundle-id]}))
+
+        filtered-posts (services/outgoing-posts bundle-ds (-> (hsql/where content-type-comp
+                                                                          [:not [:in :id blocked-post-ids]]
+                                                                          [:not [:in :feed-id blocked-feed-ids]])
+                                                              (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))))
 
         categorised-posts (vec (if (seq category-ids)
                                  (->> filtered-posts
