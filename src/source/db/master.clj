@@ -77,6 +77,24 @@
    (tables/foreign-key :bundle-id :bundles :id)
    (tables/foreign-key :content-type-id :content-types :id)))
 
+(def filtered-feeds
+  (tables/create-table-sql
+    :filtered-feeds
+    (tables/table-id)
+    [:feed-id :integer :not nil]
+    [:bundle-id :integer :not nil]
+    (tables/foreign-key :feed-id :feeds :id)
+    (tables/foreign-key :bundle-id :bundles :id)))
+
+(def filtered-posts
+  (tables/create-table-sql
+    :filtered-posts
+    (tables/table-id)
+    [:post-id :integer :not nil]
+    [:bundle-id :integer :not nil]
+    (tables/foreign-key :post-id :incoming-posts :id)
+    (tables/foreign-key :bundle-id :bundles :id)))
+
 (def feeds
   (tables/create-table-sql
    :feeds
