@@ -44,6 +44,10 @@
             [source.routes.integration :as integration]
             [source.routes.integration-key :as integration-key]
             [source.routes.integration-categories :as integration-categories]
+            [source.routes.integration-filter-feeds :as integration-filter-feeds]
+            [source.routes.integration-filter-feed :as integration-filter-feed]
+            [source.routes.integration-filter-posts :as integration-filter-posts]
+            [source.routes.integration-filter-post :as integration-filter-post]
             [source.routes.bundle :as bundle]
             [source.routes.bundle-categories :as bundle-categories]
             [source.routes.bundle-feeds :as bundle-feeds]
@@ -185,7 +189,16 @@
                                 :post integration/post})]
        ["/key"          (route {:post integration-key/post})]
        ["/categories"   (route {:get integration-categories/get
-                                :post integration-categories/post})]]]
+                                :post integration-categories/post})]
+       ["/filter"
+        ["/feeds"
+         [""            (route {:get integration-filter-feeds/get})]
+         ["/:feed-id"   (route {:get integration-filter-feed/get
+                                :post integration-filter-feed/post})]]
+        ["/posts"
+         [""            (route {:get integration-filter-posts/get})]
+         ["/:post-id"   (route {:get integration-filter-post/get
+                                :post integration-filter-post/post})]]]]]
 
      ["/feeds"          {:middleware [[mw/apply-auth]]
                          :tags #{"feeds"}}
