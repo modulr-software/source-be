@@ -53,6 +53,7 @@
             [source.routes.bundle-posts :as bundle-posts]
             [source.routes.bundle-post :as bundle-post]
             [source.routes.posts :as posts]
+            [source.routes.post :as post]
             [source.routes.admin-feeds :as admin-feeds]
             [source.routes.xml :as xml]
             [source.routes.data :as data]
@@ -192,7 +193,11 @@
       ["/:id"
        [""              (route {:get feed/get
                                 :post feed/post})]
-       ["/posts"        (route {:get posts/get})]
+       ["/posts"
+        [""             (route {:get posts/get})]
+        ["/:post-id"
+         [""            (route {:get post/get})]
+         ["/prune"      (route {:post post/post})]]]
        ["/categories"   (route {:get feed-categories/get
                                 :post feed-categories/post})]]]
 
