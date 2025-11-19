@@ -17,7 +17,6 @@
        (str v))) x))
 
 (defn get [{:keys [js]}]
- ;(let [raw-jobs (congest/view js)
- ;      formatted (stringify-unknowns raw-jobs)]
- ;  (res/response formatted))
-  (res/response {:message "Hello, world!"}))
+  (let [raw-jobs (congest/view js)
+        formatted (stringify-unknowns raw-jobs)]
+    (res/response formatted)))
