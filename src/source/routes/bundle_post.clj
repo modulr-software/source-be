@@ -26,7 +26,7 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [bundle-id path-params] :as _request}]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        id (:id path-params)]
-    (res/response (services/outgoing-post bundle-ds {:id id}))))
+  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
+    (let [id (:id path-params)]
+      (res/response (services/outgoing-post bundle-ds {:id id})))))
 

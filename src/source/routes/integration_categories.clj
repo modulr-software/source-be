@@ -13,11 +13,11 @@
                             [:name :string]]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (let [bundle-ds (db.util/conn :bundle (:id path-params))
-        category-ids (services/category-id-by-bundle bundle-ds {:bundle-id (:id path-params)})
-        id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
-        categories (services/categories ds {:where [:in :id id-vec]})]
-    (res/response categories)))
+  (with-open [bundle-ds (db.util/conn :bundle (:id path-params))]
+    (let [category-ids (services/category-id-by-bundle bundle-ds {:bundle-id (:id path-params)})
+          id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
+          categories (services/categories ds {:where [:in :id id-vec]})]
+      (res/response categories))))
 
 (defn post
   {:summary "update categories belonging to the integration with the given id"
@@ -30,10 +30,10 @@
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [path-params body] :as _request}]
-  (let [update-data (reduce (fn [acc {:keys [id]}]
-                              (conj acc {:bundle-id (:id path-params)
-                                         :category-id id})) [] body)
-        bundle-ds (db.util/conn :bundle (:id path-params))]
-    (services/delete-bundle-category! bundle-ds {:where [:= :bundle-id (:id path-params)]})
-    (services/insert-bundle-category! bundle-ds {:data update-data})
-    (res/response {:message "successfully updated integration categories"})))
+  (with-open [bundle-ds (db.util/conn :bundle (:id path-params))]
+    (let [update-data (reduce (fn [acc {:keys [id]}]
+                                (conj acc {:bundle-id (:id path-params)
+                                           :category-id id})) [] body)]
+      (services/delete-bundle-category! bundle-ds {:where [:= :bundle-id (:id path-params)]})
+      (services/insert-bundle-category! bundle-ds {:data update-data})
+      (res/response {:message "successfully updated integration categories"}))))
