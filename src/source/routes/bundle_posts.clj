@@ -34,43 +34,44 @@
                404 {:boy [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        {:keys [limit start type latest]} (walk/keywordize-keys query-params)
-        {:keys [category-ids]} body
+  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
+    (let [{:keys [limit start type latest]} (walk/keywordize-keys query-params)
+          {:keys [category-ids]} body
 
-        content-type-comp (when type [:= :content-type-id type])
-        start (when start (try (Integer/parseInt start) (catch Exception _)))
-        limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
+          content-type-comp (when type [:= :content-type-id type])
+          start (when start (try (Integer/parseInt start) (catch Exception _)))
+          limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
 
-        blocked-feed-ids (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]}))
-        blocked-post-ids (mapv :post-id (services/filtered-posts ds {:where [:= :bundle-id bundle-id]}))
+          blocked-feed-ids (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]}))
+          blocked-post-ids (mapv :post-id (services/filtered-posts ds {:where [:= :bundle-id bundle-id]}))
 
-        filtered-posts (services/outgoing-posts bundle-ds (-> (hsql/where content-type-comp
-                                                                          [:not [:in :id blocked-post-ids]]
-                                                                          [:not [:in :feed-id blocked-feed-ids]])
-                                                              (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))))
+          filtered-posts (services/outgoing-posts bundle-ds (-> (hsql/where content-type-comp
+                                                                            [:not [:in :id blocked-post-ids]]
+                                                                            [:not [:in :feed-id blocked-feed-ids]])
+                                                                (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))))
 
-        categorised-posts (vec (if (seq category-ids)
-                                 (->> filtered-posts
-                                      (mapv
-                                       (fn [post]
-                                         (when (seq (set/intersection
-                                                     (set category-ids)
-                                                     (->> {:feed-id (:feed-id post)}
-                                                          (services/categories-by-feed ds)
-                                                          (mapv :id)
-                                                          (set))))
-                                           post)))
-                                      (remove nil?))
-                                 filtered-posts))
+          categorised-posts (vec
+                             (if (seq category-ids)
+                               (->> filtered-posts
+                                    (mapv
+                                     (fn [post]
+                                       (when (seq (set/intersection
+                                                   (set category-ids)
+                                                   (->> {:feed-id (:feed-id post)}
+                                                        (services/categories-by-feed ds)
+                                                        (mapv :id)
+                                                        (set))))
+                                         post)))
+                                    (remove nil?))
+                               filtered-posts))
 
-        valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
-        started-posts (if valid-start?
-                        (subvec categorised-posts start)
-                        categorised-posts)
+          valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
+          started-posts (if valid-start?
+                          (subvec categorised-posts start)
+                          categorised-posts)
 
-        limited-posts (if (and (some? limit) (> (count started-posts) limit))
-                        (subvec started-posts 0 limit)
-                        started-posts)]
+          limited-posts (if (and (some? limit) (> (count started-posts) limit))
+                          (subvec started-posts 0 limit)
+                          started-posts)]
 
-    (res/response limited-posts)))
+      (res/response limited-posts))))

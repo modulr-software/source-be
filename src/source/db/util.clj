@@ -6,10 +6,10 @@
 (defn db-path [dbname]
   (let [db-dir (conf/read-value :database :dir)]
     (str
-      db-dir
-      (when (not (= (last db-dir) \/))
-        "/")
-      dbname)))
+     db-dir
+     (when (not (= (last db-dir) \/))
+       "/")
+     dbname)))
 
 (defn db-name
   ([type]
@@ -18,10 +18,13 @@
    (str (name type) "_" id)))
 
 (defn- -conn [dbname]
-  (-> {:dbtype (conf/read-value :database :type)}
-       (merge {:dbname (db-path dbname)})
-       (jdbc/get-connection)
-       (jdbc/with-options {:builder-fn rs/as-unqualified-lower-maps})))
+  (let [conn (-> {:dbtype (conf/read-value :database :type)}
+                 (merge {:dbname (db-path dbname)})
+                 (jdbc/get-connection))]
+    (jdbc/execute! conn ["PRAGMA journal_mode = WAL;"])
+    (jdbc/execute! conn ["PRAGMA synchronous = NORMAL;"])
+    (jdbc/with-options conn {:builder-fn rs/as-unqualified-lower-maps})
+    conn))
 
 (defn conn
   ([]
@@ -32,4 +35,3 @@
   ([db-type id]
    (assert (or (= db-type :bundle) (= db-type :creator)))
    (-conn (db-name db-type id))))
-

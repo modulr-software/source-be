@@ -32,24 +32,24 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        {:keys [category-ids]} body
-        {:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)
-        feed-ids (mapv :feed-id (services/outgoing-posts bundle-ds))
-        category-filtered-feed-ids (if (empty? category-ids)
-                                     feed-ids
-                                     (->> (hsql/where
-                                           [:in :feed-id feed-ids]
-                                           [:in :category-id category-ids])
-                                          (services/feed-categories ds)
-                                          (mapv :feed-id)))
-        blocked-feed-ids (if (some? nonfiltered)
-                           []
-                           (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]})))
-        query (-> (when type [:= :content-type-id type])
-                  (hsql/where [:in :id category-filtered-feed-ids]
-                              [:not [:in :id blocked-feed-ids]])
-                  (hsql/order-by (when latest [:created-at :desc])))
-        type-filtered (services/feeds ds query)]
+  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
+    (let [{:keys [category-ids]} body
+          {:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)
+          feed-ids (mapv :feed-id (services/outgoing-posts bundle-ds))
+          category-filtered-feed-ids (if (empty? category-ids)
+                                       feed-ids
+                                       (->> (hsql/where
+                                             [:in :feed-id feed-ids]
+                                             [:in :category-id category-ids])
+                                            (services/feed-categories ds)
+                                            (mapv :feed-id)))
+          blocked-feed-ids (if (some? nonfiltered)
+                             []
+                             (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]})))
+          query (-> (when type [:= :content-type-id type])
+                    (hsql/where [:in :id category-filtered-feed-ids]
+                                [:not [:in :id blocked-feed-ids]])
+                    (hsql/order-by (when latest [:created-at :desc])))
+          type-filtered (services/feeds ds query)]
 
-    (res/response type-filtered)))
+      (res/response type-filtered))))

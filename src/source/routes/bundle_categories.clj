@@ -14,9 +14,9 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [bundle-id ds] :as _request}]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        feed-ids (->> (services/outgoing-posts bundle-ds)
-                      (mapv :feed-id))
-        category-ids (->> (services/feed-categories ds {:where [:in :feed-id feed-ids]})
-                          (mapv :category-id))]
-    (res/response (services/categories ds {:where [:in :id category-ids]}))))
+  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
+    (let [feed-ids (->> (services/outgoing-posts bundle-ds)
+                        (mapv :feed-id))
+          category-ids (->> (services/feed-categories ds {:where [:in :feed-id feed-ids]})
+                            (mapv :category-id))]
+      (res/response (services/categories ds {:where [:in :id category-ids]})))))

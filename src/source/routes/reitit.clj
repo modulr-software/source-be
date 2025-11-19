@@ -63,6 +63,7 @@
             [source.routes.xml :as xml]
             [source.routes.data :as data]
             [source.routes.jobs :as jobs]
+            [source.routes.jobs-view :as jobs-view]
             [source.routes.job :as job]
             [source.routes.job-deregister :as job-deregister]
             [source.routes.job-start :as job-start]
@@ -265,6 +266,7 @@
       ["/jobs"
        [""                      {:get jobs/get}]
        ["/manage"
+        ["/view"                {:get jobs-view/get}]
         ["/register"            {:post jobs/post}]]
        ["/:id"
         [""                     {:get job/get}]
