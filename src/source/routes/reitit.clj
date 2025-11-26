@@ -41,6 +41,11 @@
             [source.routes.feed :as feed]
             [source.routes.feed-categories :as feed-categories]
             [source.routes.analytics.creator.general :as analytics-creator-general]
+            [source.routes.analytics.creator.deltas :as analytics-creator-deltas]
+            [source.routes.analytics.creator.top :as analytics-creator-top]
+            [source.routes.analytics.distributor.general :as analytics-distributor-general]
+            [source.routes.analytics.distributor.top :as analytics-distributor-top]
+            [source.routes.analytics.bundle.posts.-id-.views :as analytics-bundle-posts-id-views]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
             [source.routes.integration-key :as integration-key]
@@ -218,12 +223,18 @@
                                 :post feed-categories/post})]]]
 
      ["/analytics"
-      ["/creator"
+      ["/creator"       {:middleware [[mw/apply-auth {:required-type :creator}]]}
        ["/general"      (route {:get analytics-creator-general/get})]
-       ["/deltas"]
-       ["/top"]]
-      ["/bundle"]
-      ["admin"]]
+       ["/deltas"       (route {:get analytics-creator-deltas/get})]
+       ["/top"          (route {:get analytics-creator-top/get})]]
+      ["/distributor"   {:middleware [[mw/apply-auth {:required-type :distributor}]]}
+       ["/general"      (route {:get analytics-distributor-general/get})]
+       ["/top"          (route {:get analytics-distributor-top/get})]]
+      ["/bundle"        {:middleware [[mw/apply-bundle]]}
+       ["/posts"
+        ["/:id"
+         ["/views"       (route {:post analytics-bundle-posts-id-views/post})]]]]
+      ["admin"          {:middleware [[mw/apply-auth {:required-type :admin}]]}]]
 
      ["/bundle"        {:middleware [[mw/apply-bundle]]
                         :tags #{"bundles"}}
