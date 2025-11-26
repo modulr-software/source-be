@@ -233,8 +233,10 @@
       ["/bundle"        {:middleware [[mw/apply-bundle]]}
        ["/posts"
         ["/:id"
-         ["/views"       (route {:post analytics-bundle-posts-id-views/post})]]]]
-      ["admin"          {:middleware [[mw/apply-auth {:required-type :admin}]]}]]
+         ["/views"      (route {:post analytics-bundle-posts-id-views/post})]]]]
+      ["admin"          {:middleware [[mw/apply-auth {:required-type :admin}]]}
+       ["/general"]
+       ["/top"]]]
 
      ["/bundle"        {:middleware [[mw/apply-bundle]]
                         :tags #{"bundles"}}

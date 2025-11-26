@@ -21,8 +21,8 @@
 
   [{:keys [ds user query-params] :as _request}]
   (let [{:keys [n mindate maxdate top contenttype]} (w/keywordize-keys query-params)
-        top-field (if (= top "post") :post-id :feed-id)]
-    (res/response (set/rename-keys
-                   (analytics/top-statistics-query ds mindate maxdate n top-field {:distributor-id (:id user)
-                                                                                   :content-type-id contenttype})
-                   {top-field :top}))))
+        top-field (if (= top "post") :post-id :feed-id)
+        results (analytics/top-statistics-query ds mindate maxdate n top-field {:distributor-id (:id user)
+                                                                                :content-type-id contenttype})]
+    (res/response (mapv (fn [result]
+                          (set/rename-keys result {top-field :top})) results))))
