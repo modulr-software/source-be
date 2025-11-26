@@ -7,7 +7,7 @@
 
 (defn metric-query
   "Generic select query function for returning analytics data from the events table"
-  [ds {:keys [select order-by group-by metric feed-id post-id content-type-id bundle-id creator-id distributor-id min-date max-date category-ids ret]}]
+  [ds {:keys [select order-by group-by limit metric feed-id post-id content-type-id bundle-id creator-id distributor-id min-date max-date category-ids where ret]}]
   (let [clauses (cond-> {}
                   (some? metric) (hsql/where [:= :event metric])
                   (some? feed-id) (hsql/where [:= :feed-id feed-id])
@@ -16,28 +16,31 @@
                   (some? bundle-id) (hsql/where [:= :bundle-id bundle-id])
                   (some? creator-id) (hsql/where [:= :creator-id creator-id])
                   (some? distributor-id) (hsql/where [:= :distributor-id distributor-id])
+                  (some? where) (merge where)
                   (and (some? min-date) (nil? max-date)) (hsql/where [:>= :timestamp min-date])
                   (and (some? max-date) (nil? min-date)) (hsql/where [:<= :timestamp max-date])
                   (and (some? min-date) (some? max-date)) (hsql/where [:between :timestamp min-date max-date])
                   (some? select) (merge select)
+                  (nil? select) (merge {:select [[[:count :*] :total]]})
+                  (some? limit) (hsql/limit limit)
                   (some? order-by) (merge order-by)
                   (some? group-by) (merge group-by)
                   (seq category-ids) (-> (hsql/join [:event-categories :ec] [:= :events.id :ec.event-id])
                                          (hsql/where [:in :ec.category-id category-ids])))]
     (hon/execute!
      ds
-     (merge {:select [[[:count :*] :total]]
-             :from [:events]}
+     (merge {:from [:events]}
             clauses)
      {:ret (if ret ret :*)})))
 
 (defn statistics-query
-  "returns the number of impressions, clicks and views, filtered by any other arguments accepted by metric-query"
-  [ds opts]
+  "Returns the number of impressions, clicks and views, filtered by any other arguments accepted by metric-query.
+  If ret is not given, returns a single record."
+  [ds {:keys [ret] :as opts}]
   (metric-query ds (merge {:select (hsql/select [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
                                                 [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
                                                 [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
-                           :ret :1}
+                           :ret (if ret ret :1)}
                           opts)))
 
 (defn interval-statistics-query
@@ -69,9 +72,25 @@
                              :order-by (hsql/order-by column)}
                             opts))))
 
+(defn top-statistics-query
+  "Returns the top n of the given top field in order of the number of their impressions, clicks and views within the given time period"
+  [ds min-date max-date n top-field opts]
+  (metric-query ds (merge {:select (hsql/select top-field
+                                                [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
+                                                [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
+                                                [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
+                           :min-date min-date
+                           :max-date max-date
+                           :where (hsql/where [:!= top-field nil])
+                           :group-by (hsql/group-by top-field)
+                           :order-by (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc])
+                           :limit n
+                           :ret :*}
+                          opts)))
+
 (defn weekly-growth-averages
   "Returns the percentage of growth in impressions, clicks and views per week, over the given time period. 
-  Uses the first week as a basis for comparison, not included in results.
+  Uses the first week as a basis for comparison.
   Can be filtered by any other arguments accepted by metric-query."
   [ds min-date max-date opts]
   (let [weeks (interval-statistics-query ds :weekly min-date max-date opts)
@@ -171,7 +190,7 @@
                         :bundle-id bundle-id
                         :distributor-id (:user-id bundle)}) feeds)
         events' (insert-event! ds {:data events
-                                  :ret :*})]
+                                   :ret :*})]
     (insert-feed-event-categories! ds events' feeds)))
 
 (defn insert-post-impressions!
@@ -189,7 +208,7 @@
                         :bundle-id bundle-id
                         :distributor-id (:user-id bundle)}) posts)
         events' (insert-event! ds {:data events
-                                  :ret :*})]
+                                   :ret :*})]
     (insert-post-event-categories! ds events' posts)))
 
 (defn insert-feed-click!
@@ -205,7 +224,7 @@
                :bundle-id bundle-id
                :distributor-id (:user-id bundle)}
         event' (insert-event! ds {:data event
-                                 :ret :*})]
+                                  :ret :*})]
     (insert-feed-event-categories! ds event' feed)))
 
 (defn insert-post-click!
@@ -222,7 +241,7 @@
                :bundle-id bundle-id
                :distributor-id (:user-id bundle)}
         event' (insert-event! ds {:data event
-                                 :ret :*})]
+                                  :ret :*})]
     (insert-post-event-categories! ds event' post)))
 
 (defn insert-post-view!
@@ -239,7 +258,7 @@
                :bundle-id bundle-id
                :distributor-id (:user-id bundle)}
         event' (insert-event! ds {:data event
-                                 :ret :*})]
+                                  :ret :*})]
     (insert-post-event-categories! ds event' post)))
 
 (comment
@@ -290,10 +309,7 @@
   (time (metric-query ds {:min-date "2025-11-25 15:00:00"
                           :feed-id "1"}))
 
-  (time (statistics-query ds {:content-type 1
-                              :creator-id 1
-                              :bundle-id 1
-                              :ret :1}))
+  (time (statistics-query ds {:ret :*}))
 
   (time (hon/find ds {:tname :events
                       :where [:< :id 500]
@@ -304,14 +320,14 @@
                          :data {:timestamp (str "2025-11-22" " 13:00:00")}
                          :ret :*}))
 
-  (time (hon/execute! ds (- (hsql/select [[:date :timestamp] :day]
-                                         [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
-                                         [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
-                                         [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
-                            (hsql/from :events)
-                            (hsql/where [:between :timestamp "2025-11-17 00:00:00" "2025-11-24 23:59:59"])
-                            (hsql/group-by :day)
-                            (hsql/order-by :day)) {:ret :*}))
+  (time (hon/execute! ds (-> (hsql/select [[:date :timestamp] :day]
+                                          [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
+                                          [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
+                                          [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
+                             (hsql/from :events)
+                             (hsql/where [:between :timestamp "2025-11-17 00:00:00" "2025-11-24 23:59:59"])
+                             (hsql/group-by :day)
+                             (hsql/order-by :day)) {:ret :*}))
 
   (time (interval-statistics-query ds :daily "2025-11-17" "2025-11-24" {:feed-id 4}))
 
@@ -356,12 +372,14 @@
                                  [(hsql/filter :%count.* (hsql/where := :event "view")) :views])))
 
   (time (insert-event! ds {:data {:timestamp (util/get-utc-timestamp-string)
-                                 :event "impression"
-                                 :feed-id 1
-                                 :content-type-id 1
-                                 :creator-id 1
-                                 :bundle-id 1
-                                 :distributor-id 1}}))
+                                  :event "impression"
+                                  :feed-id 1
+                                  :content-type-id 1
+                                  :creator-id 1
+                                  :bundle-id 1
+                                  :distributor-id 1}}))
+
+  (time (top-statistics-query ds "2025-11-17" "2025-11-24" 10 :post-id {}))
 
   ())
 

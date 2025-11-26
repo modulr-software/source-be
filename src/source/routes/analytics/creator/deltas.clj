@@ -1,22 +1,22 @@
-(ns source.routes.analytics.creator.general
-  (:require [source.services.analytics.interface :as analytics]
+(ns source.routes.analytics.creator.deltas
+  (:require [clojure.walk :as w]
             [ring.util.response :as res]
-            [clojure.walk :as w]))
+            [source.services.analytics.interface :as analytics]))
 
 (defn get
-  {:summary "Gets the number of impressions, clicks and views per day for a creator over the given time period. Optionally filtered by feed."
+  {:summary "Returns the percentage of growth in impressions, clicks and views per week, over the given time period. Optionally filtered by feed."
    :parameters {:query [:map
                         [:mindate :string]
                         [:maxdate :string]
                         [:feed {:optional true} [:maybe :int]]]}
    :responses {200 {:body [:vector
                            [:map
-                            [:day :string]
+                            [:week :string]
                             [:impressions :int]
                             [:clicks :int]
                             [:views :int]]]}}}
 
   [{:keys [ds user query-params] :as _request}]
   (let [{:keys [mindate maxdate feed]} (w/keywordize-keys query-params)]
-    (res/response (analytics/interval-statistics-query ds :daily mindate maxdate {:creator-id (:id user)
-                                                                                  :feed-id feed}))))
+    (res/response (analytics/weekly-growth-averages ds mindate maxdate {:creator-id (:id user)
+                                                                        :feed-id feed}))))
