@@ -1,6 +1,7 @@
 (ns source.routes.bundle-feed
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.services.analytics.interface :as analytics]))
 
 (defn get
   {:summary "get feed by id"
@@ -24,6 +25,7 @@
                             [:state [:enum "live" "not live" "pending"]]]}
                 404 {:body [:map [:message :string]]}}}
 
-  [{:keys [ds path-params] :as _request}]
-  (-> (services/feed ds path-params)
-      (res/response)))
+  [{:keys [ds bundle-id path-params] :as _request}]
+  (let [feed (services/feed ds path-params)]
+    (analytics/insert-feed-click ds feed bundle-id)
+    (res/response feed)))
