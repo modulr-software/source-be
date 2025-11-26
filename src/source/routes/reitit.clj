@@ -40,6 +40,7 @@
             [source.routes.feeds :as feeds]
             [source.routes.feed :as feed]
             [source.routes.feed-categories :as feed-categories]
+            [source.routes.analytics.creator.general :as analytics-creator-general]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
             [source.routes.integration-key :as integration-key]
@@ -215,6 +216,14 @@
          ["/prune"      (route {:post post-prune/post})]]]
        ["/categories"   (route {:get feed-categories/get
                                 :post feed-categories/post})]]]
+
+     ["/analytics"
+      ["/creator"
+       ["/general"      (route {:get analytics-creator-general/get})]
+       ["/deltas"]
+       ["/top"]]
+      ["/bundle"]
+      ["admin"]]
 
      ["/bundle"        {:middleware [[mw/apply-bundle]]
                         :tags #{"bundles"}}

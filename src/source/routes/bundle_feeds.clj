@@ -3,7 +3,8 @@
             [source.services.interface :as services]
             [source.db.util :as db.util]
             [clojure.walk :as walk]
-            [honey.sql.helpers :as hsql]))
+            [honey.sql.helpers :as hsql]
+            [source.services.analytics.interface :as analytics]))
 
 (defn post
   {:summary "get all feeds present in the bundle authorised by uuid"
@@ -52,4 +53,5 @@
                     (hsql/order-by (when latest [:created-at :desc])))
           type-filtered (services/feeds ds query)]
 
+      (analytics/insert-feed-impressions! ds type-filtered bundle-id)
       (res/response type-filtered))))

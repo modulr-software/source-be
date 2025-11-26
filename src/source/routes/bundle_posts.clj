@@ -4,7 +4,8 @@
             [clojure.walk :as walk]
             [ring.util.response :as res]
             [clojure.set :as set]
-            [honey.sql.helpers :as hsql]))
+            [honey.sql.helpers :as hsql]
+            [source.services.analytics.interface :as analytics]))
 
 (defn post
   {:summary "get all outgoing posts in the uuid-authorized bundle"
@@ -74,4 +75,5 @@
                           (subvec started-posts 0 limit)
                           started-posts)]
 
+      (analytics/insert-post-impressions! ds limited-posts bundle-id)
       (res/response limited-posts))))
