@@ -221,6 +221,34 @@
    [:created-at :datetime]
    [:sleep :integer]))
 
+(def events
+  (tables/create-table-sql
+   :events
+   (tables/table-id)
+   [:timestamp :datetime]
+   [:event :text [:check [:in :event ["impression" "click" "view"]]]]
+   [:feed-id :integer :not nil]
+   [:post-id :integer]
+   [:content-type-id :not nil]
+   [:creator-id :not nil]
+   [:bundle-id :integer :not nil]
+   [:distributor-id :integer :not nil]
+   (tables/foreign-key :feed-id :feeds :id)
+   (tables/foreign-key :post-id :incoming-posts :id)
+   (tables/foreign-key :content-type-id :content-types :id)
+   (tables/foreign-key :creator-id :users :id)
+   (tables/foreign-key :bundle-id :bundles :id)
+   (tables/foreign-key :distributor-id :users :id)))
+
+(def event-categories
+  (tables/create-table-sql
+   :event-categories
+   (tables/table-id)
+   [:event-id :integer :not nil]
+   [:category-id :integer :not nil]
+   (tables/foreign-key :event-id :events :id)
+   (tables/foreign-key :category-id :categories :id)))
+
 (comment
   (require '[honey.sql :as sql])
 
@@ -242,4 +270,7 @@
   (sql/format incoming-posts)
   (sql/format jobs)
   (sql/format job-metadata)
+
+  (sql/format events)
+  (sql/format event-categories)
   ())
