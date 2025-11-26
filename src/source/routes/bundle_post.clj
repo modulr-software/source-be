@@ -30,6 +30,6 @@
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
     (let [id (:id path-params)
           post (services/outgoing-post bundle-ds {:id id})]
-      (analytics/insert-post-click ds post bundle-id)
+      (analytics/insert-post-click! ds post bundle-id)
       (res/response post))))
 

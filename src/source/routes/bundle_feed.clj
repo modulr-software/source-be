@@ -27,5 +27,5 @@
 
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [feed (services/feed ds path-params)]
-    (analytics/insert-feed-click ds feed bundle-id)
+    (analytics/insert-feed-click! ds feed bundle-id)
     (res/response feed)))

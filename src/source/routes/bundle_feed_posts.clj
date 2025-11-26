@@ -29,5 +29,5 @@
 
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [posts (services/incoming-posts ds {:where [:= :feed-id (:id path-params)]})]
-    (analytics/insert-post-impressions ds posts bundle-id)
+    (analytics/insert-post-impressions! ds posts bundle-id)
     (res/response posts)))

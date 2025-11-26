@@ -53,5 +53,5 @@
                     (hsql/order-by (when latest [:created-at :desc])))
           type-filtered (services/feeds ds query)]
 
-      (analytics/insert-feed-impressions ds type-filtered bundle-id)
+      (analytics/insert-feed-impressions! ds type-filtered bundle-id)
       (res/response type-filtered))))

@@ -98,21 +98,21 @@
   (let [{:keys [impressions clicks]} (statistics-query ds opts)]
     (float (* (/ clicks impressions) 100))))
 
-(defn insert-event [ds {:keys [data ret] :as opts}]
+(defn insert-event! [ds {:keys [data ret] :as opts}]
   (->> {:tname :events
         :data data
         :ret ret}
        (merge opts)
        (hon/insert! ds)))
 
-(defn insert-event-categories [ds {:keys [data ret] :as opts}]
+(defn insert-event-categories! [ds {:keys [data ret] :as opts}]
   (->> {:tname :event-categories
         :data data
         :ret ret}
        (merge opts)
        (hon/insert! ds)))
 
-(defn insert-feed-event-categories
+(defn insert-feed-event-categories!
   "Given a list of events and a list of feeds (or a single event/feed), 
   inserts an event category record for each event and each category 
   associated with the given feeds."
@@ -132,9 +132,9 @@
                                             category-ids)))
                               (flatten)
                               (vec))]
-    (insert-event-categories ds {:data event-categories})))
+    (insert-event-categories! ds {:data event-categories})))
 
-(defn insert-post-event-categories
+(defn insert-post-event-categories!
   "Given a list of events and a list of posts (or a single event/post),
   inserts an event category record for each event and each category 
   associated with the given posts"
@@ -155,9 +155,9 @@
                                             category-ids)))
                               (flatten)
                               (vec))]
-    (insert-event-categories ds {:data event-categories})))
+    (insert-event-categories! ds {:data event-categories})))
 
-(defn insert-feed-impressions
+(defn insert-feed-impressions!
   "Given a list of feeds and a bundle id, inserts impression event reconds 
   for each given feed. Inserts event categories for each feed."
   [ds feeds bundle-id]
@@ -170,11 +170,11 @@
                         :creator-id user-id
                         :bundle-id bundle-id
                         :distributor-id (:user-id bundle)}) feeds)
-        events' (insert-event ds {:data events
+        events' (insert-event! ds {:data events
                                   :ret :*})]
-    (insert-feed-event-categories ds events' feeds)))
+    (insert-feed-event-categories! ds events' feeds)))
 
-(defn insert-post-impressions
+(defn insert-post-impressions!
   "Given a list of posts and a bundle id, inserts impression event reconds 
   for each given post. Inserts event categories for each post."
   [ds posts bundle-id]
@@ -188,11 +188,11 @@
                         :creator-id creator-id
                         :bundle-id bundle-id
                         :distributor-id (:user-id bundle)}) posts)
-        events' (insert-event ds {:data events
+        events' (insert-event! ds {:data events
                                   :ret :*})]
-    (insert-post-event-categories ds events' posts)))
+    (insert-post-event-categories! ds events' posts)))
 
-(defn insert-feed-click
+(defn insert-feed-click!
   "Given a feed and a bundle id, inserts a click event record 
   for the given feed"
   [ds {:keys [id content-type-id user-id] :as feed} bundle-id]
@@ -204,11 +204,11 @@
                :creator-id user-id
                :bundle-id bundle-id
                :distributor-id (:user-id bundle)}
-        event' (insert-event ds {:data event
+        event' (insert-event! ds {:data event
                                  :ret :*})]
-    (insert-feed-event-categories ds event' feed)))
+    (insert-feed-event-categories! ds event' feed)))
 
-(defn insert-post-click
+(defn insert-post-click!
   "Given a post and a bundle id, inserts a click event record 
   for the given post"
   [ds {:keys [id feed-id content-type-id creator-id] :as post} bundle-id]
@@ -221,11 +221,11 @@
                :creator-id creator-id
                :bundle-id bundle-id
                :distributor-id (:user-id bundle)}
-        event' (insert-event ds {:data event
+        event' (insert-event! ds {:data event
                                  :ret :*})]
-    (insert-post-event-categories ds event' post)))
+    (insert-post-event-categories! ds event' post)))
 
-(defn insert-post-view
+(defn insert-post-view!
   "Given a post and a bundle id, inserts a view event record 
   for the given post"
   [ds {:keys [id feed-id content-type-id creator-id] :as post} bundle-id]
@@ -238,9 +238,9 @@
                :creator-id creator-id
                :bundle-id bundle-id
                :distributor-id (:user-id bundle)}
-        event' (insert-event ds {:data event
+        event' (insert-event! ds {:data event
                                  :ret :*})]
-    (insert-post-event-categories ds event' post)))
+    (insert-post-event-categories! ds event' post)))
 
 (comment
   (require '[source.db.util :as db.util]
@@ -355,7 +355,7 @@
                                  [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
                                  [(hsql/filter :%count.* (hsql/where := :event "view")) :views])))
 
-  (time (insert-event ds {:data {:timestamp (util/get-utc-timestamp-string)
+  (time (insert-event! ds {:data {:timestamp (util/get-utc-timestamp-string)
                                  :event "impression"
                                  :feed-id 1
                                  :content-type-id 1

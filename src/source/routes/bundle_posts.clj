@@ -75,5 +75,5 @@
                           (subvec started-posts 0 limit)
                           started-posts)]
 
-      (analytics/insert-post-impressions ds limited-posts bundle-id)
+      (analytics/insert-post-impressions! ds limited-posts bundle-id)
       (res/response limited-posts))))

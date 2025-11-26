@@ -28,5 +28,5 @@
 
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [post (services/incoming-post ds {:id (:post-id path-params)})]
-    (analytics/insert-post-click ds post bundle-id)
+    (analytics/insert-post-click! ds post bundle-id)
     (res/response post)))
