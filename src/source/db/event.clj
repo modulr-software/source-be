@@ -1,6 +1,6 @@
 (ns source.db.event
   (:require [source.services.event-categories :as ec]
-            [source.services.analytics :as analytics]
+            [source.services.analytics.interface :as analytics]
             [source.services.outgoing-posts :as outgoing-posts]
             [source.services.feed-categories :as feed-categories]
             [source.db.util :as db.util]
