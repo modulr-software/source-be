@@ -26,6 +26,11 @@
   [ds min-date max-date opts]
   (core/weekly-growth-averages ds min-date max-date opts))
 
+(defn top-statistics-query
+  "Returns the top n of the given top field in order of the number of their impressions, clicks and views within the given time period."
+  [ds min-date max-date n top-field opts]
+  (core/top-statistics-query ds min-date max-date n top-field opts))
+
 (defn average-engagement
   "Returns the average engagement (average clicks and views) over the given time period.
   Can be filtered by any other arguments accepted by metric-query."
