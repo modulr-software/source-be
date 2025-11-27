@@ -47,7 +47,7 @@
   "returns the number of impressions, clicks and views per interval (:daily, :weekly, :monthly or :yearly) over the given time period, 
   filtered by any other arguments accepted by metric-query.
   
-  Date parameters must be in the format YYYY-mm-dd."
+  Date parameters must be in the format YYYY-MM-DD."
   [ds interval min-date max-date opts]
   (let [select (cond
                  (= interval :daily) [[:date :timestamp] :day]
@@ -66,8 +66,8 @@
                                                   [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
                                                   [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
                                                   [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
-                             :min-date (str min-date " 00:00:00")
-                             :max-date (str max-date " 23:59:59")
+                             :min-date (str min-date "T00:00:00Z")
+                             :max-date (str max-date "T23:59:59Z")
                              :group-by (hsql/group-by column)
                              :order-by (hsql/order-by column)}
                             opts))))
@@ -306,7 +306,7 @@
     (dotimes [_ num-records]
       (seed-event! maximums)))
 
-  (time (metric-query ds {:min-date "2025-11-25 15:00:00"
+  (time (metric-query ds {:min-date "2025-11-25T15:00:00Z"
                           :feed-id "1"}))
 
   (time (statistics-query ds {:ret :*}))
@@ -317,7 +317,7 @@
 
   (time (hon/update! ds {:tname :events
                          :where [:between :id 5000000 5500000]
-                         :data {:timestamp (str "2025-11-22" " 13:00:00")}
+                         :data {:timestamp (str "2025-11-22" "T13:00:00Z")}
                          :ret :*}))
 
   (time (hon/execute! ds (-> (hsql/select [[:date :timestamp] :day]
@@ -325,7 +325,7 @@
                                           [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
                                           [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
                              (hsql/from :events)
-                             (hsql/where [:between :timestamp "2025-11-17 00:00:00" "2025-11-24 23:59:59"])
+                             (hsql/where [:between :timestamp "2025-11-17T00:00:00Z" "2025-11-24T23:59:59Z"])
                              (hsql/group-by :day)
                              (hsql/order-by :day)) {:ret :*}))
 
@@ -336,7 +336,7 @@
                                           [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
                                           [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
                              (hsql/from :events)
-                             (hsql/where [:between :timestamp "2025-11-01 00:00:00" "2025-11-30 23:59:00"])
+                             (hsql/where [:between :timestamp "2025-11-01T00:00:00Z" "2025-11-30T23:59:00Z"])
                              (hsql/group-by :week)
                              (hsql/order-by :week))
                       {:ret :*}))
@@ -347,10 +347,10 @@
 
   (time (weekly-growth-averages ds "2025-11-01" "2025-11-30" {:feed-id 4}))
 
-  (time (average-engagement ds "2025-11-24 00:00:00" "2025-11-24 23:59:59" {:feed-id 4}))
+  (time (average-engagement ds "2025-11-24T00:00:00Z" "2025-11-24T23:59:59Z" {:feed-id 4}))
 
-  (time (click-through-rate ds {:min-date "2025-11-24 00:00:00"
-                                :max-date "2025-11-24 23:59:59"
+  (time (click-through-rate ds {:min-date "2025-11-24T00:00:00Z"
+                                :max-date "2025-11-24T23:59:59Z"
                                 :feed-id 4}))
 
   (time
