@@ -12,9 +12,9 @@
    :responses {200 {:body [:vector
                            [:map
                             [:week :string]
-                            [:impressions :int]
-                            [:clicks :int]
-                            [:views :int]]]}}}
+                            [:impressions :float]
+                            [:clicks :float]
+                            [:views :float]]]}}}
 
   [{:keys [ds user query-params] :as _request}]
   (let [{:keys [mindate maxdate feed]} (w/keywordize-keys query-params)]
