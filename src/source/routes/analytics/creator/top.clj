@@ -2,7 +2,8 @@
   (:require [source.services.analytics.interface :as analytics]
             [ring.util.response :as res]
             [clojure.walk :as w]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [source.services.interface :as services]))
 
 (defn get
   {:summary "Get the top n records with the highest number of impressions, clicks and views, in terms of the given top field. Optionally filtered by content type."
@@ -22,7 +23,26 @@
   [{:keys [ds user query-params] :as _request}]
   (let [{:keys [n mindate maxdate top contenttype]} (w/keywordize-keys query-params)
         top-field (if (= top "post") :post-id :bundle-id)
-        results (analytics/top-statistics-query ds mindate maxdate n top-field {:creator-id (:id user)
-                                                                                :content-type-id contenttype})]
-    (res/response (mapv (fn [result]
-                          (set/rename-keys result {top-field :top})) results))))
+        results (->> {:creator-id (:id user)
+                      :content-type-id contenttype}
+                     (analytics/top-statistics-query ds mindate maxdate n top-field)
+                     (mapv (fn [result]
+                             (set/rename-keys result {top-field :top}))))
+        ids (mapv :top results)
+        names (if (= top-field :post-id)
+                (mapv (fn [{:keys [id title]}]
+                        {:id id
+                         :name title})
+                      (services/incoming-posts ds {:where [:in :id ids]}))
+                (mapv (fn [{:keys [id name]}]
+                        {:id id
+                         :name name})
+                      (services/bundles ds {:where [:in :id ids]})))
+        juxted (->> names
+                    (mapv (juxt :id :name))
+                    (into {}))
+        named-results (mapv (fn [{:keys [top] :as r}]
+                              (assoc r :top (clojure.core/get juxted top (str top))))
+                            results)]
+
+    (res/response named-results)))
