@@ -9,7 +9,8 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.json :as ring]
-            [ring.middleware.cookies :as cookies]))
+            [ring.middleware.cookies :as cookies]
+            [clojure.walk :as walk]))
 
 (defn wrap-ds [handler ds]
   (fn [request]
@@ -72,6 +73,12 @@
         (handler)
         (process-body csk/->camelCaseKeyword))))
 
+(defn wrap-query [handler]
+  (fn [{:keys [query-params] :as request}]
+    (-> request
+        (assoc :query-params (walk/keywordize-keys query-params))
+        (handler))))
+
 (defn apply-generic [app & {:keys [ds store js]}]
   (-> app
       (wrap-exception-logger)
@@ -79,6 +86,7 @@
       (apply-store store)
       (apply-js js)
       (wrap-case-conversion)
+      (wrap-query)
       (content-type/wrap-content-type)
       (wrap-cors :access-control-allow-origin [(re-pattern (conf/read-value :cors-origin))]
                  :access-control-allow-methods [:get :put :post :delete])
