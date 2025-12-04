@@ -4,7 +4,7 @@
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
             [ring.util.response :as res]
-            [source.jobs.handlers :as handlers]))
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all feeds"
@@ -59,9 +59,10 @@
   [{:keys [js ds store user body] :as _request}]
   (let [{:keys [provider-id rss-url content-type-id]} body
         datetime (utils/get-utc-timestamp-string)
-        used-feed (services/feeds {:where [:= :rss-url rss-url]
-                                   :ret :1})]
-    (if (some? used-feed)
+        exists (hon/exists? ds {:tname :feeds
+                                :where [:= :rss-url rss-url]
+                                :ret :1})]
+    (if exists
       (-> (res/response {:message "There is already a feed with the given RSS feed"})
           (res/status 400))
 
@@ -99,7 +100,7 @@
             (->> (jobs/prepare-congest-metadata
                   ds
                   store
-                  {:id (handlers/update-feed-posts-job-id email (:id new-feed))
+                  {:id (str email "-" (:id new-feed))
                    :initial-delay (* 1000 60 60 24)
                    :auto-start true
                    :stop-after-fail false,
