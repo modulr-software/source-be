@@ -94,7 +94,13 @@
   Can be filtered by any other arguments accepted by metric-query."
   [ds min-date max-date opts]
   (let [weeks (interval-statistics-query ds :weekly min-date max-date opts)
-        {:keys [impressions clicks views]} (first weeks)]
+        {:keys [impressions clicks views]} (first weeks)
+        {:keys [impressions clicks views]} (cond-> {:impressions impressions
+                                                    :clicks clicks
+                                                    :views views}
+                                             (= impressions 0) (assoc :impressions 1)
+                                             (= clicks 0) (assoc :clicks 1)
+                                             (= views 0) (assoc :views 1))]
     (mapv (fn [w]
             {:week (:week w)
              :impressions (float (* (/ (- (:impressions w) impressions) impressions) 100))

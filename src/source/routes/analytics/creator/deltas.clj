@@ -18,5 +18,11 @@
 
   [{:keys [ds user query-params] :as _request}]
   (let [{:keys [mindate maxdate feed]} (w/keywordize-keys query-params)]
-    (res/response (analytics/weekly-growth-averages ds mindate maxdate {:creator-id (:id user)
-                                                                        :feed-id feed}))))
+    (let [results (analytics/weekly-growth-averages ds mindate maxdate {:creator-id (:id user)
+                                                                        :feed-id feed})
+          indexed-results (mapv (fn [{:keys [impressions clicks views]} i]
+                                  {:week (str "week " i)
+                                   :impressions impressions
+                                   :clicks clicks
+                                   :views views}) results (range 1 (inc (count results))))]
+      (res/response indexed-results))))
