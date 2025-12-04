@@ -5,7 +5,8 @@
             [source.services.analytics.interface :as analytics]))
 
 (defn get
-  {:summary "Returns the percentage of growth in impressions, clicks and views per week, over the given time period. Optionally filtered by feed."
+  {:summary "Returns the percentage of growth in impressions, clicks and views per week, over the given time period. Optionally filtered by feed. 
+   Date must be in the format yyyy-MM-dd"
    :parameters {:query [:map
                         [:mindate :string]
                         [:maxdate :string]
@@ -23,17 +24,12 @@
         {:keys [parsed-mindate parsed-maxdate]} (try
                                                   {:parsed-mindate (jt/local-date mindate)
                                                    :parsed-maxdate (jt/local-date maxdate)}
-                                                  (catch Exception _ (-> (res/response {:message "Invalid date format. Date must be in the format YYYY-MM-DD."})
+                                                  (catch Exception _ (-> (res/response {:message "Invalid date format. Date must be in the format yyyy-MM-dd."})
                                                                          (res/status 400))))
         days-between (.until parsed-mindate parsed-maxdate java.time.temporal.ChronoUnit/DAYS)
         results (analytics/weekly-growth-averages ds mindate maxdate {:creator-id (:id user)
-                                                                      :feed-id feed})
-        indexed-results (mapv (fn [{:keys [impressions clicks views]} i]
-                                {:week (str "week " i)
-                                 :impressions impressions
-                                 :clicks clicks
-                                 :views views}) results (range 1 (inc (count results))))]
+                                                                      :feed-id feed})]
     (if (>= days-between 14)
-      (res/response indexed-results)
+      (res/response results)
       (-> (res/response {:message "Date range too small. Date range must include at least 2 weeks."})
           (res/status 400)))))

@@ -93,7 +93,14 @@
   Uses the first week as a basis for comparison.
   Can be filtered by any other arguments accepted by metric-query."
   [ds min-date max-date opts]
-  (let [weeks (interval-statistics-query ds :weekly min-date max-date opts)
+  (let [days (interval-statistics-query ds :daily min-date max-date opts)
+        parts (partition-all 7 days)
+        weeks (mapv (fn [week i]
+                      {:week (str "week " i)
+                       :impressions (apply + (mapv :impressions week))
+                       :clicks (apply + (mapv :clicks week))
+                       :views (apply + (mapv :views week))})
+                    parts (range 1 (inc (count parts))))
         {:keys [impressions clicks views]} (first weeks)
         {:keys [impressions clicks views]} (cond-> {:impressions impressions
                                                     :clicks clicks
@@ -386,6 +393,22 @@
                                   :distributor-id 1}}))
 
   (time (top-statistics-query ds "2025-11-17" "2025-11-24" 10 :post-id {}))
+
+  (def data [{:a 1 :n 64}
+             {:a 2 :n 65}
+             {:a 3 :n 66}
+             {:a 4 :n 67}
+             {:a 5 :n 68}
+             {:a 6 :n 69}
+             {:a 7 :n 70}
+             {:a 8 :n 71}
+             {:a 9 :n 72}
+             {:a 10 :n 73}])
+
+  (mapv (fn [week i]
+          {:week i
+           :n (apply + (mapv :n week))})
+        (partition-all 7 data) (range 1 (inc (count (partition-all 7 data)))))
 
   ())
 

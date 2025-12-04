@@ -17,7 +17,8 @@
           (services/bundles ds {:where [:in :id ids]}))))
 
 (defn get
-  {:summary "Get the top n records with the highest number of impressions, clicks and views, in terms of the given top field. Optionally filtered by content type."
+  {:summary "Get the top n records with the highest number of impressions, clicks and views, in terms of the given top field. Optionally filtered by content type.
+   Date must be in the format yyyy-MM-dd"
    :parameters {:query [:map
                         [:n :int]
                         [:mindate :string]
