@@ -102,17 +102,12 @@
                        :views (apply + (mapv :views week))})
                     parts (range 1 (inc (count parts))))
         {:keys [impressions clicks views]} (first weeks)
-        {:keys [impressions clicks views]} (cond-> {:impressions impressions
-                                                    :clicks clicks
-                                                    :views views}
-                                             (= impressions 0) (assoc :impressions 1)
-                                             (= clicks 0) (assoc :clicks 1)
-                                             (= views 0) (assoc :views 1))]
+        denom #(if (= % 0) 1 %)]
     (mapv (fn [w]
             {:week (:week w)
-             :impressions (float (* (/ (- (:impressions w) impressions) impressions) 100))
-             :clicks (float (* (/ (- (:clicks w) clicks) clicks) 100))
-             :views (float (* (/ (- (:views w) views) views) 100))})
+             :impressions (float (* (/ (- (:impressions w) impressions) (denom impressions)) 100))
+             :clicks (float (* (/ (- (:clicks w) clicks) (denom clicks)) 100))
+             :views (float (* (/ (- (:views w) views) (denom views)) 100))})
           weeks)))
 
 (defn average-engagement
