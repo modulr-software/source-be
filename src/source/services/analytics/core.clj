@@ -3,7 +3,8 @@
             [source.db.honey :as hon]
             [source.services.bundles :as bundles]
             [source.util :as util]
-            [source.services.feed-categories :as feed-categories]))
+            [source.services.feed-categories :as feed-categories]
+            [honey.sql :as sql]))
 
 (defn metric-query
   "Generic select query function for returning analytics data from the events table"
@@ -66,7 +67,7 @@
                                                   [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
                                                   [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
                                                   [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
-                             :min-date (str min-date "T00:00:00Z")
+                             :min-date (str min-date)
                              :max-date (str max-date "T23:59:59Z")
                              :group-by (hsql/group-by column)
                              :order-by (hsql/order-by column)}
@@ -270,8 +271,7 @@
     (insert-post-event-categories! ds event' post)))
 
 (comment
-  (require '[source.db.util :as db.util]
-           '[honey.sql :as sql])
+  (require '[source.db.util :as db.util])
 
   (defonce ds (db.util/conn))
 
@@ -337,7 +337,7 @@
                              (hsql/group-by :day)
                              (hsql/order-by :day)) {:ret :*}))
 
-  (time (interval-statistics-query ds :daily "2025-11-17" "2025-11-24" {:feed-id 4}))
+  (time (interval-statistics-query ds :daily "2025-11-17" "2025-11-24" {}))
 
   (time (hon/execute! ds (-> (hsql/select [[:strftime "%W" :timestamp] :week]
                                           [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
