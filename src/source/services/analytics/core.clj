@@ -9,6 +9,7 @@
   "Generic select query function for returning analytics data from the events table"
   [ds {:keys [select order-by group-by limit metric feed-id post-id content-type-id bundle-id creator-id distributor-id min-date max-date category-ids where ret]}]
   (let [clauses (cond-> {}
+                  (some? where) (merge where)
                   (some? metric) (hsql/where [:= :event metric])
                   (some? feed-id) (hsql/where [:= :feed-id feed-id])
                   (some? post-id) (hsql/where [:= :post-id post-id])
@@ -16,7 +17,6 @@
                   (some? bundle-id) (hsql/where [:= :bundle-id bundle-id])
                   (some? creator-id) (hsql/where [:= :creator-id creator-id])
                   (some? distributor-id) (hsql/where [:= :distributor-id distributor-id])
-                  (some? where) (merge where)
                   (and (some? min-date) (nil? max-date)) (hsql/where [:>= :timestamp min-date])
                   (and (some? max-date) (nil? min-date)) (hsql/where [:<= :timestamp max-date])
                   (and (some? min-date) (some? max-date)) (hsql/where [:between :timestamp min-date max-date])
@@ -315,7 +315,7 @@
       (seed-event! maximums)))
 
   (time (metric-query ds {:min-date "2025-11-25T15:00:00Z"
-                          :feed-id "1"}))
+                          :feed-id 2}))
 
   (time (statistics-query ds {:ret :*}))
 
@@ -355,7 +355,7 @@
 
   (time (weekly-growth-averages ds "2025-11-01" "2025-11-30" {:feed-id 4}))
 
-  (time (average-engagement ds "2025-11-24T00:00:00Z" "2025-11-24T23:59:59Z" {:feed-id 4}))
+  (time (average-engagement ds "2025-11-24" "2025-11-30" {:feed-id 4}))
 
   (time (click-through-rate ds {:min-date "2025-11-24T00:00:00Z"
                                 :max-date "2025-11-24T23:59:59Z"
@@ -387,7 +387,7 @@
                                   :bundle-id 1
                                   :distributor-id 1}}))
 
-  (time (top-statistics-query ds "2025-11-17" "2025-11-24" 10 :post-id {}))
+  (time (top-statistics-query ds "2025-11-17" "2025-11-24" 10 :post-id {:content-type-id 3}))
 
   (def data [{:a 1 :n 64}
              {:a 2 :n 65}
@@ -404,6 +404,19 @@
           {:week i
            :n (apply + (mapv :n week))})
         (partition-all 7 data) (range 1 (inc (count (partition-all 7 data)))))
+
+  (metric-query ds (merge {:select (hsql/select :post-id
+                                                [(hsql/filter :%count.* (hsql/where := :event "impression")) :impressions]
+                                                [(hsql/filter :%count.* (hsql/where := :event "click")) :clicks]
+                                                [(hsql/filter :%count.* (hsql/where := :event "view")) :views])
+                           :min-date "2025-11-17"
+                           :max-date "2025-11-24"
+                           :where (hsql/where [:!= :post-id nil])
+                           :group-by (hsql/group-by :post-id)
+                           :order-by (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc])
+                           :limit 10
+                           :ret :*}
+                          {:content-type-id 3}))
 
   ())
 
