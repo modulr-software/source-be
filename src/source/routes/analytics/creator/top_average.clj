@@ -4,7 +4,8 @@
             [source.util :as utils]))
 
 (defn get
-  {:summary "Get the average engagement (clicks and views) for a creator, optionally filtered by content type."
+  {:summary "Get the average engagement (clicks and views) for a creator, optionally filtered by content type.
+   Date must be in the format yyyy-MM-dd"
    :parameters {:query [:map
                         [:mindate :string]
                         [:maxdate :string]
