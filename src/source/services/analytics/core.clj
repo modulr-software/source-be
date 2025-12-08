@@ -131,6 +131,15 @@
        (merge opts)
        (hon/insert! ds)))
 
+(defn delete-event! [ds {:keys [id where] :as opts}]
+  (->> {:tname :events
+        :where (if (some? id)
+                 [:= :id id]
+                 where)
+        :ret :1}
+       (merge opts)
+       (hon/delete! ds)))
+
 (defn insert-feed-event-categories!
   "Given a list of events and a list of feeds (or a single event/feed), 
   inserts an event category record for each event and each category 
