@@ -43,8 +43,10 @@
             [source.routes.analytics.creator.general :as analytics-creator-general]
             [source.routes.analytics.creator.deltas :as analytics-creator-deltas]
             [source.routes.analytics.creator.top :as analytics-creator-top]
+            [source.routes.analytics.creator.top-average :as analytics-creator-top-average]
             [source.routes.analytics.distributor.general :as analytics-distributor-general]
             [source.routes.analytics.distributor.top :as analytics-distributor-top]
+            [source.routes.analytics.distributor.top-average :as analytics-distributor-top-average]
             [source.routes.analytics.bundle.posts.-id-.views :as analytics-bundle-posts-id-views]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
@@ -223,14 +225,18 @@
        ["/categories"   (route {:get feed-categories/get
                                 :post feed-categories/post})]]]
 
-     ["/analytics"
+     ["/analytics"      {:tags #{"analytics"}}
       ["/creator"       {:middleware [[mw/apply-auth {:required-type :creator}]]}
        ["/general"      (route {:get analytics-creator-general/get})]
        ["/deltas"       (route {:get analytics-creator-deltas/get})]
-       ["/top"          (route {:get analytics-creator-top/get})]]
+       ["/top"
+        [""             (route {:get analytics-creator-top/get})]
+        ["/average"     (route {:get analytics-creator-top-average/get})]]]
       ["/distributor"   {:middleware [[mw/apply-auth {:required-type :distributor}]]}
        ["/general"      (route {:get analytics-distributor-general/get})]
-       ["/top"          (route {:get analytics-distributor-top/get})]]
+       ["/top"
+        [""             (route {:get analytics-distributor-top/get})]
+        ["/average"     (route {:get analytics-distributor-top-average/get})]]]
       ["/bundle"        {:middleware [[mw/apply-bundle]]}
        ["/posts"
         ["/:id"

@@ -4,7 +4,8 @@
             [clojure.walk :as w]))
 
 (defn get
-  {:summary "Gets the number of impressions, clicks and views per day for a creator over the given time period. Optionally filtered by feed."
+  {:summary "Gets the number of impressions, clicks and views per day for a creator over the given time period. Optionally filtered by feed.
+   Date must be in the format yyyy-MM-dd"
    :parameters {:query [:map
                         [:mindate :string]
                         [:maxdate :string]

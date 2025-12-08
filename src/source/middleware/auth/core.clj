@@ -49,7 +49,7 @@
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
-          bundle-uuid (get-in request [:query-params "uuid"])
+          bundle-uuid (get-in request [:query-params :uuid])
           {:keys [id]} (db/find-one ds {:tname :bundles
                                         :where [:= :uuid bundle-uuid]})]
       (if (some? id)
@@ -104,10 +104,10 @@
     (println "Test passed"))
 
   (require '[source.util :as utils])
-  (let [garbage-request {:query-params {"uuid" "garbage"}}
+  (let [garbage-request {:query-params {:uuid "garbage"}}
         ds (db.util/conn)
         uuid (utils/uuid)
-        bundle-request {:query-params {"uuid" uuid}}
+        bundle-request {:query-params {:uuid uuid}}
         test-handler (-> (fn [request]
                            request)
                          (wrap-bundle-id))]
