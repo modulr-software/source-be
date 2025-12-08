@@ -4,7 +4,8 @@
             [source.db.util :as db.util]
             [congest.jobs :as congest]
             [source.util :as utils]
-            [source.jobs.core :as jobs]))
+            [source.jobs.core :as jobs]
+            [source.jobs.handlers :as handlers]))
 
 (defn get
   {:summary "get integration by id"

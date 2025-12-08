@@ -5,7 +5,8 @@
             [source.migrate :as migrate]
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [source.jobs.handlers :as handlers]))
 
 (defn get
   {:summary "get all integrations"
@@ -82,7 +83,7 @@
     (->> (jobs/prepare-congest-metadata
           ds
           store
-          {:id (str "bundle_" (:id new-bundle))
+          {:id (handlers/update-bundle-job-id (:id new-bundle))
            :initial-delay 0
            :auto-start true
            :stop-after-fail false,

@@ -43,12 +43,15 @@
           start (when start (try (Integer/parseInt start) (catch Exception _)))
           limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
 
+          all-feed-ids (mapv :id (services/feeds ds))
           blocked-feed-ids (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]}))
+          available-feed-ids (vec (remove (set blocked-feed-ids) all-feed-ids))
+
           blocked-post-ids (mapv :post-id (services/filtered-posts ds {:where [:= :bundle-id bundle-id]}))
 
           filtered-posts (services/outgoing-posts bundle-ds (-> (hsql/where content-type-comp
                                                                             [:not [:in :id blocked-post-ids]]
-                                                                            [:not [:in :feed-id blocked-feed-ids]])
+                                                                            [:in :feed-id available-feed-ids])
                                                                 (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))))
 
           categorised-posts (vec

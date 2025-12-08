@@ -197,6 +197,9 @@
 (defn feed [ds {:keys [_id] :as opts}]
   (feeds/feed ds opts))
 
+(defn delete-feed! [ds {:keys [_id _where] :as opts}]
+  (feeds/delete-feed! ds opts))
+
 (defn insert-incoming-post! [ds {:keys [_data _ret] :as opts}]
   (incoming-posts/insert-incoming-post! ds opts))
 
@@ -215,6 +218,9 @@
 
 (defn incoming-post [ds opts]
   (incoming-posts/incoming-post ds opts))
+
+(defn delete-incoming-post! [ds {:keys [_id _where] :as opts}]
+  (incoming-posts/delete-incoming-post! ds opts))
 
 (defn insert-cadence! [ds {:keys [_values _ret] :as opts}]
   (cadences/insert-cadence! ds opts))

@@ -18,6 +18,11 @@
   (fn [{:keys [args]}]
     (println "hello" (get args :name) args)))
 
+(defn update-feed-posts-job-id 
+  "returns the job id of an update-feed-posts job with the given email and feed-id"
+  [email feed-id]
+  (str email "-" feed-id))
+
 (defmethod handler :update-feed-posts [_]
   (fn [{:keys [args ds store]}]
     (try
@@ -62,6 +67,11 @@
              (services/insert-incoming-post! ds {:data post})))
          extended-posts))
       (catch Exception _ :fail))))
+
+(defn update-bundle-job-id 
+  "returns the job id of an update-bundle job with the given bundle id"
+  [bundle-id]
+  (str "bundle_" bundle-id))
 
 ; run long heuristics and pull the highest scoring incoming posts into the bundle's outgoing posts
 (defmethod handler :update-bundle [_]

@@ -48,6 +48,9 @@
 (defn insert-event-categories! [ds {:keys [_data _ret] :as opts}]
   (core/insert-event-categories! ds opts))
 
+(defn delete-event! [ds {:keys [_id _where] :as opts}]
+  (core/delete-event! ds opts))
+
 (defn insert-feed-event-categories!
   "Given a list of events and a list of feeds (or a single event/feed), 
   inserts an event category record for each event and each category 
