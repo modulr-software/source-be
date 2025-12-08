@@ -213,7 +213,8 @@
                                 :post feeds/post})]
       ["/:id"
        [""              (route {:get feed/get
-                                :post feed/post})]
+                                :post feed/post
+                                :delete feed/delete})]
        ["/posts"
         [""             (route {:get posts/get})]
         ["/:post-id"
