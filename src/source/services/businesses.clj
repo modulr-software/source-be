@@ -1,6 +1,14 @@
 (ns source.services.businesses
   (:require [source.db.interface :as db]))
 
+(defn business
+  [ds {:keys [id where] :as opts}]
+  (->> {:tname :businesses
+        :where (if id [:= :id id] where)
+        :ret :1}
+       (merge opts)
+       (db/find ds)))
+
 (defn businesses
   ([ds] (businesses ds {}))
   ([ds opts]

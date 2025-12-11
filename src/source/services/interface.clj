@@ -35,6 +35,10 @@
 (defn update-user! [ds {:keys [_id _values _where] :as opts}]
   (users/update-user! ds opts))
 
+(defn business
+  [ds {:keys [_id _where] :as opts}]
+  (businesses/business ds opts))
+
 (defn businesses
   ([ds] (businesses ds {}))
   ([ds opts]
@@ -285,7 +289,7 @@
 (defn delete-user-sector! [ds {:keys [_id _where] :as opts}]
   (user-sectors/delete-user-sector! ds opts))
 
-(defn sectors-by-user [ds {:keys [_sector-id _where] :as opts}]
+(defn sectors-by-user [ds {:keys [_user-id _where] :as opts}]
   (user-sectors/sectors-by-user ds opts))
 
 (defn sector-id [ds {:keys [_user-id _where] :as opts}]
