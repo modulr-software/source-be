@@ -23,6 +23,7 @@
             [source.routes.authorized :as authorized]
             [source.routes.business :as business]
             [source.routes.businesses :as businesses]
+            [source.routes.business-types :as business-types]
             [source.routes.sectors :as sectors]
             [source.routes.selection-schemas :as selection-schemas]
             [source.routes.selection-schema :as selection-schema]
@@ -132,8 +133,10 @@
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get me/get
                                 :post me/post})]
-      ["/business"      (route {:post me-business/post})]
-      ["/sectors"       (route {:post me-sectors/post})]]
+      ["/business"      (route {:get me-business/get
+                                :post me-business/post})]
+      ["/sectors"       (route {:get me-sectors/get
+                                :post me-sectors/post})]]
 
      ["/mail"             {:middleware [[mw/apply-auth]]
                            :tags #{"mail"}
@@ -147,7 +150,8 @@
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get businesses/get
                                 :post business/post})]
-      ["/:id"           (route {:patch business/patch})]]
+      ["/:id"           (route {:patch business/patch})]
+      ["/types"         (route {:get business-types/get})]]
 
      ["/sectors"        {:tags #{"sectors"}}
       [""               (route {:get sectors/get})]]
