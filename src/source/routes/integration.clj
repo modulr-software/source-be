@@ -114,8 +114,16 @@
   {:summary "delete the integration with the given id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "integration id"} :int]]}
-   :responses {200 {:body [:map [:message :string]]}}}
+   :responses {200 {:body [:map [:message :string]]}
+               403 {:body [:map [:message :string]]}}}
 
-  [{:keys [ds js path-params] :as _request}]
-    (hard-delete-bundle! ds js (:id path-params))
-    (res/response {:message "successfully deleted integration"}))
+  [{:keys [ds js user path-params] :as _request}]
+  (let [bundle (services/bundle ds {:where [:and
+                                            [:= :id (:id path-params)]
+                                            [:= :user-id (:id user)]]})]
+    (if (some? bundle)
+      (do
+        (hard-delete-bundle! ds js (:id path-params))
+        (res/response {:message "successfully deleted integration"}))
+      (-> (res/response {:message "unauthorized"})
+          (res/status 403)))))
