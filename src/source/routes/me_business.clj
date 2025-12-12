@@ -18,8 +18,11 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user] :as _request}]
-  (let [{:keys [business-id]} (services/user ds {:id (:id user)})]
-    (res/response (services/business ds {:id business-id}))))
+  (let [{:keys [business-id]} (services/user ds {:id (:id user)})
+        business (if business-id
+                   (services/business ds {:id business-id})
+                   {})]
+    (res/response business)))
 
 (defn post
   {:summary "add or update business for logged-in user"
@@ -50,4 +53,4 @@
           (services/update-business! ds {:id business-id
                                          :data data}))
 
-        (res/response {:message "successfully added business"})))))
+        (res/response {:message "successfully added or updated business"})))))

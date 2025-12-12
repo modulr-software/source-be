@@ -1,6 +1,7 @@
 (ns source.routes.me-sectors
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "get sectors for the logged-in user"

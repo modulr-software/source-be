@@ -8,6 +8,6 @@
                            [:map
                             [:id :int]
                             [:name :string]]]}}}
-  [ds]
+  [{:keys [ds] :as _request}]
   (res/response (db/find ds {:tname :business-types
                              :ret :*})))

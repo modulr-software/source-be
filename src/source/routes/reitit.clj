@@ -149,8 +149,10 @@
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get businesses/get
-                                :post business/post})]
-      ["/:id"           (route {:patch business/patch})]
+                                :post business/post})] 
+      ["/:id"           (route {:patch business/patch})]]
+
+     ["/business"
       ["/types"         (route {:get business-types/get})]]
 
      ["/sectors"        {:tags #{"sectors"}}
