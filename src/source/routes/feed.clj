@@ -70,6 +70,13 @@
 
   [{:keys [ds js user path-params] :as _request}]
   (let [id (:id path-params)
+        feed (services/feed ds {:where [:and
+                                        [:= :user-id (:id user)
+                                         := :id id]]})
         {:keys [email]} (services/user ds {:id (:id user)})]
-    (hard-delete-feed! ds js email id)
-    (res/response {:message "successfully deleted feed"})))
+    (if (some? feed)
+      (do
+        (hard-delete-feed! ds js email id)
+        (res/response {:message "successfully deleted feed"}))
+      (-> (res/response {:message "unauthorized"})
+          (res/status 403)))))

@@ -5,7 +5,9 @@
             [congest.jobs :as congest]
             [source.util :as utils]
             [source.jobs.core :as jobs]
-            [source.jobs.handlers :as handlers]))
+            [source.jobs.handlers :as handlers]
+            [source.services.analytics.interface :as analytics]
+            [source.db.tables :as tables]))
 
 (defn get
   {:summary "get integration by id"
@@ -97,3 +99,31 @@
          (congest/register! js))
 
     (res/response {:message "successfully updated integration"})))
+
+(defn hard-delete-bundle! [ds js bundle-id]
+  (let [job-id (handlers/update-bundle-job-id bundle-id)]
+    (services/delete-filtered-feed! ds {:where [:= :bundle-id bundle-id]})
+    (services/delete-filtered-post! ds {:where [:= :bundle-id bundle-id]})
+    (services/delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
+    (analytics/delete-event! ds {:where [:= :bundle-id bundle-id]})
+    (tables/drop-all-tables! (db.util/conn :bundle bundle-id))
+    (services/delete-bundle ds {:id bundle-id})
+    (congest/deregister! js job-id)))
+
+(defn delete
+  {:summary "delete the integration with the given id"
+   :parameters {:path [:map [:id {:title "id"
+                                  :description "integration id"} :int]]}
+   :responses {200 {:body [:map [:message :string]]}
+               403 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds js user path-params] :as _request}]
+  (let [bundle (services/bundle ds {:where [:and
+                                            [:= :id (:id path-params)]
+                                            [:= :user-id (:id user)]]})]
+    (if (some? bundle)
+      (do
+        (hard-delete-bundle! ds js (:id path-params))
+        (res/response {:message "successfully deleted integration"}))
+      (-> (res/response {:message "unauthorized"})
+          (res/status 403)))))

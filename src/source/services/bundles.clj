@@ -31,3 +31,12 @@
         :ret :1}
        (merge opts)
        (db/find ds)))
+
+(defn delete-bundle! [ds {:keys [id where] :as opts}]
+  (->> {:tname :bundles
+        :where (if (some? id)
+                 [:= :id id]
+                 where)
+        :ret :1}
+       (merge opts)
+       (db/delete! ds)))

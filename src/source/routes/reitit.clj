@@ -195,7 +195,8 @@
                                 :post integrations/post})]
       ["/:id"
        [""              (route {:get integration/get
-                                :post integration/post})]
+                                :post integration/post
+                                :delete integration/delete})]
        ["/key"          (route {:post integration-key/post})]
        ["/categories"   (route {:get integration-categories/get
                                 :post integration-categories/post})]
