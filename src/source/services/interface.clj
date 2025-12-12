@@ -72,6 +72,9 @@
 (defn bundle [ds {:keys [_id _where] :as opts}]
   (bundles/bundle ds opts))
 
+(defn delete-bundle [ds {:keys [_id _where] :as opts}]
+  (bundles/delete-bundle! ds opts))
+
 (defn bundle-categories
   ([ds] (bundle-categories ds {}))
   ([ds {:keys [_where] :as opts}]
