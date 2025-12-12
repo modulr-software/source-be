@@ -31,7 +31,7 @@
                  :from :sectors
                  :join [:user-sectors [:= :user-sectors.sector-id :sectors.id]]
                  :where (if (some? user-id)
-                          [:= :sector-id user-id]
+                          [:= :user-id user-id]
                           where)}
                 {:ret :*}))
 
