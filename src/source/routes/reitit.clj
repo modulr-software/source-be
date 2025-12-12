@@ -152,7 +152,7 @@
                                 :post business/post})] 
       ["/:id"           (route {:patch business/patch})]]
 
-     ["/business"
+     ["/business"       {:tags #{"businesses"}}
       ["/types"         (route {:get business-types/get})]]
 
      ["/sectors"        {:tags #{"sectors"}}

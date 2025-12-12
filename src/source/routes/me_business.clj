@@ -13,7 +13,7 @@
                            [:linkedin [:maybe :string]]
                            [:twitter [:maybe :string]]
                            [:registration [:maybe :string]]
-                           [:business-type-id {:optional true} :int]]}
+                           [:business-type-id [:maybe :int]]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
