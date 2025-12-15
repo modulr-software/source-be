@@ -69,7 +69,7 @@
       (hard-delete-distributor ds js user-id))
 
     (services/delete-user-sector! ds {:where [:= :user-id user-id]})
-    (services/delete-business! ds {:id business-id})
+    (when (some? business-id) (services/delete-business! ds {:id business-id}))
     (services/delete-user! ds {:id user-id})))
 
 (defn delete
