@@ -133,12 +133,15 @@
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get me/get
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                                 :post me/post})]
       ["/business"      (route {:get me-business/get
                                 :post me-business/post})]
       ["/sectors"       (route {:get me-sectors/get
                                 :post me-sectors/post})]]
 =======
+=======
+>>>>>>> Stashed changes
                                 :post me/post
                                 :delete me/delete})]
       ["/business"      (route {:post me-business/post})]
