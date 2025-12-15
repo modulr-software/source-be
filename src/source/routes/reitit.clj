@@ -132,7 +132,8 @@
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get me/get
-                                :post me/post})]
+                                :post me/post
+                                :delete me/delete})]
       ["/business"      (route {:get me-business/get
                                 :post me-business/post})]
       ["/sectors"       (route {:get me-sectors/get
