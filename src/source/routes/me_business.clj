@@ -27,13 +27,13 @@
 (defn post
   {:summary "add or update business for logged-in user"
    :parameters {:body [:map
-                       [:name {:optional true} :string]
-                       [:address {:optional true} :string]
-                       [:url {:optional true} :string]
-                       [:linkedin {:optional true} :string]
-                       [:twitter {:optional true} :string]
-                       [:registration {:optional true} :string]
-                       [:business-type-id {:optional true} :int]]}
+                       [:name {:optional true} [:maybe :string]]
+                       [:address {:optional true} [:maybe :string]]
+                       [:url {:optional true} [:maybe :string]]
+                       [:linkedin {:optional true} [:maybe :string]]
+                       [:twitter {:optional true} [:maybe :string]]
+                       [:registration {:optional true} [:maybe :string]]
+                       [:business-type-id {:optional true} [:maybe :int]]]}
    :responses {200 {:body [:map [:message :string]]}
                400 {:body [:map [:message :string]]}}}
 
