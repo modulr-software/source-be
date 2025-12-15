@@ -1,7 +1,10 @@
 (ns source.routes.me
   (:require [source.services.interface :as services]
+            [source.routes.feed :as feed]
+            [source.routes.integration :as integration]
             [ring.util.response :as res]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.services.analytics.interface :as analytics]))
 
 (defn get
   {:summary "get logged in user by access token"
@@ -47,3 +50,33 @@
                                      :data data})
           (res/response {:message "successfully updated user"})))))
 
+(defn hard-delete-creator [ds js user-id email]
+  (let [feed-ids (mapv :id (services/feeds ds {:where [:= :user-id user-id]}))]
+    (run! #(feed/hard-delete-feed! ds js email %) feed-ids)
+    (analytics/delete-event! ds {:where [:= :creator-id user-id]})))
+
+(defn hard-delete-distributor [ds js user-id]
+  (let [bundle-ids (mapv :id (services/bundles ds {:where [:= :user-id user-id]}))]
+    (run! #(integration/hard-delete-bundle! ds js %) bundle-ids)
+    (analytics/delete-event! ds {:where [:= :distributor-id user-id]})))
+
+(defn hard-delete-user [user-type ds js user-id]
+  (let [{:keys [email business-id]} (services/user ds {:id user-id})]
+    (cond
+      (= user-type :creator)
+      (hard-delete-creator ds js user-id email)
+      (= user-type :distributor)
+      (hard-delete-distributor ds js user-id))
+
+    (services/delete-user-sector! ds {:where [:= :user-id user-id]})
+    (services/delete-business! ds {:id business-id})
+    (services/delete-user! ds {:id user-id})))
+
+(defn delete
+  {:summary "delete logged-in user by access token"
+   :responses {200 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds js user] :as _request}]
+  (let [{:keys [id type]} user]
+    (hard-delete-user (keyword type) ds js id)
+    (res/response {:message "successfully deleted user"})))
