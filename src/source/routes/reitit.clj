@@ -149,7 +149,7 @@
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
       [""               (route {:get businesses/get
-                                :post business/post})] 
+                                :post business/post})]
       ["/:id"           (route {:patch business/patch})]]
 
      ["/business"       {:tags #{"businesses"}}
@@ -293,6 +293,10 @@
                                  :tags #{"admin"}
                                  :swagger {:security [{"auth" []}]}
                                  :openapi {:security [{:bearerAuth []}]}}
+      ["/business"
+       ["/types"                (route {:post business-types/post
+                                        :patch business-types/patch
+                                        :delete business-types/delete})]]
       ["/feeds"
        [""                      (route {:get admin-feeds/get})]
        ["/:id"

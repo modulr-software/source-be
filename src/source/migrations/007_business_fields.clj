@@ -2,15 +2,7 @@
   (:require [source.db.master]
             [source.db.honey :as hon]
             [source.db.tables :as tables]
-            [honey.sql.helpers :as hsql]
-            [source.db.util :as db.util]))
-
-(def business-types-seed
-  {:tname :business-types
-   :data [{:name "Independent"}
-          {:name "Commercial"}
-          {:name "Non-profit"}
-          {:name "State-owned"}]})
+            [honey.sql.helpers :as hsql]))
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
@@ -18,8 +10,6 @@
      ds-master
      :source.db.master
      :business-types)
-
-    (hon/insert! ds-master business-types-seed)
 
     (hon/execute!
      ds-master
