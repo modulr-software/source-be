@@ -35,19 +35,12 @@
 (defn update-user! [ds {:keys [_id _values _where] :as opts}]
   (users/update-user! ds opts))
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+(defn delete-user! [ds {:keys [_id _where] :as opts}]
+  (users/delete-user! ds opts))
+
 (defn business
   [ds {:keys [_id _where] :as opts}]
   (businesses/business ds opts))
-=======
-(defn delete-user! [ds {:keys [_id _where] :as opts}]
-  (users/delete-user! ds opts))
->>>>>>> Stashed changes
-=======
-(defn delete-user! [ds {:keys [_id _where] :as opts}]
-  (users/delete-user! ds opts))
->>>>>>> Stashed changes
 
 (defn businesses
   ([ds] (businesses ds {}))
