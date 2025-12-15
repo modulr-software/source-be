@@ -248,6 +248,12 @@
    (tables/foreign-key :event-id :events :id)
    (tables/foreign-key :category-id :categories :id)))
 
+(def business-types
+  (tables/create-table-sql
+    :business-types 
+    (tables/table-id)
+    [:name :text :not nil]))
+
 (comment
   (require '[honey.sql :as sql])
 
@@ -269,6 +275,9 @@
   (sql/format incoming-posts)
   (sql/format jobs)
   (sql/format job-metadata)
+  (sql/format filtered-feeds)
+  (sql/format filtered-posts)
+  (sql/format business-types)
 
   (sql/format events)
   (sql/format event-categories)

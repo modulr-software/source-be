@@ -25,13 +25,13 @@
        (merge opts)
        (db/delete! ds)))
 
-(defn sectors-by-user [ds {:keys [sector-id where] :as _opts}]
+(defn sectors-by-user [ds {:keys [user-id where] :as _opts}]
   (hon/execute! ds
                 {:select [[:user-sectors.sector-id :id] :name]
                  :from :sectors
                  :join [:user-sectors [:= :user-sectors.sector-id :sectors.id]]
-                 :where (if (some? sector-id)
-                          [:= :sector-id sector-id]
+                 :where (if (some? user-id)
+                          [:= :user-id user-id]
                           where)}
                 {:ret :*}))
 
