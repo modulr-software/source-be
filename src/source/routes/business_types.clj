@@ -26,8 +26,8 @@
 
 (defn patch
   {:summary "update business type with the given id"
-   :parameters {:path [:id {:title "id"
-                            :description "business type id"} :int]
+   :parameters {:path [:map [:id {:title "id"
+                                  :description "business type id"} :int]]
                 :body [:map [:name :string]]}
    :responses {200 {:body [:map [:message :string]]}}}
 
@@ -39,8 +39,8 @@
 
 (defn delete
   {:summary "delete business type with the given id"
-   :parameters {:path [:id {:title "id"
-                            :description "business type id"} :int]}
+   :parameters {:path [:map [:id {:title "id"
+                                  :description "business type id"} :int]]}
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
