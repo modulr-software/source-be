@@ -20,13 +20,11 @@
 (defn post
   {:summary "add a provider"
    :parameters {:body [:map
-                       [:provider
-                        [:map
-                         [:name :string]
-                         [:domain {:optional true} [:maybe :string]]
-                         [:content-type-id :int]
-                         [:instructions {:optional true} [:maybe :string]]
-                         [:placeholder-url {:optional true} [:maybe :string]]]]]}
+                       [:name :string]
+                       [:domain {:optional true} [:maybe :string]]
+                       [:content-type-id :int]
+                       [:instructions {:optional true} [:maybe :string]]
+                       [:placeholder-url {:optional true} [:maybe :string]]]}
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body] :as _request}]
