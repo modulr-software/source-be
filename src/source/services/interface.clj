@@ -177,6 +177,9 @@
 (defn delete-provider! [ds provider-id]
   (providers/delete-provider! ds provider-id))
 
+(defn update-provider! [ds {:keys [_id _data _where] :as opts}]
+  (providers/update-provider! ds opts))
+
 (defn insert-provider! [ds {:keys [_values _ret] :as opts}]
   (providers/insert-provider! ds opts))
 

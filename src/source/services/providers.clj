@@ -25,6 +25,13 @@
        (merge opts)
        (db/find ds)))
 
+(defn update-provider! [ds {:keys [id data where] :as opts}]
+  (->> {:tname :providers
+        :data data
+        :where (if (some? id) [:= :id id] where)}
+       (merge opts)
+       (db/update! ds)))
+
 (defn delete-provider! [ds {:keys [id where] :as opts}]
   (->> {:tname :providers
         :where (if (some? id)
