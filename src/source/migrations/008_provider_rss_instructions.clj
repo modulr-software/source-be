@@ -12,12 +12,12 @@
 
     (hon/execute!
      ds-master
-     (-> (hsql/alter-table :businesses)
+     (-> (hsql/alter-table :providers)
          (hsql/add-column :placeholder-url :string)))))
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
     (hon/execute!
      ds-master
-     (-> (hsql/alter-table :businesses)
+     (-> (hsql/alter-table :providers)
          (hsql/drop-column :instructions :placeholder-url)))))
