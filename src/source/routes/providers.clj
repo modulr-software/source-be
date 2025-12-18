@@ -8,8 +8,10 @@
                            [:map
                             [:id :int]
                             [:name :string]
-                            [:domain :string]
-                            [:content-type-id :int]]]}}}
+                            [:domain [:maybe :string]]
+                            [:content-type-id :int]
+                            [:instructions [:maybe :string]]
+                            [:placeholder-url [:maybe :string]]]]}}}
 
   [{:keys [ds] :as _request}]
   (-> (services/providers ds)
@@ -18,16 +20,14 @@
 (defn post
   {:summary "add a provider"
    :parameters {:body [:map
-                       [:provider
-                        [:map
-                         [:id :int]
-                         [:name :string]
-                         [:domain :string]
-                         [:content-type-id :int]]]]}
+                       [:name :string]
+                       [:domain {:optional true} [:maybe :string]]
+                       [:content-type-id :int]
+                       [:instructions {:optional true} [:maybe :string]]
+                       [:placeholder-url {:optional true} [:maybe :string]]]}
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body] :as _request}]
-  (let [{:keys [provider]} body]
-    (services/insert-provider! ds {:data provider
-                                   :ret :1})
-    (res/response {:message "successfully added provider"})))
+  (services/insert-provider! ds {:data body
+                                 :ret :1})
+  (res/response {:message "successfully added provider"}))

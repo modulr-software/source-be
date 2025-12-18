@@ -326,7 +326,8 @@
        ["/:id"                  {:get output-schema/get}]]
       ["/providers"
        [""                      (route {:post providers/post})]
-       ["/:id"                  (route {:delete provider/delete})]]
+       ["/:id"                  (route {:post provider/post
+                                        :delete provider/delete})]]
       ["/ast"                   {:post xml/post}]
       ["/extract-data"          {:post data/post}]]]
 
