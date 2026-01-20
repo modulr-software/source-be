@@ -1,14 +1,10 @@
 (ns source.routes.reitit
   (:require [reitit.ring :as ring]
-            [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]
-            [reitit.openapi :as openapi]
             [reitit.coercion.malli]
             [reitit.ring.malli]
-            [malli.util :as mu]
             [source.middleware.interface :as mw]
             [clojure.data.json :as json]
-            [source.util :as util]
+            [source.routes.util :refer [get patch post delete] :as rutil]
             [source.routes.user :as user]
             [source.routes.users :as users]
             [source.routes.me :as me]
@@ -81,270 +77,223 @@
             [source.routes.approve-feed :as approve-feed]
             [source.routes.reject-feed :as reject-feed]))
 
-(defn route [handlers]
-  (reduce (fn [acc [k v]]
-            (let [{:keys [middleware summary parameters responses]} (util/metadata v)]
-              (merge acc {k {:middleware middleware
-                             :summary summary
-                             :parameters parameters
-                             :responses responses
-                             :handler v}})))
-          {} handlers))
-
 (defn create-app [{:keys [ds store js]}]
   (ring/ring-handler
    (ring/router
-    [["/swagger.json"   {:get {:no-doc true
-                               :swagger {:info {:title "source-api"
-                                                :description "swagger docs for source api with malli and reitit-ring"
-                                                :version "0.0.1"}
-                                         :securityDefinitions {"auth" {:type :apiKey
-                                                                       :in :header
-                                                                       :name "Authorization"}
-                                                               "apiKey" {:type :apiKey
-                                                                         :in :header
-                                                                         :name "Authorization"}}}
-                               :handler (swagger/create-swagger-handler)}}]
-
-     ["/openapi.json"   {:get {:no-doc true
-                               :openapi {:info {:title "source-api"
-                                                :description "openapi3 docs for source api with malli and reitit-ring"
-                                                :version "0.0.1"}
-                                         :components {:securitySchemes {"bearerAuth" {:type :http
-                                                                                      :scheme :bearer
-                                                                                      :bearerFormat "JWT"
-                                                                                      :description "JWT Authorization using the Bearer scheme"}
-                                                                        "apiKey" {:type :http
-                                                                                  :scheme :bearer
-                                                                                  :description "API Key authorization using the Bearer scheme"}}}}
-                               :handler (openapi/create-openapi-handler)}}]
+    [(rutil/swagger-route)
+     (rutil/openapi-route)
 
      ["/users"          {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"users"}
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
-      [""               (route {:get users/get})]
-      ["/:id"           (route {:get user/get
-                                :patch user/patch})]]
+      [""               (-> (get users/get))]
+      ["/:id"           (-> (get user/get)
+                            (patch user/patch))]]
 
      ["/me"             {:middleware [[mw/apply-auth]]
                          :tags #{"me"}
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
-      [""               (route {:get me/get
-                                :post me/post})]
-      ["/business"      (route {:get me-business/get
-                                :post me-business/post})]
-      ["/sectors"       (route {:get me-sectors/get
-                                :post me-sectors/post})]]
+      [""               (-> (get me/get)
+                            (post me/post))]
+      ["/business"      (-> (get me-business/get)
+                            (post me-business/post))]
+      ["/sectors"       (-> (get me-sectors/get)
+                            (post me-sectors/post))]]
 
      ["/mail"             {:middleware [[mw/apply-auth]]
                            :tags #{"mail"}
                            :swagger {:security [{"auth" []}]}
                            :openapi {:security [{:bearerAuth []}]}}
-      ["/report"          (route {:post report/post})]]
+      ["/report"          (-> (post report/post))]]
 
      ["/businesses"     {:middleware [[mw/apply-auth {:required-type :admin}]]
                          :tags #{"businesses"}
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
-      [""               (route {:get businesses/get
-                                :post business/post})]
-      ["/:id"           (route {:patch business/patch})]]
+      [""               (-> (get businesses/get)
+                            (post business/post))]
+      ["/:id"           (-> (patch business/patch))]]
 
      ["/business"       {:tags #{"businesses"}}
-      ["/types"         (route {:get business-types/get})]]
+      ["/types"         (-> (get business-types/get))]]
 
      ["/sectors"        {:tags #{"sectors"}}
-      [""               (route {:get sectors/get})]]
+      [""               (-> (get sectors/get))]]
 
      ["/login"          {:tags #{"auth"}}
-      [""               (route {:post login/post})]]
+      [""               (-> (post login/post))]]
 
      ["/register"       {:tags #{"auth"}}
-      [""               (route {:post register/post})]]
+      [""               (-> (post register/post))]]
 
      ["/oauth2"
       ["/google"        {:tags #{"google"}}
-       [""              (route {:get google-launch/get})]
-       ["/callback"     {:no-doc true
-                         :get google-redirect/get}]
-       ["/user"         (route {:get google-user/get})]]]
+       [""              (-> (get google-launch/get))]
+       ["/callback"     {:no-doc true}
+        [""             (-> (get google-redirect/get))]]
+       ["/user"         (-> (get google-user/get))]]]
 
      ["/protected"      {:middleware [[mw/apply-auth]]
                          :tags #{"protected"}
                          :swagger {:security [{"auth" []}]}
                          :openapi {:security [{:bearerAuth []}]}}
-      ["/authorized"    (route {:get authorized/get})]]
+      ["/authorized"    (-> (get authorized/get))]]
 
      ["/providers"      {:tags #{"providers"}}
-      [""               (route {:get providers/get})]
-      ["/:id"           (route {:get provider/get})]]
+      [""               (-> (get providers/get))]
+      ["/:id"           (-> (get provider/get))]]
 
      ["/cadences"       {:tags #{"cadences"}}
-      [""               (route {:get cadences/get})]]
+      [""               (-> (get cadences/get))]]
 
      ["/categories"     {:tags #{"categories"}}
-      [""               (route {:get categories/get})]
-      ["/:id"           (route {:get category/get})]]
+      [""               (-> (get categories/get))]
+      ["/:id"           (-> (get category/get))]]
 
      ["/baselines"      {:tags #{"baselines"}}
-      [""               (route {:get baselines/get})]]
+      [""               (-> (get baselines/get))]]
 
      ["/contentTypes"  {:tags #{"content types"}}
-      [""               (route {:get content-types/get})]
-      ["/:id"           (route {:get content-type/get})]]
+      [""               (-> (get content-types/get))]
+      ["/:id"           (-> (get content-type/get))]]
 
      ["/integrations"   {:middleware [[mw/apply-auth]]
                          :tags #{"integrations"}}
-      [""               (route {:get integrations/get
-                                :post integrations/post})]
+      [""               (->  (get integrations/get)
+                             (post integrations/post))]
       ["/:id"
-       [""              (route {:get integration/get
-                                :post integration/post
-                                :delete integration/delete})]
-       ["/key"          (route {:post integration-key/post})]
-       ["/categories"   (route {:get integration-categories/get
-                                :post integration-categories/post})]
+       [""              (-> (get integration/get)
+                            (post integration/post)
+                            (delete integration/delete))]
+       ["/key"          (-> (post integration-key/post))]
+       ["/categories"   (->  (get integration-categories/get)
+                             (post integration-categories/post))]
        ["/filter"
         ["/feeds"
-         [""            (route {:get integration-filter-feeds/get})]
-         ["/:feed-id"   (route {:get integration-filter-feed/get
-                                :post integration-filter-feed/post})]]
+         [""            (-> (get integration-filter-feeds/get))]
+         ["/:feed-id"   (->  (get integration-filter-feed/get)
+                             (post integration-filter-feed/post))]]
         ["/posts"
-         [""            (route {:get integration-filter-posts/get})]
-         ["/:post-id"   (route {:get integration-filter-post/get
-                                :post integration-filter-post/post})]]]]]
+         [""            (-> (get integration-filter-posts/get))]
+         ["/:post-id"   (-> (get integration-filter-post/get)
+                            (post integration-filter-post/post))]]]]]
 
      ["/feeds"          {:middleware [[mw/apply-auth]]
                          :tags #{"feeds"}}
-      [""               (route {:get feeds/get
-                                :post feeds/post})]
+      [""               (-> (get feeds/get)
+                            (post feeds/post))]
       ["/:id"
-       [""              (route {:get feed/get
-                                :post feed/post
-                                :delete feed/delete})]
+       [""              (-> (get feed/get)
+                            (post feed/post)
+                            (delete feed/delete))]
        ["/posts"
-        [""             (route {:get posts/get})]
+        [""             (-> (get posts/get))]
         ["/:post-id"
-         [""            (route {:get post/get})]
-         ["/prune"      (route {:post post-prune/post})]]]
-       ["/categories"   (route {:get feed-categories/get
-                                :post feed-categories/post})]]]
+         [""            (-> (get post/get))]
+         ["/prune"      (-> (post post-prune/post))]]]
+       ["/categories"   (-> (get feed-categories/get)
+                            (post feed-categories/post))]]]
 
      ["/analytics"      {:tags #{"analytics"}}
       ["/creator"       {:middleware [[mw/apply-auth {:required-type :creator}]]}
-       ["/general"      (route {:get analytics-creator-general/get})]
-       ["/deltas"       (route {:get analytics-creator-deltas/get})]
+       ["/general"      (-> (get analytics-creator-general/get))]
+       ["/deltas"       (-> (get analytics-creator-deltas/get))]
        ["/top"
-        [""             (route {:get analytics-creator-top/get})]
-        ["/average"     (route {:get analytics-creator-top-average/get})]]]
+        [""             (-> (get analytics-creator-top/get))]
+        ["/average"     (-> (get analytics-creator-top-average/get))]]]
       ["/distributor"   {:middleware [[mw/apply-auth {:required-type :distributor}]]}
-       ["/general"      (route {:get analytics-distributor-general/get})]
+       ["/general"      (-> (get analytics-distributor-general/get))]
        ["/top"
-        [""             (route {:get analytics-distributor-top/get})]
-        ["/average"     (route {:get analytics-distributor-top-average/get})]]]
+        [""             (-> (get analytics-distributor-top/get))]
+        ["/average"     (-> (get analytics-distributor-top-average/get))]]]
       ["/bundle"        {:middleware [[mw/apply-bundle]]}
        ["/posts"
         ["/:id"
-         ["/views"      (route {:post analytics-bundle-posts-id-views/post})]]]]
+         ["/views"      (-> (post analytics-bundle-posts-id-views/post))]]]]
       ["admin"          {:middleware [[mw/apply-auth {:required-type :admin}]]}
        ["/general"]
        ["/top"]]]
 
      ["/bundle"        {:middleware [[mw/apply-bundle]]
                         :tags #{"bundles"}}
-      [""               (route {:get bundle/get})]
-      ["/categories"
-       [""              (route {:get bundle-categories/get})]]
-      ["/feeds"
-       [""              (route {:post bundle-feeds/post})]
-       ["/:id"
-        [""             (route {:get bundle-feed/get})]
-        ["/posts"
-         [""            (route {:get bundle-feed-posts/get})]
-         ["/:post-id"   (route {:get bundle-feed-post/get})]]]]
-      ["/posts"
-       [""              (route {:post bundle-posts/post})]
-       ["/:id"          (route {:get bundle-post/get})]]]
+
+      ["" (get bundle/get)]
+      ["/categories" (get bundle-categories/get)]
+      ["/feeds" (post bundle-feeds/post)]
+      ["/feeds/:id" (get bundle-feed/get)]
+      ["/feeds/:id/posts" (get bundle-feed-posts/get)]
+      ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
+      ["/posts" (post bundle-posts/post)]
+      ["/posts/:id" (get bundle-post/get)]]
 
      ["/api"             {:middleware [[mw/apply-api-key]]
                           :tags #{"api"}
                           :swagger {:security [{"apiKey" []}]}
                           :openapi {:security [{:apiKey []}]}}
       ["/bundle"         {:middleware [[mw/apply-bundle]]}
-       [""               (route {:get bundle/get})]
+       [""               (-> (get bundle/get))]
        ["/categories"
-        [""              (route {:get bundle-categories/get})]]
+        [""              (-> (get bundle-categories/get))]]
        ["/feeds"
-        [""              (route {:post bundle-feeds/post})]
+        [""              (-> (post bundle-feeds/post))]
         ["/:id"
-         [""             (route {:get bundle-feed/get})]
+         [""             (-> (get bundle-feed/get))]
          ["/posts"
-          [""            (route {:get bundle-feed-posts/get})]
-          ["/:post-id"   (route {:get bundle-feed-post/get})]]]]
+          [""            (-> (get bundle-feed-posts/get))]
+          ["/:post-id"   (-> (get bundle-feed-post/get))]]]]
        ["/posts"
-        [""              (route {:post bundle-posts/post})]
-        ["/:id"          (route {:get bundle-post/get})]]]
+        [""              (-> (post bundle-posts/post))]
+        ["/:id"          (-> (get bundle-post/get))]]]
       ["/categories"
-       [""               (route {:get categories/get})]
-       ["/:id"           (route {:get category/get})]]]
+       [""               (-> (get categories/get))]
+       ["/:id"           (-> (get category/get))]]]
 
      ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
                                  :tags #{"admin"}
                                  :swagger {:security [{"auth" []}]}
                                  :openapi {:security [{:bearerAuth []}]}}
       ["/business"
-       ["/types"                (route {:post business-types/post
-                                        :patch business-types/patch
-                                        :delete business-types/delete})]]
+       ["/types"                (-> (post business-types/post)
+                                    (patch business-types/patch)
+                                    (delete business-types/delete))]]
       ["/feeds"
-       [""                      (route {:get admin-feeds/get})]
+       [""                      (-> (get admin-feeds/get))]
        ["/:id"
-        ["/approve"             (route {:post approve-feed/post})]
-        ["/reject"              (route {:post reject-feed/post})]]]
+        ["/approve"             (-> (post approve-feed/post))]
+        ["/reject"              (-> (post reject-feed/post))]]]
       ["/jobs"
-       [""                      {:get jobs/get}]
+       [""                      (-> (get jobs/get))]
        ["/manage"
-        ["/view"                {:get jobs-view/get}]
-        ["/register"            {:post jobs/post}]]
+        ["/view"                (-> (get jobs-view/get))]
+        ["/register"            (-> (post jobs/post))]]
        ["/:id"
-        [""                     {:get job/get}]
+        [""                     (-> (get job/get))]
         ["/manage"
-         ["/deregister"         {:get job-deregister/get}]
-         ["/start"              {:get job-start/get}]
-         ["/stop"               {:get job-stop/get}]]]]
-      ["/add-admin"             (route {:post admin/post})]
+         ["/deregister"         (-> (get job-deregister/get))]
+         ["/start"              (-> (get job-start/get))]
+         ["/stop"               (-> (get job-stop/get))]]]]
+      ["/add-admin"             (-> (post admin/post))]
       ["/selection-schemas"
-       [""                      {:get selection-schemas/get
-                                 :post selection-schemas/post}]
-       ["/:id"                  {:get selection-schema/get}]
-       ["/providers/:id"        {:get provider-selection-schemas/get}]]
+       [""                      (-> (get selection-schemas/get)
+                                    (post selection-schemas/post))]
+       ["/:id"                  (-> (get selection-schema/get))]
+       ["/providers/:id"        (-> (get provider-selection-schemas/get))]]
       ["/output-schemas"
-       [""                      {:get output-schemas/get
-                                 :post output-schemas/post}]
-       ["/:id"                  {:get output-schema/get}]]
+       [""                      (-> (get output-schemas/get)
+                                    (post output-schemas/post))]
+       ["/:id"                  (-> (get output-schema/get))]]
       ["/providers"
-       [""                      (route {:post providers/post})]
-       ["/:id"                  (route {:post provider/post
-                                        :delete provider/delete})]]
-      ["/ast"                   {:post xml/post}]
-      ["/extract-data"          {:post data/post}]]]
+       [""                      (-> (post providers/post))]
+       ["/:id"                  (-> (post provider/post)
+                                    (delete provider/delete))]]
+      ["/ast"                   (-> (post xml/post))]
+      ["/extract-data"          (-> (post data/post))]]]
 
-    {:data {:coercion (reitit.coercion.malli/create
-                       {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
-                        :compile mu/closed-schema
-                        :strip-extra-keys true
-                        :default-values true
-                        :options nil})
-            :middleware [[mw/apply-generic :ds ds :store store :js js]]}})
+    (rutil/data-map ds store js))
    (ring/routes
-    (swagger-ui/create-swagger-ui-handler {:path "/"
-                                           :config {:validatorUrl nil
-                                                    :urls [{:name "swagger", :url "swagger.json"}
-                                                           {:name "openapi", :url "openapi.json"}]
-                                                    :urls.primaryName "swagger"
-                                                    :operationsSorter "alpha"}})
+    (rutil/swagger-ui-handler)
     (ring/create-default-handler))))
 
 (comment

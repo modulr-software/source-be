@@ -1,7 +1,6 @@
 (ns source.routes.register
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.util :as util]))
+            [ring.util.response :as res]))
 
 (defn post
   {:summary "register a new user"
@@ -28,14 +27,9 @@
 
   [{:keys [ds body] :as _request}]
 
-  (let [{:keys [data error success]} (util/validate post body)
-        {:keys [email password confirm-password]} data
+  (let [{:keys [email password confirm-password]} body
         existing-user (services/user ds {:where [:= :email email]})]
     (cond
-
-      (not success) (-> (res/response error)
-                        (res/status 400))
-
       (not (= password confirm-password))
       (-> (res/response {:error "Passwords do not match!"}))
 
@@ -43,7 +37,7 @@
       (-> (res/response {:error "An account for this email already exists!"}))
 
       :else
-      (-> (services/register ds data)
+      (-> (services/register ds body)
           (res/response)))))
 
 (comment

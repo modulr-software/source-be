@@ -10,7 +10,9 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.json :as ring]
             [ring.middleware.cookies :as cookies]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [source.util :as util]
+            [clojure.string :as string]))
 
 (defn wrap-ds [handler ds]
   (fn [request]
@@ -54,6 +56,26 @@
         (println "Unhandled Exception:\n" e)
         (-> (res/response {:message "Internal Server Error"})
             (res/status 500))))))
+
+(defn- validate-param [request [param-type schema]]
+  (let [{:keys [error] :as validated} (-> (cond
+                                            (= param-type :body) (:body request)
+                                            (= param-type :path) (:path-params request)
+                                            (= param-type :query) (:query-params request))
+                                          (util/validate schema))]
+    (->> (when error
+           (str "In " (name param-type) ":\n" error))
+         (assoc validated :error))))
+
+(defn wrap-input-validation [handler openapi-meta]
+  (fn [request]
+    (let [errors (->> (mapv (partial validate-param request) (:parameters openapi-meta))
+                      (filter #(:error %))
+                      (mapv :error))]
+      (if (seq errors)
+        (-> (res/response {:message (string/join "\n" errors)})
+            (res/status 400))
+        (handler request)))))
 
 (defn process-body [{:keys [body] :as req} t-fn]
   (assoc req

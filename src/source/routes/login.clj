@@ -2,8 +2,7 @@
   (:require [source.services.auth :as auth]
             [ring.util.response :as res]
             [source.services.users :as users]
-            [source.password :as pw]
-            [source.util :as util]))
+            [source.password :as pw]))
 
 (defn post
   {:summary "get user data and access token provided valid credentials"
@@ -29,19 +28,15 @@
 
   [{:keys [ds body] :as _request}]
 
-  (let [{:keys [data error success]} (util/validate post body)
-        {:keys [email password]} data
+  (let [{:keys [email password]} body
         user (users/user ds {:where [:= :email email]})]
 
-    (cond
-      (not success) (-> (res/response error)
-                        (res/status 400))
-
-      (or (not (some? user))
-          (not (pw/verify-password password (:password user))))
+    (if
+     (or (not (some? user))
+         (not (pw/verify-password password (:password user))))
       {:status 401 :body {:message "Invalid username or password!"}}
 
-      :else (res/response (auth/login ds {:user user})))))
+      (res/response (auth/login ds {:user user})))))
 
 (comment
   (require '[source.db.interface :as db])

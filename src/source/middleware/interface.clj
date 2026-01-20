@@ -14,3 +14,6 @@
 
 (defn apply-api-key [app]
   (mw/apply-api-key app))
+
+(defn apply-validation [app openapi-meta]
+  (mw/wrap-input-validation app openapi-meta))

@@ -1,7 +1,6 @@
 (ns source.routes.user
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.util :as util]))
+            [ring.util.response :as res]))
 
 (defn get
   {:summary "get user by id"
@@ -61,17 +60,10 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body path-params] :as _request}]
-
-  (let [{:keys [data error success]} (util/validate patch body)]
-    (if (not success)
-
-      (-> (res/response error)
-          (res/status 400))
-
-      (do (services/update-user! ds
-                                 {:id (:id path-params)
-                                  :values data})
-          (res/response {:message "successfully updated user"})))))
+  (services/update-user! ds
+                         {:id (:id path-params)
+                          :values body})
+  (res/response {:message "successfully updated user"}))
 
 (comment
   (require '[source.db.interface :as db])
