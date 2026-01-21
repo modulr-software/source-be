@@ -273,7 +273,7 @@
       ["/ast" (post xml/post)]
       ["/extract-data" (post data/post)]]]
 
-    (rutil/data-map ds store js))
+    (rutil/data-map [[mw/apply-generic :ds ds :store store :js js]]))
    (ring/routes
     (rutil/swagger-ui-handler)
     (ring/create-default-handler))))

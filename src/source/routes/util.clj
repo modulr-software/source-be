@@ -95,11 +95,11 @@
                                                                              :description "API Key authorization using the Bearer scheme"}}}}
                           :handler (openapi/create-openapi-handler)}}])
 
-(defn data-map [ds store js]
+(defn data-map [middleware]
   {:data {:coercion (reitit.coercion.malli/create
                      {:error-keys #{#_:type :coercion :in :schema :value :errors :humanized #_:transformed}
                       :compile mu/closed-schema
                       :strip-extra-keys true
                       :default-values true
                       :options nil})
-          :middleware [[mw/apply-generic :ds ds :store store :js js]]}})
+          :middleware middleware}})
