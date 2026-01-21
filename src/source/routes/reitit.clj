@@ -83,142 +83,138 @@
     [(rutil/swagger-route)
      (rutil/openapi-route)
 
-     ["/users"          {:middleware [[mw/apply-auth {:required-type :admin}]]
-                         :tags #{"users"}
-                         :swagger {:security [{"auth" []}]}
-                         :openapi {:security [{:bearerAuth []}]}}
-      [""               (-> (get users/get))]
-      ["/:id"           (-> (get user/get)
-                            (patch user/patch))]]
+     ["/users" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                :tags #{"users"}
+                :swagger {:security [{"auth" []}]}
+                :openapi {:security [{:bearerAuth []}]}}
 
-     ["/me"             {:middleware [[mw/apply-auth]]
-                         :tags #{"me"}
-                         :swagger {:security [{"auth" []}]}
-                         :openapi {:security [{:bearerAuth []}]}}
-      [""               (-> (get me/get)
-                            (post me/post))]
-      ["/business"      (-> (get me-business/get)
-                            (post me-business/post))]
-      ["/sectors"       (-> (get me-sectors/get)
-                            (post me-sectors/post))]]
+      ["" (get users/get)]
+      ["/:id" (-> (get user/get)
+                  (patch user/patch))]]
 
-     ["/mail"             {:middleware [[mw/apply-auth]]
-                           :tags #{"mail"}
-                           :swagger {:security [{"auth" []}]}
-                           :openapi {:security [{:bearerAuth []}]}}
-      ["/report"          (-> (post report/post))]]
+     ["/me" {:middleware [[mw/apply-auth]]
+             :tags #{"me"}
+             :swagger {:security [{"auth" []}]}
+             :openapi {:security [{:bearerAuth []}]}}
 
-     ["/businesses"     {:middleware [[mw/apply-auth {:required-type :admin}]]
-                         :tags #{"businesses"}
-                         :swagger {:security [{"auth" []}]}
-                         :openapi {:security [{:bearerAuth []}]}}
-      [""               (-> (get businesses/get)
-                            (post business/post))]
-      ["/:id"           (-> (patch business/patch))]]
+      ["" (-> (get me/get)
+              (post me/post))]
+      ["/business" (-> (get me-business/get)
+                       (post me-business/post))]
+      ["/sectors" (-> (get me-sectors/get)
+                      (post me-sectors/post))]]
 
-     ["/business"       {:tags #{"businesses"}}
-      ["/types"         (-> (get business-types/get))]]
+     ["/mail" {:middleware [[mw/apply-auth]]
+               :tags #{"mail"}
+               :swagger {:security [{"auth" []}]}
+               :openapi {:security [{:bearerAuth []}]}}
 
-     ["/sectors"        {:tags #{"sectors"}}
-      [""               (-> (get sectors/get))]]
+      ["/report" (post report/post)]]
 
-     ["/login"          {:tags #{"auth"}}
-      [""               (-> (post login/post))]]
+     ["/businesses" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                     :tags #{"businesses"}
+                     :swagger {:security [{"auth" []}]}
+                     :openapi {:security [{:bearerAuth []}]}}
 
-     ["/register"       {:tags #{"auth"}}
-      [""               (-> (post register/post))]]
+      ["" (-> (get businesses/get)
+              (post business/post))]
+      ["/:id" (patch business/patch)]]
+
+     ["/business" {:tags #{"businesses"}}
+      ["/types" (get business-types/get)]]
+
+     ["/sectors" {:tags #{"sectors"}}
+      ["" (get sectors/get)]]
+
+     ["/login" {:tags #{"auth"}}
+      ["" (post login/post)]]
+
+     ["/register" {:tags #{"auth"}}
+      ["" (post register/post)]]
 
      ["/oauth2"
-      ["/google"        {:tags #{"google"}}
-       [""              (-> (get google-launch/get))]
-       ["/callback"     {:no-doc true}
-        [""             (-> (get google-redirect/get))]]
-       ["/user"         (-> (get google-user/get))]]]
+      ["/google" {:tags #{"google"}}
 
-     ["/protected"      {:middleware [[mw/apply-auth]]
-                         :tags #{"protected"}
-                         :swagger {:security [{"auth" []}]}
-                         :openapi {:security [{:bearerAuth []}]}}
-      ["/authorized"    (-> (get authorized/get))]]
+       ["" (get google-launch/get)]
+       ["/callback" {:no-doc true}
+        ["" (get google-redirect/get)]]
+       ["/user" (get google-user/get)]]]
 
-     ["/providers"      {:tags #{"providers"}}
-      [""               (-> (get providers/get))]
-      ["/:id"           (-> (get provider/get))]]
+     ["/protected" {:middleware [[mw/apply-auth]]
+                    :tags #{"protected"}
+                    :swagger {:security [{"auth" []}]}
+                    :openapi {:security [{:bearerAuth []}]}}
 
-     ["/cadences"       {:tags #{"cadences"}}
-      [""               (-> (get cadences/get))]]
+      ["/authorized" (get authorized/get)]]
 
-     ["/categories"     {:tags #{"categories"}}
-      [""               (-> (get categories/get))]
-      ["/:id"           (-> (get category/get))]]
+     ["/providers" {:tags #{"providers"}}
+      ["" (get providers/get)]
+      ["/:id" (get provider/get)]]
 
-     ["/baselines"      {:tags #{"baselines"}}
-      [""               (-> (get baselines/get))]]
+     ["/cadences" {:tags #{"cadences"}}
+      ["" (get cadences/get)]]
 
-     ["/contentTypes"  {:tags #{"content types"}}
-      [""               (-> (get content-types/get))]
-      ["/:id"           (-> (get content-type/get))]]
+     ["/categories" {:tags #{"categories"}}
+      ["" (get categories/get)]
+      ["/:id" (get category/get)]]
 
-     ["/integrations"   {:middleware [[mw/apply-auth]]
-                         :tags #{"integrations"}}
-      [""               (->  (get integrations/get)
-                             (post integrations/post))]
-      ["/:id"
-       [""              (-> (get integration/get)
-                            (post integration/post)
-                            (delete integration/delete))]
-       ["/key"          (-> (post integration-key/post))]
-       ["/categories"   (->  (get integration-categories/get)
-                             (post integration-categories/post))]
-       ["/filter"
-        ["/feeds"
-         [""            (-> (get integration-filter-feeds/get))]
-         ["/:feed-id"   (->  (get integration-filter-feed/get)
-                             (post integration-filter-feed/post))]]
-        ["/posts"
-         [""            (-> (get integration-filter-posts/get))]
-         ["/:post-id"   (-> (get integration-filter-post/get)
-                            (post integration-filter-post/post))]]]]]
+     ["/baselines" {:tags #{"baselines"}}
+      ["" (get baselines/get)]]
 
-     ["/feeds"          {:middleware [[mw/apply-auth]]
-                         :tags #{"feeds"}}
-      [""               (-> (get feeds/get)
-                            (post feeds/post))]
-      ["/:id"
-       [""              (-> (get feed/get)
-                            (post feed/post)
-                            (delete feed/delete))]
-       ["/posts"
-        [""             (-> (get posts/get))]
-        ["/:post-id"
-         [""            (-> (get post/get))]
-         ["/prune"      (-> (post post-prune/post))]]]
-       ["/categories"   (-> (get feed-categories/get)
-                            (post feed-categories/post))]]]
+     ["/contentTypes" {:tags #{"content types"}}
+      ["" (get content-types/get)]
+      ["/:id" (get content-type/get)]]
 
-     ["/analytics"      {:tags #{"analytics"}}
-      ["/creator"       {:middleware [[mw/apply-auth {:required-type :creator}]]}
-       ["/general"      (-> (get analytics-creator-general/get))]
-       ["/deltas"       (-> (get analytics-creator-deltas/get))]
-       ["/top"
-        [""             (-> (get analytics-creator-top/get))]
-        ["/average"     (-> (get analytics-creator-top-average/get))]]]
-      ["/distributor"   {:middleware [[mw/apply-auth {:required-type :distributor}]]}
-       ["/general"      (-> (get analytics-distributor-general/get))]
-       ["/top"
-        [""             (-> (get analytics-distributor-top/get))]
-        ["/average"     (-> (get analytics-distributor-top-average/get))]]]
-      ["/bundle"        {:middleware [[mw/apply-bundle]]}
-       ["/posts"
-        ["/:id"
-         ["/views"      (-> (post analytics-bundle-posts-id-views/post))]]]]
-      ["admin"          {:middleware [[mw/apply-auth {:required-type :admin}]]}
+     ["/integrations" {:middleware [[mw/apply-auth]]
+                       :tags #{"integrations"}}
+
+      ["" (->  (get integrations/get)
+               (post integrations/post))]
+      ["/:id" (-> (get integration/get)
+                  (post integration/post)
+                  (delete integration/delete))]
+      ["/:id/key" (post integration-key/post)]
+      ["/:id/categories" (->  (get integration-categories/get)
+                              (post integration-categories/post))]
+      ["/:id/filter/feeds" (get integration-filter-feeds/get)]
+      ["/:id/filter/feeds/:feed-id" (->  (get integration-filter-feed/get)
+                                         (post integration-filter-feed/post))]
+      ["/:id/filter/posts" (get integration-filter-posts/get)]
+      ["/:id/filter/posts/:post-id" (-> (get integration-filter-post/get)
+                                        (post integration-filter-post/post))]]
+
+     ["/feeds" {:middleware [[mw/apply-auth]]
+                :tags #{"feeds"}}
+
+      ["" (-> (get feeds/get)
+              (post feeds/post))]
+      ["/:id" (-> (get feed/get)
+                  (post feed/post)
+                  (delete feed/delete))]
+      ["/:id/posts" (get posts/get)]
+      ["/:id/posts/:post-id" (get post/get)]
+      ["/:id/posts/:post-id/prune" (post post-prune/post)]
+      ["/:id/categories" (-> (get feed-categories/get)
+                             (post feed-categories/post))]]
+
+     ["/analytics" {:tags #{"analytics"}}
+
+      ["/creator" {:middleware [[mw/apply-auth {:required-type :creator}]]}
+       ["/general" (get analytics-creator-general/get)]
+       ["/deltas" (get analytics-creator-deltas/get)]
+       ["/top" (get analytics-creator-top/get)]
+       ["/top/average" (get analytics-creator-top-average/get)]]
+      ["/distributor" {:middleware [[mw/apply-auth {:required-type :distributor}]]}
+       ["/general" (get analytics-distributor-general/get)]
+       ["/top" (get analytics-distributor-top/get)]
+       ["/top/average" (get analytics-distributor-top-average/get)]]
+      ["/bundle" {:middleware [[mw/apply-bundle]]}
+       ["/posts/:id/views" (post analytics-bundle-posts-id-views/post)]]
+      ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
        ["/general"]
        ["/top"]]]
-
-     ["/bundle"        {:middleware [[mw/apply-bundle]]
-                        :tags #{"bundles"}}
-
+     ["/bundle" {:middleware [[mw/apply-bundle]]
+                 :tags #{"bundles"}}
       ["" (get bundle/get)]
       ["/categories" (get bundle-categories/get)]
       ["/feeds" (post bundle-feeds/post)]
@@ -228,68 +224,54 @@
       ["/posts" (post bundle-posts/post)]
       ["/posts/:id" (get bundle-post/get)]]
 
-     ["/api"             {:middleware [[mw/apply-api-key]]
-                          :tags #{"api"}
-                          :swagger {:security [{"apiKey" []}]}
-                          :openapi {:security [{:apiKey []}]}}
-      ["/bundle"         {:middleware [[mw/apply-bundle]]}
-       [""               (-> (get bundle/get))]
-       ["/categories"
-        [""              (-> (get bundle-categories/get))]]
-       ["/feeds"
-        [""              (-> (post bundle-feeds/post))]
-        ["/:id"
-         [""             (-> (get bundle-feed/get))]
-         ["/posts"
-          [""            (-> (get bundle-feed-posts/get))]
-          ["/:post-id"   (-> (get bundle-feed-post/get))]]]]
-       ["/posts"
-        [""              (-> (post bundle-posts/post))]
-        ["/:id"          (-> (get bundle-post/get))]]]
-      ["/categories"
-       [""               (-> (get categories/get))]
-       ["/:id"           (-> (get category/get))]]]
+     ["/api" {:middleware [[mw/apply-api-key]]
+              :tags #{"api"}
+              :swagger {:security [{"apiKey" []}]}
+              :openapi {:security [{:apiKey []}]}}
 
-     ["/admin"                  {:middleware [[mw/apply-auth {:required-type :admin}]]
-                                 :tags #{"admin"}
-                                 :swagger {:security [{"auth" []}]}
-                                 :openapi {:security [{:bearerAuth []}]}}
-      ["/business"
-       ["/types"                (-> (post business-types/post)
-                                    (patch business-types/patch)
-                                    (delete business-types/delete))]]
-      ["/feeds"
-       [""                      (-> (get admin-feeds/get))]
-       ["/:id"
-        ["/approve"             (-> (post approve-feed/post))]
-        ["/reject"              (-> (post reject-feed/post))]]]
-      ["/jobs"
-       [""                      (-> (get jobs/get))]
-       ["/manage"
-        ["/view"                (-> (get jobs-view/get))]
-        ["/register"            (-> (post jobs/post))]]
-       ["/:id"
-        [""                     (-> (get job/get))]
-        ["/manage"
-         ["/deregister"         (-> (get job-deregister/get))]
-         ["/start"              (-> (get job-start/get))]
-         ["/stop"               (-> (get job-stop/get))]]]]
-      ["/add-admin"             (-> (post admin/post))]
-      ["/selection-schemas"
-       [""                      (-> (get selection-schemas/get)
-                                    (post selection-schemas/post))]
-       ["/:id"                  (-> (get selection-schema/get))]
-       ["/providers/:id"        (-> (get provider-selection-schemas/get))]]
-      ["/output-schemas"
-       [""                      (-> (get output-schemas/get)
-                                    (post output-schemas/post))]
-       ["/:id"                  (-> (get output-schema/get))]]
-      ["/providers"
-       [""                      (-> (post providers/post))]
-       ["/:id"                  (-> (post provider/post)
-                                    (delete provider/delete))]]
-      ["/ast"                   (-> (post xml/post))]
-      ["/extract-data"          (-> (post data/post))]]]
+      ["/bundle" {:middleware [[mw/apply-bundle]]}
+       ["" (get bundle/get)]
+       ["/categories" (get bundle-categories/get)]
+       ["/feeds" (post bundle-feeds/post)]
+       ["/feeds/:id" (get bundle-feed/get)]
+       ["/feeds/:id/posts" (get bundle-feed-posts/get)]
+       ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
+       ["/posts" (post bundle-posts/post)]
+       ["/posts/:id" (get bundle-post/get)]]
+      ["/categories" (get categories/get)]
+      ["/categories/:id" (get category/get)]]
+
+     ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
+                :tags #{"admin"}
+                :swagger {:security [{"auth" []}]}
+                :openapi {:security [{:bearerAuth []}]}}
+
+      ["/business/types" (-> (post business-types/post)
+                             (patch business-types/patch)
+                             (delete business-types/delete))]
+      ["/feeds" (get admin-feeds/get)]
+      ["/feeds/:id/approve" (post approve-feed/post)]
+      ["/feeds/:id/reject" (post reject-feed/post)]
+      ["/jobs" (get jobs/get)]
+      ["/jobs/manage/view" (get jobs-view/get)]
+      ["/jobs/manage/register" (post jobs/post)]
+      ["/jobs/:id" (get job/get)]
+      ["/jobs/manage/deregister" (get job-deregister/get)]
+      ["/jobs/manage/start" (get job-start/get)]
+      ["/jobs/manage/stop" (get job-stop/get)]
+      ["/add-admin" (post admin/post)]
+      ["/selection-schemas" (-> (get selection-schemas/get)
+                                (post selection-schemas/post))]
+      ["/selection-schemas/:id" (get selection-schema/get)]
+      ["/selection-schemas/providers/:id" (get provider-selection-schemas/get)]
+      ["/output-schemas" (-> (get output-schemas/get)
+                             (post output-schemas/post))]
+      ["/output-schemas/:id" (get output-schema/get)]
+      ["/providers" (post providers/post)]
+      ["/providers/:id" (-> (post provider/post)
+                            (delete provider/delete))]
+      ["/ast" (post xml/post)]
+      ["/extract-data" (post data/post)]]]
 
     (rutil/data-map ds store js))
    (ring/routes

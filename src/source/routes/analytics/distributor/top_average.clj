@@ -1,6 +1,7 @@
 (ns source.routes.analytics.distributor.top-average
   (:require [source.services.analytics.interface :as analytics]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.util :as utils]))
 
 (defn get
   {:summary "Get the average engagement (clicks and views) for a distributor, optionally filtered by content type.
@@ -12,7 +13,12 @@
    :responses {200 {:body [:map [:average :float]]}}}
 
   [{:keys [ds user query-params] :as _request}]
-  (let [{:keys [mindate maxdate contenttype]} query-params
-        result (analytics/average-engagement ds mindate maxdate {:distributor-id (:id user)
-                                                                 :content-type-id contenttype})]
-    (res/response {:average result})))
+  (let [{:keys [data success error]} (utils/validate get query-params :query)
+        {:keys [mindate maxdate contenttype]} data]
+    (if success
+      (let [result (analytics/average-engagement ds mindate maxdate {:distributor-id (:id user)
+                                                                     :content-type-id contenttype})]
+        (res/response {:average result}))
+
+      (-> (res/response error)
+          (res/status 400)))))

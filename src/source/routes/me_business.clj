@@ -1,5 +1,6 @@
 (ns source.routes.me-business
-  (:require [ring.util.response :as res]
+  (:require [source.util :as util]
+            [ring.util.response :as res]
             [source.services.interface :as services]))
 
 (defn get
@@ -37,14 +38,19 @@
                400 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user body] :as _request}]
-  (let [{:keys [business-id]} (services/user ds {:id (:id user)})
-        business (when (nil? business-id)
-                   (services/insert-business! ds {:data body
-                                                  :ret :1}))]
-    (if (nil? business-id)
-      (services/update-user! ds {:id (:id user)
-                                 :data {:business-id (:id business)}})
-      (services/update-business! ds {:id business-id
-                                     :data body}))
+  (let [{:keys [data error success]} (util/validate post body)]
+    (if (not success)
+      (-> (res/response {:message error})
+          (res/status 400))
 
-    (res/response {:message "successfully added or updated business"})))
+      (let [{:keys [business-id]} (services/user ds {:id (:id user)})
+            business (when (nil? business-id)
+                       (services/insert-business! ds {:data data
+                                                      :ret :1}))]
+        (if (nil? business-id)
+          (services/update-user! ds {:id (:id user)
+                                     :data {:business-id (:id business)}})
+          (services/update-business! ds {:id business-id
+                                         :data data}))
+
+        (res/response {:message "successfully added or updated business"})))))

@@ -22,7 +22,7 @@
 
 (defn- merge-route-map [validation-mw acc [method handler]]
   (->> (extract-openapi-meta handler)
-       (attach-handler handler validation-mw)
+       ;(attach-handler handler validation-mw)
        (assoc {} method)
        (merge acc)))
 

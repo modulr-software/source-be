@@ -94,15 +94,28 @@
 (defn humanise [{:keys [errors] :as _error}]
   (reduce append-humanised-error "" errors))
 
+; (defn validate
+;   [data schema]
+;   (let [transformed (m/decode schema data mt/string-transformer)
+;         success (m/validate schema transformed)]
+;     {:data (when success transformed)
+;      :success success
+;      :error (when-not success (->> transformed
+;                                    (m/explain schema)
+;                                    (humanise)))}))
+
 (defn validate
-  [data schema]
-  (let [transformed (m/decode schema data mt/string-transformer)
-        success (m/validate schema transformed)]
-    {:data (when success transformed)
-     :success success
-     :error (when-not success (->> transformed
-                                   (m/explain schema)
-                                   (humanise)))}))
+  ([handler data]
+   (validate handler data :body))
+  ([handler data schema-type]
+   (let [schema (get-in (metadata handler) [:parameters schema-type])
+         transformed (m/decode schema data mt/string-transformer)
+         success (m/validate schema transformed)]
+     {:data (when success transformed)
+      :success success
+      :error (when-not success (->> transformed
+                                    (m/explain schema)
+                                    (me/humanize)))})))
 
 (defn format-rss-date
   "Takes a date as a string in RFC 1123 format and returns it in a format that meets ISO 8601 standards for SQLite.

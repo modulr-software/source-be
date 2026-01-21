@@ -39,6 +39,10 @@
                400 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user body] :as _request}]
-  (services/update-user! ds {:id (:id user)
-                             :data body})
-  (res/response {:message "successfully updated user"}))
+  (let [{:keys [data error success]} (util/validate post body)]
+    (if (not success)
+      (-> (res/response {:message error})
+          (res/status 400))
+      (do (services/update-user! ds {:id (:id user)
+                                     :data data})
+          (res/response {:message "successfully updated user"})))))
