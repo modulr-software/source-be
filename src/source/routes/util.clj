@@ -14,15 +14,15 @@
 
 (defn- attach-handler [handler validation-mw openapi-meta]
   (cond-> openapi-meta
-    (some? (:parameters openapi-meta))
-    (assoc :middleware [[validation-mw openapi-meta]]
-           :responses (merge (:responses openapi-meta)
-                             (api/bad-request)))
+    #_(some? (:parameters openapi-meta))
+    #_(assoc :middleware [[validation-mw openapi-meta]]
+             :responses (merge (:responses openapi-meta)
+                               (api/bad-request)))
     true (assoc :handler handler)))
 
 (defn- merge-route-map [validation-mw acc [method handler]]
   (->> (extract-openapi-meta handler)
-       ;(attach-handler handler validation-mw)
+       (attach-handler handler validation-mw)
        (assoc {} method)
        (merge acc)))
 
