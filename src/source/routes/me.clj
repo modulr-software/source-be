@@ -46,4 +46,3 @@
       (do (services/update-user! ds {:id (:id user)
                                      :data data})
           (res/response {:message "successfully updated user"})))))
-

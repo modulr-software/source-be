@@ -40,3 +40,4 @@
                          (dissoc :confirm-password))]
         (users/insert-user! ds {:data new-user})
         (res/response {:message "successfully created user"})))))
+

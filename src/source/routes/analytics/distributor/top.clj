@@ -3,8 +3,7 @@
             [ring.util.response :as res]
             [clojure.set :as set]
             [source.services.interface :as services]
-            [source.util :as utils]
-            [clojure.walk :as walk]))
+            [source.util :as utils]))
 
 (defn record-names [ds top-field ids]
   (if (= top-field :post-id)
