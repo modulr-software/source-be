@@ -11,10 +11,15 @@
         (merge opts)
         (db/find ds))))
 
-(defn insert-bundle-content-types! [ds {:keys [_data _ret] :as opts}]
-  (->> {:tname :bundle-content-types}
-       (merge opts)
-       (db/insert! ds)))
+;;NEW
+(defn insert-bundle-content-types! [ds {:keys [bundle-id content-types]}]
+  (let [content-types (mapv (fn [{:keys [id]}]
+                              {:bundle-id bundle-id
+                               :content-type-id id}) content-types)]
+    (->> {:tname :bundle-content-types
+          :data content-types
+          :ret :*}
+         (db/insert! ds))))
 
 (defn delete-bundle-content-types! [ds {:keys [id where] :as opts}]
   (->> {:tname :bundle-content-types
@@ -43,3 +48,11 @@
         :ret :*}
        (merge opts)
        (db/find ds)))
+
+;;NEW
+(defn update-bundle-content-types! [ds {:keys [bundle-id content-types]}]
+  (let [content-types (mapv (fn [{:keys [id]}]
+                              {:bundle-id bundle-id
+                               :content-type-id id}) content-types)]
+    (delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
+    (insert-bundle-content-types! ds {:data content-types})))

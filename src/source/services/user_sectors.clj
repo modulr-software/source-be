@@ -43,3 +43,11 @@
         :ret :1}
        (merge opts)
        (db/find ds)))
+
+;;NEW
+(defn update-user-sectors! [ds {:keys [user-id sectors]}]
+  (let [update-data (reduce (fn [acc {:keys [id]}]
+                              (conj acc {:user-id user-id
+                                         :sector-id id})) [] sectors)]
+    (delete-user-sector! ds {:where [:= :user-id user-id]})
+    (insert-user-sector! ds {:data update-data})))

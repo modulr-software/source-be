@@ -32,3 +32,16 @@
         :ret :*}
        (merge opts)
        (db/find ds)))
+
+(defn insert-bundle-categories! [ds {:keys [bundle-id categories]}]
+  (let [bundle-categories (mapv (fn [{:keys [id]}]
+                                  {:bundle-id bundle-id
+                                   :category-id id}) categories)]
+    (insert-bundle-category! ds {:data bundle-categories})))
+
+(defn update-bundle-categories! [ds {:keys [bundle-id categories]}]
+  (let [bundle-categories (mapv (fn [{:keys [id]}]
+                                  {:bundle-id bundle-id
+                                   :category-id id}) categories)]
+    (delete-bundle-category! ds {:where [:= :bundle-id bundle-id]})
+    (insert-bundle-category! ds {:data bundle-categories})))
