@@ -7,7 +7,10 @@
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
             [source.services.analytics.interface :as analytics]
-            [source.db.tables :as tables]))
+            [source.db.tables :as tables]
+            [source.services.bundle-categories :as bundle-categories]
+            [source.services.bundle-content-types :as bundle-content-types]
+            [source.services.categories :as categories]))
 
 (defn get
   {:summary "get integration by id"
@@ -55,51 +58,46 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [js ds store path-params body] :as _request}]
-  (let [_ (services/update-bundle! ds {:id (:id path-params)
-                                       :data (dissoc body :categories :content-types)})
+  (with-open [bundle-ds (db.util/conn :bundle (:id path-params))]
+    (let [_ (services/update-bundle! ds {:id (:id path-params)
+                                         :data (dissoc body :categories :content-types)})
 
-        bundle-categories (mapv (fn [{:keys [id]}]
-                                  {:bundle-id (:id path-params)
-                                   :category-id id}) (:categories body))
-        bundle-content-types (mapv (fn [{:keys [id]}]
-                                     {:bundle-id (:id path-params)
-                                      :content-type-id id}) (:content-types body))
-
-        job-id (str "bundle_" (:id path-params))
+          job-id (str "bundle_" (:id path-params))
 
         ; update bundle categories
-        bundle-ds (db.util/conn :bundle (:id path-params))
-        _ (services/delete-bundle-category! bundle-ds {:where [:= :bundle-id (:id path-params)]})
-        _ (services/insert-bundle-category! bundle-ds {:data bundle-categories})
-
+          _ (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id (:id path-params)
+                                                                    :categories (:categories body)})
         ; update bundle content types
-        _ (services/delete-bundle-content-types! ds {:where [:= :bundle-id (:id path-params)]})
-        _ (services/insert-bundle-content-types! ds {:data bundle-content-types})
+          _ (bundle-content-types/update-bundle-content-types! ds {:bundle-id (:id path-params)
+                                                                   :content-types (:content-types body)})
 
-        category-ids (services/category-id-by-bundle bundle-ds {:bundle-id (:id path-params)})
-        id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
-        categories-by-bundle (services/categories ds {:where [:in :id id-vec]})]
+          ; service needed
+          category-ids (bundle-categories/category-id bundle-ds {:bundle-id (:id path-params)})
+          id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
+          categories-by-bundle (categories/categories ds {:where [:in :id id-vec]})]
 
-    (congest/deregister! js job-id)
-    (->> (jobs/prepare-congest-metadata
-          ds
-          store
-          {:id job-id
-           :initial-delay (* 1000 60 60 24)
-           :auto-start true
-           :stop-after-fail false,
-           :interval (* 1000 60 60 24)
-           :recurring? true
-           :ds ds
-           :args {:bundle-id (:id path-params)
-                  :categories categories-by-bundle}
-           :handler :update-bundle
-           :created-at (utils/get-utc-timestamp-string)
-           :sleep false})
-         (congest/register! js))
+      ; service needed
+      (congest/deregister! js job-id)
+      (->> (jobs/prepare-congest-metadata
+            ds
+            store
+            {:id job-id
+             :initial-delay (* 1000 60 60 24)
+             :auto-start true
+             :stop-after-fail false,
+             :interval (* 1000 60 60 24)
+             :recurring? true
+             :ds ds
+             :args {:bundle-id (:id path-params)
+                    :categories categories-by-bundle}
+             :handler :update-bundle
+             :created-at (utils/get-utc-timestamp-string)
+             :sleep false})
+           (congest/register! js))
 
-    (res/response {:message "successfully updated integration"})))
+      (res/response {:message "successfully updated integration"}))))
 
+; cleanup needed
 (defn hard-delete-bundle! [ds js bundle-id]
   (let [job-id (handlers/update-bundle-job-id bundle-id)]
     (services/delete-filtered-feed! ds {:where [:= :bundle-id bundle-id]})

@@ -1,6 +1,6 @@
 (ns source.routes.me-sectors
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.services.user-sectors :as user-sectors]))
 
 (defn get
   {:summary "get sectors for the logged-in user"
@@ -11,7 +11,7 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
   [{:keys [ds user] :as _request}]
-  (res/response (services/sectors-by-user ds {:user-id (:id user)})))
+  (res/response (user-sectors/sectors-by-user ds {:user-id (:id user)})))
 
 (defn post
   {:summary "update sectors for the logged-in user"
@@ -21,9 +21,6 @@
                         [:name :string]]]}
    :responses {200 {:body [:map [:message :string]]}}}
   [{:keys [ds user body] :as _request}]
-  (let [update-data (reduce (fn [acc {:keys [id]}]
-                              (conj acc {:user-id (:id user)
-                                         :sector-id id})) [] body)]
-    (services/delete-user-sector! ds {:where [:= :user-id (:id user)]})
-    (services/insert-user-sector! ds {:data update-data})
-    (res/response {:message "successfully updated user sectors"})))
+  (user-sectors/update-user-sectors! ds {:user-id (:id user)
+                                         :sectors body})
+  (res/response {:message "successfully updated user sectors"}))
