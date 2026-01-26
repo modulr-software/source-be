@@ -10,13 +10,15 @@
    [:linkedin :string]
    [:twitter :string]])
 
+(def UserType [:enum ["creator" "distributor" "admin"]])
+
 (def User
   [:map
    [:id :int]
    [:email :string]
    [:firstname :string]
    [:lastname :string]
-   [:type [:enum ["creator" "distributor" "admin"]]]
+   [:type UserType]
    [:email-verified :int]
    [:onboarded :int]
    [:address :string]
@@ -27,17 +29,17 @@
   (-> User
       (mu/assoc :business Business)))
 
-(def AuthSchema
+(def SessionCredentials
   [:map
    [:access-token :string]
    [:refresh-token :string]])
 
 (def Login
-  (-> AuthSchema
+  (-> SessionCredentials
       (mu/assoc :user User)))
 
 (def Register
-  (-> AuthSchema
+  (-> SessionCredentials
       (mu/assoc :user User)))
 
 (def ConstantSchema
@@ -85,27 +87,29 @@
    [:min :int]
    [:max :int]])
 
-(def Feed
+(def FeedStatus [:enum ["live" "not live" "pending"]])
+
+(def FeedRecord
   [:map
    [:id :int]
    [:title :string]
    [:display-picture :string]
    [:url :string]
    [:rss-url :string]
-   [:provider-id :int]
    [:created-at :string]
    [:updated-at :string]
    [:ts-and-cs :int]
-   [:state [:enum ["live" "not live" "pending"]]]])
+   [:state FeedStatus]])
 
-(def FeedWithChildren
-  (-> Feed
+(def Feed
+  (-> FeedRecord
       (mu/assoc :user User)
       (mu/assoc :content-type ContentType)
       (mu/assoc :cadence Cadence)
-      (mu/assoc :baseline Baseline)))
+      (mu/assoc :baseline Baseline)
+      (mu/assoc :provider Provider)))
 
-(def IncomingPost
+(def IncomingPostRecord
   [:map
    [:id :int]
    [:post-id :string]
@@ -119,9 +123,9 @@
    [:redacted :int]
    [:posted-at :string]])
 
-(def IncomingPostWithChildren
+(def IncomingPost
   (-> IncomingPost
-      (mu/assoc :feed FeedWithChildren)))
+      (mu/assoc :feed FeedRecord)))
 
 ;; This is exactly the same as IncomingPost except without redacted
 ;; We could probably just make a Post schema with (sometimes :redacted :int)
@@ -138,11 +142,13 @@
    [:episode :int]
    [:posted-at :string]])
 
+(def JobStatus [:enum ["running" "stopped"]])
+
 (def Job
   [:map
    [:id :int]
    [:job-id :string]
-   [:status [:enum ["running" "stopped"]]]
+   [:status JobStatus]
    [:args :string]
    [:handler :string]
    [:last-heartbeat :string]])
@@ -178,29 +184,35 @@
   (-> Bundle
       (mu/assoc :user User)))
 
+(def GeneralStatistic
+  [:map
+   [:day :string]
+   [:impressions :int]
+   [:clicks :int]
+   [:views :int]])
+
 (def GeneralAnalytics
-  [:vector
-   [:map
-    [:day :string]
-    [:impressions :int]
-    [:clicks :int]
-    [:views :int]]])
+  [:vector GeneralStatistic])
+
+(def DeltasStatistic
+  [:map
+   [:week :string]
+   [:impressions :float]
+   [:clicks :float]
+   [:views :float]])
 
 (def DeltasAnalytics
-  [:vector
-   [:map
-    [:week :string]
-    [:impressions :float]
-    [:clicks :float]
-    [:views :float]]])
+  [:vector DeltasStatistic])
+
+(def TopStatistic
+  [:map
+   [:top :string]
+   [:impressions :int]
+   [:clicks :int]
+   [:views :int]])
 
 (def TopAnalytics
-  [:vector
-   [:map
-    [:top :string]
-    [:impressions :int]
-    [:clicks :int]
-    [:views :int]]])
+  [:vector TopStatistic])
 
 (def AverageEngagementAnalytics
   [:map
