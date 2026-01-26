@@ -124,7 +124,7 @@
    [:posted-at :string]])
 
 (def IncomingPost
-  (-> IncomingPost
+  (-> IncomingPostRecord
       (mu/assoc :feed FeedRecord)))
 
 ;; This is exactly the same as IncomingPost except without redacted
