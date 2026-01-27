@@ -1,7 +1,6 @@
 (ns source.routes.bundle-feed-posts
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.services.analytics.interface :as analytics]))
+  (:require [ring.util.response :as res]
+            [source.workers.bundles :as bundles]))
 
 (defn get
   {:summary "get all posts by feed id"
@@ -28,6 +27,7 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id path-params] :as _request}]
-  (let [posts (services/incoming-posts ds {:where [:= :feed-id (:id path-params)]})]
-    (analytics/insert-post-impressions! ds posts bundle-id)
-    (res/response posts)))
+  (->> {:bundle-id bundle-id
+        :feed-id (:id path-params)}
+       (bundles/get-posts-by-feed-in-bundle! ds)
+       (res/response)))

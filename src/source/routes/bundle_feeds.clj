@@ -1,11 +1,7 @@
 (ns source.routes.bundle-feeds
   (:require [ring.util.response :as res]
-            [source.services.interface :as services]
             [source.db.util :as db.util]
             [clojure.walk :as walk]
-            [honey.sql.helpers :as hsql]
-            [source.services.analytics.interface :as analytics]
-            [source.db.honey :as hon]
             [source.workers.bundles :as bundles]))
 
 (defn post
