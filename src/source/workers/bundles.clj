@@ -6,7 +6,9 @@
             [clojure.set :as set]
             [source.services.feed-categories :as feed-categories]))
 
-(defn get-bundle-categories [ds bundle-id]
+(defn get-bundle-categories 
+  "Get all categories for feeds/posts in bundle"
+  [ds bundle-id]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
     (let [feed-ids (->> (hon/find bundle-ds {:tname :outgoing-posts
                                              :ret :*})
@@ -50,26 +52,34 @@
       (analytics/insert-feed-impressions! ds type-filtered bundle-id)
       type-filtered)))
 
-(defn get-feed-in-bundle! [ds {:keys [bundle-id feed-id]}]
+(defn get-feed-in-bundle! 
+  "Get feed in bundle and update analytics clicks"
+  [ds {:keys [bundle-id feed-id]}]
   (let [feed (hon/find-one ds {:tname :feeds
                                :where [:= :id feed-id]})]
     (analytics/insert-feed-click! ds feed bundle-id)
     feed))
 
-(defn get-posts-by-feed-in-bundle! [ds {:keys [bundle-id feed-id]}]
+(defn get-posts-by-feed-in-bundle! 
+  "Get all posts in a feed and update analytics impressions"
+  [ds {:keys [bundle-id feed-id]}]
   (let [posts (hon/find ds {:tname :incoming-posts
                             :where [:= :feed-id feed-id]
                             :ret :*})]
     (analytics/insert-post-impressions! ds posts bundle-id)
     posts))
 
-(defn get-post-by-feed-in-bundle! [ds {:keys [bundle-id post-id]}]
+(defn get-post-by-feed-in-bundle! 
+  "Get post in a feed and update analytics clicks"
+  [ds {:keys [bundle-id post-id]}]
   (let [post (hon/find-one ds {:tname :incoming-posts
                                :where [:= :id post-id]})]
     (analytics/insert-post-click! ds post bundle-id)
     post))
 
-(defn get-outgoing-posts! [ds {:keys [bundle-id limit start type latest category-ids]}]
+(defn get-outgoing-posts! 
+  "Get outgoing posts based on short heuristics and update analytics impressions"
+  [ds {:keys [bundle-id limit start type latest category-ids]}]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
     (let [content-type-comp (when type [:= :content-type-id type])
           start (when start (try (Integer/parseInt start) (catch Exception _)))
@@ -120,7 +130,9 @@
       (analytics/insert-post-impressions! ds limited-posts bundle-id)
       limited-posts)))
 
-(defn get-outgoing-post! [ds {:keys [bundle-id post-id]}]
+(defn get-outgoing-post! 
+  "Get single outgoing post and update analytics click"
+  [ds {:keys [bundle-id post-id]}]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
     (let [post (hon/find-one bundle-ds {:tname :outgoing-posts
                                         :where [:= :id post-id]
