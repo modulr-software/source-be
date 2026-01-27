@@ -11,8 +11,7 @@
             [source.services.filtered-feeds :as filtered-feeds]
             [source.services.filtered-posts :as filtered-posts]
             [source.services.analytics.interface :as analytics]
-            [source.db.tables :as tables]
-            [source.util :as util]))
+            [source.db.tables :as tables]))
 
 (defn create-integration! [ds js store {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
@@ -92,8 +91,8 @@
     (congest/deregister! js job-id)))
 
 (defn generate-api-key! [ds user-id bundle-id]
-  (let [uuid (util/uuid)
-        api-key (util/sha256 (str user-id bundle-id uuid))]
+  (let [uuid (utils/uuid)
+        api-key (utils/sha256 (str user-id bundle-id uuid))]
     (bundles/update-bundle! ds {:id bundle-id
                                 :data {:hash api-key}})
     api-key))
@@ -104,4 +103,12 @@
                                                       :bundle-id bundle-id}})
     (filtered-feeds/delete-filtered-feed! ds {:where [:and
                                                       [:= :feed-id feed-id]
+                                                      [:= :bundle-id bundle-id]]})))
+
+(defn update-filtered-posts! [ds {:keys [filtered bundle-id post-id]}]
+  (if filtered
+    (filtered-posts/insert-filtered-posts! ds {:data {:post-id post-id
+                                                      :bundle-id bundle-id}})
+    (filtered-posts/delete-filtered-post! ds {:where [:and
+                                                      [:= :post-id post-id]
                                                       [:= :bundle-id bundle-id]]})))
