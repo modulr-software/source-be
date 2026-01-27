@@ -39,7 +39,7 @@
                  (or (cske/transform-keys
                       csk/->snake_case_keyword where)
                      [])))
-            :ret ret))
+            :ret (or ret :*)))
 
 (defn find-one [ds opts]
   (->> {:ret :1}

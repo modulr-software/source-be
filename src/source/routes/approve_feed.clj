@@ -2,7 +2,8 @@
   (:require [source.services.interface :as services]
             [source.email.gmail :as gmail]
             [source.email.templates :as templates]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "approve the feed with the given feed-id and allow it to go live"
@@ -13,10 +14,13 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (let [{:keys [id user-id title]} (services/feed ds path-params)
-        {:keys [email firstname]} (services/user ds {:id user-id})]
-    (services/update-feed! ds {:id (:id path-params)
-                               :data {:state "live"}})
+  (let [{:keys [id user-id title]} (hon/find-one ds {:tname :feeds
+                                                     :where [:= :id (:id path-params)]})
+        {:keys [email firstname]} (services/user ds {:tname :users
+                                                     :where [:= :id user-id]})]
+    (hon/update! ds {:tname :feeds
+                     :where [:= :id (:id path-params)]
+                     :data {:state "live"}})
     (gmail/send-email {:to email
                        :subject "Feed Approval"
                        :body (templates/feed-approval {:creator-name firstname
