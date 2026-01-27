@@ -89,3 +89,14 @@
     (hon/delete! ds {:tname :feeds
                      :where [:= :id feed-id]})
     (congest/deregister! js job-id)))
+
+(defn update-feed-categories! [ds {:keys [feed-id categories]}]
+  (let [update-data (mapv (fn [{:keys [id]}]
+                            {:feed-id feed-id
+                             :category-id id}) categories)]
+    (when (seq update-data)
+      (hon/delete! ds {:tname :feed-categories
+                       :where [:= :feed-id feed-id]})
+      (hon/insert! ds {:tname :feed-categories
+                       :data update-data
+                       :ret :*}))))

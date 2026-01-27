@@ -1,6 +1,6 @@
 (ns source.routes.posts
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all posts by feed id"
@@ -26,5 +26,7 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (-> (services/incoming-posts ds {:where [:= :feed-id (:id path-params)]})
+  (-> (hon/find ds {:tname :incoming-posts
+                    :where [:= :feed-id (:id path-params)]
+                    :ret :*})
       (res/response)))

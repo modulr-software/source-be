@@ -1,6 +1,6 @@
 (ns source.routes.post
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get post by id"
@@ -23,7 +23,8 @@
                             [:posted-at [:maybe :string]]]}}}
 
   [{:keys [ds user path-params] :as _request}]
-  (-> (services/incoming-post ds {:where [:and
-                                          [:= :id (:post-id path-params)]
-                                          [:= :creator-id (:id user)]]})
+  (-> (hon/find-one ds {:tname :incoming-posts
+                        :where [:and
+                                [:= :id (:post-id path-params)]
+                                [:= :creator-id (:id user)]]})
       (res/response)))
