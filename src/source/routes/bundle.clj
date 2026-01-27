@@ -1,6 +1,6 @@
 (ns source.routes.bundle
   (:require [ring.util.response :as res]
-            [source.services.interface :as services]))
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get bundle metadata by authorized uuid"
@@ -19,4 +19,5 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id] :as _request}]
-  (res/response (services/bundle ds {:id bundle-id})))
+  (res/response (hon/find-one ds {:tname :bundles
+                                  :where [:= :id bundle-id]})))

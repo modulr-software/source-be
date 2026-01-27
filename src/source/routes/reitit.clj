@@ -213,6 +213,7 @@
       ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
        ["/general"]
        ["/top"]]]
+
      ["/bundle" {:middleware [[mw/apply-bundle]]
                  :tags #{"bundles"}}
       ["" (get bundle/get)]

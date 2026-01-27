@@ -1,6 +1,5 @@
 (ns source.routes.bundle-categories
-  (:require [source.services.interface :as services]
-            [source.db.util :as db.util]
+  (:require [source.workers.bundles :as bundles]
             [ring.util.response :as res]))
 
 (defn get
@@ -14,9 +13,4 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [bundle-id ds] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [feed-ids (->> (services/outgoing-posts bundle-ds)
-                        (mapv :feed-id))
-          category-ids (->> (services/feed-categories ds {:where [:in :feed-id feed-ids]})
-                            (mapv :category-id))]
-      (res/response (services/categories ds {:where [:in :id category-ids]})))))
+  (res/response (bundles/get-bundle-categories ds bundle-id)))
