@@ -1,9 +1,7 @@
 (ns source.routes.feed
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [congest.jobs :as congest]
-            [source.jobs.handlers :as handlers]
-            [source.services.analytics.interface :as analytics]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]
+            [source.workers.feeds :as feeds]))
 
 (defn get
   {:summary "get feed by id"
@@ -26,7 +24,8 @@
                             [:state [:enum "live" "not live" "pending"]]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (-> (services/feed ds path-params)
+  (-> (hon/find-one ds {:tname :feeds
+                        :where [:= :id (:id path-params)]})
       (res/response)))
 
 (defn post
@@ -45,20 +44,9 @@
                 403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params body] :as _request}]
-  (services/update-feed! ds {:id (:id path-params)
-                             :data body})
+  (feeds/update-feed! ds {:feed-id (:id path-params)
+                          :feed-metadata body})
   (res/response {:message "successfully updated feed"}))
-
-(defn hard-delete-feed! [ds js creator-email feed-id]
-  (let [job-id (handlers/update-feed-posts-job-id creator-email feed-id)
-        post-ids (mapv :id (services/incoming-posts ds {:where [:= :feed-id feed-id]}))]
-    (services/delete-filtered-feed! ds {:where [:= :feed-id feed-id]})
-    (services/delete-filtered-post! ds {:where [:in :post-id post-ids]})
-    (services/delete-incoming-post! ds {:where [:= :feed-id feed-id]})
-    (services/delete-feed-category! ds {:where [:= :feed-id feed-id]})
-    (analytics/delete-event! ds {:where [:= :feed-id feed-id]})
-    (services/delete-feed! ds {:where [:= :id feed-id]})
-    (congest/deregister! js job-id)))
 
 (defn delete
   {:summary "delete feed by id"
@@ -70,13 +58,15 @@
 
   [{:keys [ds js user path-params] :as _request}]
   (let [id (:id path-params)
-        feed (services/feed ds {:where [:and
-                                        [:= :user-id (:id user)
-                                         := :id id]]})
-        {:keys [email]} (services/user ds {:id (:id user)})]
+        feed (hon/find-one ds {:tname :feeds
+                               :where [:and
+                                       [:= :user-id (:id user)
+                                        := :id id]]})
+        {:keys [email]} (hon/find-one ds {:tname :users
+                                          :where [:= :id (:id user)]})]
     (if (some? feed)
       (do
-        (hard-delete-feed! ds js email id)
+        (feeds/hard-delete-feed! ds js email id)
         (res/response {:message "successfully deleted feed"}))
       (-> (res/response {:message "unauthorized"})
           (res/status 403)))))

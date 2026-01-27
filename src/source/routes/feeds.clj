@@ -1,6 +1,7 @@
 (ns source.routes.feeds
   (:require [source.services.interface :as services]
             [source.util :as utils]
+            [source.workers.feeds :as feeds]
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
             [ring.util.response :as res]
@@ -57,68 +58,19 @@
                            [:state [:enum "live" "not live" "pending"]]]}}}
 
   [{:keys [js ds store user body] :as _request}]
-  (let [{:keys [provider-id rss-url content-type-id]} body
-        datetime (utils/get-utc-timestamp-string)
-        exists (hon/exists? ds {:tname :feeds
-                                :where [:= :rss-url rss-url]
+  (let [exists (hon/exists? ds {:tname :feeds
+                                :where [:= :rss-url (:rss-url body)]
                                 :ret :1})]
     (if exists
       (-> (res/response {:message "There is already a feed with the given RSS feed"})
           (res/status 400))
 
-      (let [selection-schemas (->> [:= :provider-id provider-id]
-                                   (assoc {} :where)
-                                   (services/selection-schemas ds))
-            latest-ss (->> selection-schemas
-                           (reduce (fn [acc {:keys [id]}]
-                                     (conj acc id)) [])
-                           (apply max -1))
-            extracted (when-not (= latest-ss -1)
-                        (services/extract-data store {:schema-id latest-ss
-                                                      :url rss-url}))
-            extracted-posts (get-in extracted [:feed :posts])
-            new-feed (services/insert-feed!
-                      ds
-                      {:data (merge body {:title (get-in extracted [:feed :title])
-                                          :display-picture (get-in extracted [:feed :display-picture])
-                                          :user-id (:id user)
-                                          :created-at datetime
-                                          :state "pending"})})
-            extended-posts (mapv (fn [post]
-                                   (merge post
-                                          {:feed-id (:id new-feed)
-                                           :creator-id (:id user)
-                                           :content-type-id content-type-id
-                                           :thumbnail (or (:thumbnail post) (:display-picture new-feed))}))
-                                 extracted-posts)
-            {:keys [email]} (services/user ds {:id (:id user)})]
-
-        (if (some? extracted-posts)
-          (do
-            (services/insert-incoming-post! ds {:data extended-posts})
-
-            (->> (jobs/prepare-congest-metadata
-                  ds
-                  store
-                  {:id (str email "-" (:id new-feed))
-                   :initial-delay (* 1000 60 60 24)
-                   :auto-start true
-                   :stop-after-fail false,
-                   :interval (* 1000 60 60 24)
-                   :recurring? true
-                   :args {:feed-id (:id new-feed)
-                          :creator-id (:id user)
-                          :content-type-id content-type-id
-                          :provider-id provider-id
-                          :url rss-url}
-                   :handler :update-feed-posts
-                   :created-at (utils/get-utc-timestamp-string)
-                   :sleep false})
-                 (congest/register! js))
-            (res/response new-feed))
-
-          (-> (res/response {:message "failed to extract data"})
-              (res/status 500)))))))
+      (let [new-feed (feeds/create-feed! ds js store {:user-id (:id user)
+                                                      :feed-metadata body})]
+        (if new-feed
+          (res/response new-feed)
+          (-> (res/response {:message "Failed to parse RSS feed"})
+              (res/status 422)))))))
 
 (comment
   (require '[source.db.util :as db.util]
