@@ -1,16 +1,8 @@
 (ns source.routes.integration
   (:require [ring.util.response :as res]
             [source.services.interface :as services]
-            [source.db.util :as db.util]
-            [congest.jobs :as congest]
-            [source.util :as utils]
-            [source.jobs.core :as jobs]
-            [source.jobs.handlers :as handlers]
-            [source.services.analytics.interface :as analytics]
-            [source.db.tables :as tables]
-            [source.services.bundle-categories :as bundle-categories]
-            [source.services.bundle-content-types :as bundle-content-types]
-            [source.services.categories :as categories]))
+            [source.services.bundles :as bundles]
+            [source.workers.integrations :as integrations]))
 
 (defn get
   {:summary "get integration by id"
@@ -58,55 +50,11 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [js ds store path-params body] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle (:id path-params))]
-    (let [_ (services/update-bundle! ds {:id (:id path-params)
-                                         :data (dissoc body :categories :content-types)})
-
-          job-id (str "bundle_" (:id path-params))
-
-        ; update bundle categories
-          _ (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id (:id path-params)
-                                                                    :categories (:categories body)})
-        ; update bundle content types
-          _ (bundle-content-types/update-bundle-content-types! ds {:bundle-id (:id path-params)
-                                                                   :content-types (:content-types body)})
-
-          ; service needed
-          category-ids (bundle-categories/category-id bundle-ds {:bundle-id (:id path-params)})
-          id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)
-          categories-by-bundle (categories/categories ds {:where [:in :id id-vec]})]
-
-      ; service needed
-      (congest/deregister! js job-id)
-      (->> (jobs/prepare-congest-metadata
-            ds
-            store
-            {:id job-id
-             :initial-delay (* 1000 60 60 24)
-             :auto-start true
-             :stop-after-fail false,
-             :interval (* 1000 60 60 24)
-             :recurring? true
-             :ds ds
-             :args {:bundle-id (:id path-params)
-                    :categories categories-by-bundle}
-             :handler :update-bundle
-             :created-at (utils/get-utc-timestamp-string)
-             :sleep false})
-           (congest/register! js))
-
-      (res/response {:message "successfully updated integration"}))))
-
-; cleanup needed
-(defn hard-delete-bundle! [ds js bundle-id]
-  (let [job-id (handlers/update-bundle-job-id bundle-id)]
-    (services/delete-filtered-feed! ds {:where [:= :bundle-id bundle-id]})
-    (services/delete-filtered-post! ds {:where [:= :bundle-id bundle-id]})
-    (services/delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
-    (analytics/delete-event! ds {:where [:= :bundle-id bundle-id]})
-    (tables/drop-all-tables! (db.util/conn :bundle bundle-id))
-    (services/delete-bundle ds {:id bundle-id})
-    (congest/deregister! js job-id)))
+  (integrations/update-integration! ds js store {:bundle-id (:id path-params)
+                                                 :bundle-metadata (dissoc body :categories :content-types)
+                                                 :categories (:categories body)
+                                                 :content-types (:content-types body)})
+  (res/response {:message "successfully updated integration"}))
 
 (defn delete
   {:summary "delete the integration with the given id"
@@ -116,12 +64,12 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds js user path-params] :as _request}]
-  (let [bundle (services/bundle ds {:where [:and
-                                            [:= :id (:id path-params)]
-                                            [:= :user-id (:id user)]]})]
+  (let [bundle (bundles/bundle ds {:where [:and
+                                           [:= :id (:id path-params)]
+                                           [:= :user-id (:id user)]]})]
     (if (some? bundle)
       (do
-        (hard-delete-bundle! ds js (:id path-params))
+        (integrations/hard-delete-bundle! ds js (:id path-params))
         (res/response {:message "successfully deleted integration"}))
       (-> (res/response {:message "unauthorized"})
           (res/status 403)))))
