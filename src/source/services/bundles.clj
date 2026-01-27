@@ -53,6 +53,7 @@
        (merge opts)
        (db/delete! ds)))
 
+;;NEW
 (defn categories-in-bundle [ds bundle-id]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
     (let [category-ids (bundle-categories/category-id bundle-ds {:bundle-id bundle-id})

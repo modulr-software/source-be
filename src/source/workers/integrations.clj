@@ -97,3 +97,11 @@
     (bundles/update-bundle! ds {:id bundle-id
                                 :data {:hash api-key}})
     api-key))
+
+(defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
+  (if filtered
+    (filtered-feeds/insert-filtered-feeds! ds {:data {:feed-id feed-id
+                                                      :bundle-id bundle-id}})
+    (filtered-feeds/delete-filtered-feed! ds {:where [:and
+                                                      [:= :feed-id feed-id]
+                                                      [:= :bundle-id bundle-id]]})))

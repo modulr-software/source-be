@@ -1,6 +1,7 @@
 (ns source.routes.integration-filter-feed
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.workers.integrations :as integrations]))
 
 (defn get
   {:summary "Returns true if the feed with the given id is filtered out by the integration with the given id"
@@ -35,16 +36,8 @@
                       403 [:map [:message :string]]}}}
 
   [{:keys [ds path-params body] :as _request}]
-
-  (let [{:keys [filtered]} body
-        {:keys [id feed-id]} path-params]
-
-    (if filtered
-      (services/insert-filtered-feeds! ds {:data {:feed-id feed-id
-                                                  :bundle-id id}})
-
-      (services/delete-filtered-feed! ds {:where [:and
-                                                  [:= :feed-id feed-id]
-                                                  [:= :bundle-id id]]}))
-
-    (res/response {:message "Successfully updated feed filtering."})))
+  (->> {:filtered (:filtered body)
+        :bundle-id (:id path-params)
+        :feed-id (:feed-id path-params)}
+       (integrations/update-filtered-feeds! ds))
+  (res/response {:message "Successfully updated feed filtering."}))
