@@ -1,9 +1,10 @@
 (ns source.routes.bundle-feed-posts
   (:require [ring.util.response :as res]
-            [source.workers.bundles :as bundles]))
+            [source.db.honey :as hon]
+            [source.services.analytics.interface :as analytics]))
 
 (defn get
-  {:summary "get all posts by feed id"
+  {:summary "get all posts in the outgoing feed for the associated uuid-authorized bundle by feed id"
    :parameters {:query [:map [:uuid :string]]
                 :path [:map [:id {:title "id"
                                   :description "feed id"} :int]]}
@@ -27,7 +28,8 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id path-params] :as _request}]
-  (->> {:bundle-id bundle-id
-        :feed-id (:id path-params)}
-       (bundles/get-posts-by-feed-in-bundle! ds)
-       (res/response)))
+  (let [posts (hon/find ds {:tname :incoming-posts
+                            :where [:= :feed-id (:id path-params)]
+                            :ret :*})]
+    (analytics/insert-post-impressions! ds posts bundle-id)
+    (res/response posts)))

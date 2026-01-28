@@ -3,7 +3,7 @@
             [source.db.honey :as hon]))
 
 (defn get
-  {:summary "get bundle metadata by authorized uuid"
+  {:summary "get metadata for the associated uuid-authorized bundle"
    :parameters {:query [:map [:uuid :string]]}
    :responses {200 {:body [:map
                            [:id :int]

@@ -2,10 +2,11 @@
   (:require [ring.util.response :as res]
             [source.db.util :as db.util]
             [clojure.walk :as walk]
-            [source.workers.bundles :as bundles]))
+            [source.workers.bundles :as bundles]
+            [source.services.analytics.interface :as analytics]))
 
 (defn post
-  {:summary "get all feeds present in the bundle authorised by uuid"
+  {:summary "get all feeds present in the bundle authorised by uuid, updating impression analytics."
    :parameters {:query [:map
                         [:uuid :string]
                         [:type {:optional true} :int]
@@ -31,14 +32,15 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [{:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)]
-    (->> {:bundle-id bundle-id
-          :type type
-          :latest latest
-          :category-ids (:category-ids body)
-          :nonfiltered nonfiltered}
-         (bundles/get-feeds-in-bundle! ds)
-         (res/response))))
+  (let [{:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)
+        feeds (->> {:bundle-id bundle-id
+                    :type type
+                    :latest latest
+                    :category-ids (:category-ids body)
+                    :nonfiltered nonfiltered}
+                   (bundles/get-outgoing-feeds ds))]
+    (analytics/insert-feed-impressions! ds feeds bundle-id)
+    (res/response feeds)))
 
 (comment
   (def ds (db.util/conn :master))

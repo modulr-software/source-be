@@ -1,15 +1,11 @@
 (ns source.routes.bundle-posts
-  (:require [source.services.interface :as services]
-            [source.db.util :as db.util]
-            [clojure.walk :as walk]
+  (:require [clojure.walk :as walk]
             [ring.util.response :as res]
-            [clojure.set :as set]
-            [honey.sql.helpers :as hsql]
             [source.services.analytics.interface :as analytics]
             [source.workers.bundles :as bundles]))
 
 (defn post
-  {:summary "get all outgoing posts in the uuid-authorized bundle"
+  {:summary "get all (optionally filtered) outgoing posts in the uuid-authorized bundle, updates impression analytics"
    :parameters {:body [:map [:category-ids [:vector :int]]]
                 :query [:map
                         [:uuid :string]
@@ -36,12 +32,13 @@
                404 {:boy [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [{:keys [limit start type latest]} (walk/keywordize-keys query-params)]
-    (->> {:bundle-id bundle-id
-          :limit limit
-          :start start
-          :type type
-          :latest latest
-          :category-ids (:category-ids body)}
-         (bundles/get-outgoing-posts! ds)
-         (res/response))))
+  (let [{:keys [limit start type latest]} (walk/keywordize-keys query-params)
+        posts (->> {:bundle-id bundle-id
+                    :limit limit
+                    :start start
+                    :type type
+                    :latest latest
+                    :category-ids (:category-ids body)}
+                   (bundles/get-outgoing-posts ds))]
+    (analytics/insert-post-impressions! ds posts bundle-id)
+    (res/response posts)))

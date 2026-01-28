@@ -1,9 +1,10 @@
 (ns source.routes.bundle-feed
   (:require [ring.util.response :as res]
-            [source.workers.bundles :as bundles]))
+            [source.db.honey :as hon]
+            [source.services.analytics.interface :as analytics]))
 
 (defn get
-  {:summary "get feed by id"
+  {:summary "get feed associated with the uuid-authorized bundle by id, updates click analytics for the given feed"
    :parameters {:query [:map [:uuid :string]]
                 :path [:map [:id {:title "id"
                                   :description "feed id"} :int]]}
@@ -25,7 +26,7 @@
                 404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id path-params] :as _request}]
-  (->> {:bundle-id bundle-id
-        :feed-id (:id path-params)}
-       (bundles/get-feed-in-bundle! ds)
-       (res/response)))
+  (let [feed (hon/find-one ds {:tname :feeds
+                               :where [:= :id (:id path-params)]})]
+    (analytics/insert-feed-click! ds feed bundle-id)
+    (res/response feed)))
