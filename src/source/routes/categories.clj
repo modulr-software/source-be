@@ -1,7 +1,6 @@
 (ns source.routes.categories
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.db.util :as db.util]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all categories"
@@ -11,5 +10,5 @@
                             [:name :string]
                             [:display-picture {:optional true} [:maybe :string]]]]}}}
   [{:keys [ds] :as _request}]
-  (->> (services/categories ds)
+  (->> (hon/find ds {:tname :categories})
        (res/response)))

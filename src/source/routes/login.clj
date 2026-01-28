@@ -1,9 +1,9 @@
 (ns source.routes.login
   (:require [source.services.auth :as auth]
             [ring.util.response :as res]
-            [source.services.users :as users]
             [source.password :as pw]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "get user data and access token provided valid credentials"
@@ -31,7 +31,8 @@
 
   (let [{:keys [data error success]} (util/validate post body)
         {:keys [email password]} data
-        user (users/user ds {:where [:= :email email]})]
+        user (hon/find-one ds {:tname :users
+                               :where [:= :email email]})]
 
     (cond
       (not success) (-> (res/response error)

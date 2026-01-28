@@ -1,6 +1,6 @@
 (ns source.routes.baselines
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all baselines"
@@ -11,5 +11,5 @@
                             [:min :int]
                             [:max :int]]]}}}
   [{:keys [ds] :as _request}]
-  (->> (services/baselines ds)
+  (->> (hon/find ds {:tname :baselines})
        (res/response)))

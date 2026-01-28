@@ -2,8 +2,8 @@
   (:require [source.config :as conf]
             [source.email.gmail :as gmail]
             [source.email.templates :as templates]
-            [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "sends us a message to let us know of a problem"
@@ -12,7 +12,8 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
   [{:keys [ds user body] :as _req}]
-  (let [{:keys [email]} (services/user ds {:id (:id user)})
+  (let [{:keys [email]} (hon/find-one ds {:tname :users
+                                          :where [:= :id (:id user)]})
         email-body (templates/admin-reported-problem {:user-id (:id user)
                                                       :user-type (:type user)
                                                       :user-email email

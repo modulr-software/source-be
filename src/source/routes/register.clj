@@ -1,7 +1,8 @@
 (ns source.routes.register
   (:require [source.services.interface :as services]
             [ring.util.response :as res]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "register a new user"
@@ -30,7 +31,8 @@
 
   (let [{:keys [data error success]} (util/validate post body)
         {:keys [email password confirm-password]} data
-        existing-user (services/user ds {:where [:= :email email]})]
+        existing-user (hon/find-one ds {:tname :users
+                                        :where [:= :email email]})]
     (cond
 
       (not success) (-> (res/response error)

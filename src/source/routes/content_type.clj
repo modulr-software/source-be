@@ -1,6 +1,6 @@
 (ns source.routes.content-type
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get content type by id"
@@ -11,6 +11,6 @@
                            [:name :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (->> path-params
-       (services/content-type ds)
+  (->> (hon/find-one ds {:tname :content-types
+                         :where [:= :id (:id path-params)]})
        (res/response)))

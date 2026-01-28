@@ -1,7 +1,7 @@
 (ns source.routes.business
-  (:require [source.services.businesses :as businesses]
-            [ring.util.response :as res]
-            [source.util :as utils]))
+  (:require [ring.util.response :as res]
+            [source.util :as utils]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "insert a business"
@@ -19,7 +19,8 @@
     (if (not success) (-> (res/response error)
                           (res/status 400))
 
-        (do (businesses/insert-business! ds {:values data})
+        (do (hon/insert! ds {:tname :businesses
+                             :data data})
             (res/response {:message "successfully added business"})))))
 
 (defn patch
@@ -42,8 +43,9 @@
       (-> (res/response error)
           (res/status 400))
 
-      (do (businesses/update-business! ds {:id (:id path-params)
-                                           :values data})
+      (do (hon/update! ds {:tname :businesses
+                           :where  [:= :id (:id path-params)]
+                           :data data})
           (res/response {:message "successfully updated business"})))))
 
 (comment

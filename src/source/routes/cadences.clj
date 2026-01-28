@@ -1,6 +1,6 @@
 (ns source.routes.cadences
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all cadences"
@@ -10,5 +10,6 @@
                             [:label :string]
                             [:days :int]]]}}}
   [{:keys [ds] :as _request}]
-  (->> (services/cadences ds)
+  (->> (hon/find ds {:tname :cadences
+                     :ret :*})
        (res/response)))
