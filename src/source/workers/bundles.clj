@@ -53,8 +53,7 @@
   "Get outgoing posts based on short heuristics and update analytics impressions"
   [ds {:keys [bundle-id limit start type latest category-ids]}]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [content-type-comp (when type [:= :content-type-id type])
-          start (when start (try (Integer/parseInt start) (catch Exception _)))
+    (let [start (when start (try (Integer/parseInt start) (catch Exception _)))
           limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
 
           all-feed-ids (mapv :id (hon/find ds {:tname :feeds
@@ -68,7 +67,7 @@
                                                         :where [:= :bundle-id bundle-id]
                                                         :ret :*}))
 
-          filtered-posts (hon/find bundle-ds (-> (hsql/where content-type-comp
+          filtered-posts (hon/find bundle-ds (-> (hsql/where (when type [:= :content-type-id type])
                                                              [:not [:in :id blocked-post-ids]]
                                                              [:in :feed-id available-feed-ids])
                                                  (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))

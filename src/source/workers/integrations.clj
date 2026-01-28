@@ -8,10 +8,8 @@
             [source.jobs.handlers :as handlers]
             [source.util :as utils]
             [congest.jobs :as congest]
-            [source.services.filtered-feeds :as filtered-feeds]
-            [source.services.filtered-posts :as filtered-posts]
-            [source.services.analytics.interface :as analytics]
-            [source.db.tables :as tables]))
+            [source.db.tables :as tables]
+            [source.db.honey :as hon]))
 
 (defn create-integration! [ds js store {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
@@ -82,33 +80,43 @@
 
 (defn hard-delete-bundle! [ds js bundle-id]
   (let [job-id (handlers/update-bundle-job-id bundle-id)]
-    (filtered-feeds/delete-filtered-feed! ds {:where [:= :bundle-id bundle-id]})
-    (filtered-posts/delete-filtered-post! ds {:where [:= :bundle-id bundle-id]})
-    (bundle-content-types/delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
-    (analytics/delete-event! ds {:where [:= :bundle-id bundle-id]})
+    (hon/delete! ds {:tname :filtered-feeds
+                     :where [:= :bundle-id bundle-id]})
+    (hon/delete! ds {:tname :filtered-posts
+                     :where [:= :bundle-id bundle-id]})
+    (hon/delete! ds {:tname :bundle-content-types
+                     :where [:= :bundle-id bundle-id]})
+    (hon/delete! ds {:tname :events
+                     :where [:= :bundle-id bundle-id]})
     (tables/drop-all-tables! (db.util/conn :bundle bundle-id))
-    (bundles/delete-bundle! ds {:id bundle-id})
+    (hon/delete! ds {:tname :bundles
+                     :where [:= :id bundle-id]})
     (congest/deregister! js job-id)))
 
 (defn generate-api-key! [ds user-id bundle-id]
   (let [uuid (utils/uuid)
         api-key (utils/sha256 (str user-id bundle-id uuid))]
-    (bundles/update-bundle! ds {:id bundle-id
-                                :data {:hash api-key}})
+    (hon/update! ds {:tname :bundles
+                     :where [:= :id bundle-id]
+                     :data {:hash api-key}})
     api-key))
 
 (defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
   (if filtered
-    (filtered-feeds/insert-filtered-feeds! ds {:data {:feed-id feed-id
-                                                      :bundle-id bundle-id}})
-    (filtered-feeds/delete-filtered-feed! ds {:where [:and
-                                                      [:= :feed-id feed-id]
-                                                      [:= :bundle-id bundle-id]]})))
+    (hon/insert! ds {:tname :filtered-feeds
+                     :data {:feed-id feed-id
+                            :bundle-id bundle-id}})
+    (hon/delete! ds {:tname :filtered-feeds
+                     :where [:and
+                             [:= :feed-id feed-id]
+                             [:= :bundle-id bundle-id]]})))
 
 (defn update-filtered-posts! [ds {:keys [filtered bundle-id post-id]}]
   (if filtered
-    (filtered-posts/insert-filtered-posts! ds {:data {:post-id post-id
-                                                      :bundle-id bundle-id}})
-    (filtered-posts/delete-filtered-post! ds {:where [:and
-                                                      [:= :post-id post-id]
-                                                      [:= :bundle-id bundle-id]]})))
+    (hon/insert! ds {:tname :filtered-posts
+                     :data {:post-id post-id
+                            :bundle-id bundle-id}})
+    (hon/delete! ds {:tname :filtered-posts
+                     :where [:and
+                             [:= :post-id post-id]
+                             [:= :bundle-id bundle-id]]})))
