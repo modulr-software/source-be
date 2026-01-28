@@ -1,6 +1,5 @@
 (ns source.routes.approve-feed
-  (:require [source.services.interface :as services]
-            [source.email.gmail :as gmail]
+  (:require [source.email.gmail :as gmail]
             [source.email.templates :as templates]
             [ring.util.response :as res]
             [source.db.honey :as hon]))
@@ -16,8 +15,8 @@
   [{:keys [ds path-params] :as _request}]
   (let [{:keys [id user-id title]} (hon/find-one ds {:tname :feeds
                                                      :where [:= :id (:id path-params)]})
-        {:keys [email firstname]} (services/user ds {:tname :users
-                                                     :where [:= :id user-id]})]
+        {:keys [email firstname]} (hon/find-one ds {:tname :users
+                                                    :where [:= :id user-id]})]
     (hon/update! ds {:tname :feeds
                      :where [:= :id (:id path-params)]
                      :data {:state "live"}})

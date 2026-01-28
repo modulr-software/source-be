@@ -1,9 +1,6 @@
 (ns source.routes.feeds
-  (:require [source.services.interface :as services]
-            [source.util :as utils]
-            [source.workers.feeds :as feeds]
+  (:require [source.workers.feeds :as feeds]
             [congest.jobs :as congest]
-            [source.jobs.core :as jobs]
             [ring.util.response :as res]
             [source.db.honey :as hon]))
 
@@ -27,7 +24,8 @@
                              [:state [:enum "live" "not live" "pending"]]]]}}}
 
   [{:keys [ds user] :as _request}]
-  (-> (services/feeds ds {:where [:= :user-id (:id user)]})
+  (-> (hon/find ds {:tname :feeds
+                    :where [:= :user-id (:id user)]})
       (res/response)))
 
 (defn post

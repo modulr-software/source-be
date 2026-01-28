@@ -1,6 +1,5 @@
 (ns source.routes.reject-feed
-  (:require [source.services.interface :as services]
-            [source.email.gmail :as gmail]
+  (:require [source.email.gmail :as gmail]
             [source.email.templates :as templates]
             [ring.util.response :as res]
             [source.db.honey :as hon]))
