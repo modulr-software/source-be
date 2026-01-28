@@ -28,7 +28,8 @@
                                                :display-picture (get-in extracted [:feed :display-picture])
                                                :user-id user-id
                                                :created-at datetime
-                                               :state "pending"})})
+                                               :state "pending"})
+                   :ret :1})
         extended-posts (mapv (fn [post]
                                (merge post
                                       {:feed-id (:id new-feed)

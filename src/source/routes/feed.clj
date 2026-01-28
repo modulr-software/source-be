@@ -60,8 +60,8 @@
   (let [id (:id path-params)
         feed (hon/find-one ds {:tname :feeds
                                :where [:and
-                                       [:= :user-id (:id user)
-                                        := :id id]]})
+                                       [:= :user-id (:id user)]
+                                       [:= :id id]]})
         {:keys [email]} (hon/find-one ds {:tname :users
                                           :where [:= :id (:id user)]})]
     (if (some? feed)

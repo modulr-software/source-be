@@ -58,7 +58,7 @@
               (-> (hsql/insert-into (csk/->snake_case_keyword tname))
                   (hsql/values vals)
                   (hsql/returning :*))
-              :ret ret)))
+              :ret (or ret :1))))
 
 (defn delete!
   "deletes a record or set of records that match a predicate where clause. the where

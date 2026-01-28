@@ -1,7 +1,8 @@
 (ns source.routes.bundle-feed-post
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
-            [source.services.analytics.interface :as analytics]))
+            [source.services.analytics.interface :as analytics]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "get post in outgoing feed for the associated uuid-authorized bundle by post id, updates click analytics"
@@ -28,6 +29,7 @@
 
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [post (hon/find-one ds {:tname :incoming-posts
-                               :where [:= :id (:id path-params)]})]
+                               :where [:= :id (:post-id path-params)]
+                               :ret :1})]
     (analytics/insert-post-click! ds post bundle-id)
     (res/response post)))

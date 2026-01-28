@@ -37,4 +37,5 @@
                               {:bundle-id bundle-id
                                :content-type-id id}) content-types)]
     (delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
-    (insert-bundle-content-types! ds {:data content-types})))
+    (hon/insert! ds {:tname :bundle-content-types
+                     :data content-types})))
