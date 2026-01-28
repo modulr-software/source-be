@@ -9,31 +9,11 @@
              [source.services.feeds :as feeds]
              [source.services.incoming-posts :as incoming-posts]
              [source.services.outgoing-posts :as outgoing-posts]
-             [source.services.cadences :as cadences]
-             [source.services.baselines :as baselines]
-             [source.services.content-types :as content-types]
-             [source.services.categories :as categories]
              [source.services.feed-categories :as feed-categories]
-             [source.services.jobs :as jobs]
-             [source.services.businesses :as businesses]
-             [source.services.filtered-feeds :as filtered-feeds]
-             [source.services.filtered-posts :as filtered-posts]))
+             [source.services.jobs :as jobs]))
 
 (defn user [ds {:keys [_id] :as opts}]
   (users/user ds opts))
-
-(defn update-user! [ds {:keys [_id _values _where] :as opts}]
-  (users/update-user! ds opts))
-
-(defn business
-  [ds {:keys [_id _where] :as opts}]
-  (businesses/business ds opts))
-
-(defn insert-business! [ds {:keys [_values _ret] :as opts}]
-  (businesses/insert-business! ds opts))
-
-(defn update-business! [ds {:keys [_id _values _where] :as opts}]
-  (businesses/update-business! ds opts))
 
 (defn register [ds user]
   (auth/register ds user))
@@ -97,26 +77,8 @@
 (defn insert-output-schema! [store schema]
   (xml/insert-output-schema! store schema))
 
-(defn providers [ds]
-  (providers/providers ds))
-
 (defn provider [ds provider-id]
   (providers/provider ds provider-id))
-
-(defn delete-provider! [ds provider-id]
-  (providers/delete-provider! ds provider-id))
-
-(defn update-provider! [ds {:keys [_id _data _where] :as opts}]
-  (providers/update-provider! ds opts))
-
-(defn insert-provider! [ds {:keys [_values _ret] :as opts}]
-  (providers/insert-provider! ds opts))
-
-(defn content-types [ds]
-  (content-types/content-types ds))
-
-(defn content-type [ds id]
-  (content-types/content-type ds id))
 
 (defn update-feed! [ds {:keys [_id _data _where] :as opts}]
   (feeds/update-feed! ds opts))
@@ -149,20 +111,6 @@
 (defn incoming-post [ds opts]
   (incoming-posts/incoming-post ds opts))
 
-(defn cadences [ds]
-  (cadences/cadences ds))
-
-(defn baselines [ds]
-  (baselines/baselines ds))
-
-(defn categories
-  ([ds] (categories ds {}))
-  ([ds {:keys [_where] :as opts}]
-   (categories/categories ds opts)))
-
-(defn category [ds {:keys [_id _where] :as opts}]
-  (categories/category ds opts))
-
 (defn categories-by-feed [ds {:keys [_feed-id _where] :as opts}]
   (feed-categories/categories-by-feed ds opts))
 
@@ -194,13 +142,3 @@
 
 (defn job-metadata [ds {:keys [_id _where] :as opts}]
   (jobs/job-metadata ds opts))
-
-(defn filtered-feeds
-  ([ds] (filtered-feeds ds {}))
-  ([ds {:keys [_where] :as opts}]
-   (filtered-feeds/filtered-feeds ds opts)))
-
-(defn filtered-posts
-  ([ds] (filtered-posts ds {}))
-  ([ds {:keys [_where] :as opts}]
-   (filtered-posts/filtered-posts ds opts)))

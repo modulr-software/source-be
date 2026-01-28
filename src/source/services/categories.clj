@@ -17,15 +17,6 @@
         (merge opts)
         (db/find ds))))
 
-(defn category [ds {:keys [id where] :as opts}]
-  (->> {:tname :categories
-        :where (if (some? id)
-                 [:= :id id]
-                 where)
-        :ret :1}
-       (merge opts)
-       (db/find ds)))
-
 (comment 
   (require '[source.db.util :as db.util])
   (def ds (db.util/conn))

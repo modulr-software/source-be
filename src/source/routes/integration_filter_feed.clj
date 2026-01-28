@@ -1,7 +1,7 @@
 (ns source.routes.integration-filter-feed
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.workers.integrations :as integrations]))
+  (:require [ring.util.response :as res]
+            [source.workers.integrations :as integrations]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "Returns true if the feed with the given id is filtered out by the integration with the given id"
@@ -16,9 +16,10 @@
 
   [{:keys [ds path-params] :as _request}]
 
-  (let [returned (services/filtered-feeds ds {:where [:and
-                                                      [:= :bundle-id (:id path-params)]
-                                                      [:= :feed-id (:feed-id path-params)]]})
+  (let [returned (hon/find ds {:tname :filtered-feeds
+                               :where [:and
+                                       [:= :bundle-id (:id path-params)]
+                                       [:= :feed-id (:feed-id path-params)]]})
         blocked (if (seq returned) true false)]
     (res/response {:filtered blocked})))
 
