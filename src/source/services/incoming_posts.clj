@@ -55,12 +55,3 @@
                   :right-join [:categories [:= :categories.id :feed-categories.category-id]]}
                  opts)
                 {:ret :*}))
-
-(defn delete-incoming-post! [ds {:keys [id where] :as opts}]
-  (->> {:tname :incoming-posts
-        :where (if (some? id)
-                 [:= :id id]
-                 where)
-        :ret :1}
-       (merge opts)
-       (db/delete! ds)))

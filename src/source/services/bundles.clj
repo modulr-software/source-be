@@ -44,15 +44,6 @@
        (merge opts)
        (db/find ds)))
 
-(defn delete-bundle! [ds {:keys [id where] :as opts}]
-  (->> {:tname :bundles
-        :where (if (some? id)
-                 [:= :id id]
-                 where)
-        :ret :1}
-       (merge opts)
-       (db/delete! ds)))
-
 ;;NEW
 (defn categories-in-bundle [ds bundle-id]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]

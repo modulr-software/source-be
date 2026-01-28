@@ -2,15 +2,6 @@
   (:require [source.db.interface :as db]
             [source.db.honey :as hon]))
 
-(defn bundle-content-types
-  ([ds] (bundle-content-types ds {}))
-  ([ds {:keys [where] :as opts}]
-   (->> {:tname :bundle-content-types
-         :where where
-         :ret :*}
-        (merge opts)
-        (db/find ds))))
-
 ;;NEW
 (defn insert-bundle-content-types! [ds {:keys [bundle-id content-types]}]
   (let [content-types (mapv (fn [{:keys [id]}]
@@ -39,15 +30,6 @@
                           [:= :bundle-id bundle-id]
                           where)}
                 {:ret :*}))
-
-(defn content-type-id [ds {:keys [bundle-id where] :as opts}]
-  (->> {:tname :bundle-content-types
-        :where (if (some? bundle-id)
-                 [:= :bundle-id bundle-id]
-                 where)
-        :ret :*}
-       (merge opts)
-       (db/find ds)))
 
 ;;NEW
 (defn update-bundle-content-types! [ds {:keys [bundle-id content-types]}]

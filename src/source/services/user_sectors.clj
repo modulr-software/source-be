@@ -2,15 +2,6 @@
   (:require [source.db.interface :as db]
             [source.db.honey :as hon]))
 
-(defn user-sectors
-  ([ds] (user-sectors ds {}))
-  ([ds {:keys [where] :as opts}]
-   (->> {:tname :user-sectors
-         :where where
-         :ret :*}
-        (merge opts)
-        (db/find ds))))
-
 (defn insert-user-sector! [ds {:keys [_data _ret] :as opts}]
   (->> {:tname :user-sectors}
        (merge opts)
@@ -34,15 +25,6 @@
                           [:= :user-id user-id]
                           where)}
                 {:ret :*}))
-
-(defn sector-id [ds {:keys [user-id where] :as opts}]
-  (->> {:tname :user-sectors
-        :where (if (some? user-id)
-                 [:= :user-id user-id]
-                 where)
-        :ret :1}
-       (merge opts)
-       (db/find ds)))
 
 ;;NEW
 (defn update-user-sectors! [ds {:keys [user-id sectors]}]

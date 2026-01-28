@@ -8,14 +8,6 @@
        (merge opts)
        (db/insert! ds)))
 
-(defn update-category! [ds {:keys [id data where] :as opts}]
-  (->> {:tname :categories
-        :values data
-        :where (if (some? id) [:= :id id] where)
-        :ret :1}
-       (merge opts)
-       (db/update! ds)))
-
 (defn categories
   ([ds] (categories ds {}))
   ([ds {:keys [where] :as opts}]

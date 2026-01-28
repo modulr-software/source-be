@@ -1,15 +1,6 @@
 (ns source.services.bundle-categories
   (:require [source.db.interface :as db]))
 
-(defn bundle-categories
-  ([ds] (bundle-categories ds {}))
-  ([ds {:keys [where] :as opts}]
-   (->> {:tname :bundle-categories
-         :where where
-         :ret :*}
-        (merge opts)
-        (db/find ds))))
-
 (defn insert-bundle-category! [ds {:keys [_data _ret] :as opts}]
   (->> {:tname :bundle-categories}
        (merge opts)
