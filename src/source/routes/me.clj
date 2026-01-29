@@ -58,6 +58,7 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
+    ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
           js

@@ -72,6 +72,7 @@
                                               :where [:= :id (:id user)]})]
         (if new-feed
           (do
+            ;TODO: service needed
             (->> (jobs/prepare-congest-metadata
                   ds
                   store
