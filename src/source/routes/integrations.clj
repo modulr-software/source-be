@@ -1,7 +1,11 @@
 (ns source.routes.integrations
   (:require [ring.util.response :as res]
             [source.services.bundles :as bundles]
-            [source.workers.integrations :as integrations]))
+            [source.workers.integrations :as integrations]
+            [source.util :as util]
+            [source.jobs.core :as jobs]
+            [source.jobs.handlers :as handlers]
+            [congest.jobs :as congest]))
 
 (defn get
   {:summary "get all integrations"
@@ -51,9 +55,27 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [js ds store user body] :as _request}]
-  (->> {:user-id (:id user)
-        :bundle-metadata (dissoc body :categories :content-types)
-        :categories (:categories body)
-        :content-types (:content-types body)}
-       (integrations/create-integration! ds js store)
-       (res/response)))
+  (let [new-bundle (->> {:user-id (:id user)
+                         :bundle-metadata (dissoc body :categories :content-types)
+                         :categories (:categories body)
+                         :content-types (:content-types body)}
+                        (integrations/create-integration! ds))
+        categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))]
+    ;TODO: service needed
+    (->> (jobs/prepare-congest-metadata
+          ds
+          store
+          {:id (handlers/update-bundle-job-id (:id new-bundle))
+           :initial-delay 0
+           :auto-start true
+           :stop-after-fail false,
+           :interval (* 1000 60 60 24)
+           :recurring? true
+           :ds ds
+           :args {:bundle-id (:id new-bundle)
+                  :categories categories-by-bundle}
+           :handler :update-bundle
+           :created-at (util/get-utc-timestamp-string)
+           :sleep false})
+         (congest/register! js))
+    (res/response new-bundle)))
