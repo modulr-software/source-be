@@ -13,18 +13,18 @@
 
 (defn create-integration! [ds js store {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
-                                               :bundle-metadata bundle-metadata})
-        _ (migrate/migrate-bundle (:id new-bundle) ["up"])]
+                                               :bundle-metadata bundle-metadata})]
+    (migrate/migrate-bundle (:id new-bundle) ["up"])
 
     (with-open [bundle-ds (db.util/conn :bundle (:id new-bundle))]
-      (let [_ (bundle-categories/insert-bundle-categories! bundle-ds {:bundle-id (:id new-bundle)
-                                                                      :categories categories})
-            _ (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
-                                                                     :content-types content-types})
+      (bundle-categories/insert-bundle-categories! bundle-ds {:bundle-id (:id new-bundle)
+                                                              :categories categories})
+      (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
+                                                             :content-types content-types})
 
-            categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))]
+      (let [categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))]
 
-        ; service needed
+        ;TODO: service needed
         (->> (jobs/prepare-congest-metadata
               ds
               store
@@ -45,21 +45,15 @@
 
 (defn update-integration! [ds js store {:keys [bundle-id bundle-metadata categories content-types]}]
   (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [_ (bundles/update-bundle! ds {:id bundle-id
-                                        :data bundle-metadata})
-
-          job-id (str "bundle_" bundle-id)
-
-        ; update bundle categories
-          _ (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id bundle-id
-                                                                    :categories categories})
-        ; update bundle content types
-          _ (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
-                                                                   :content-types content-types})
-
+    (bundles/update-bundle! ds {:id bundle-id
+                                :data bundle-metadata})
+    (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id bundle-id
+                                                            :categories categories})
+    (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
+                                                           :content-types content-types})
+    (let [job-id (str "bundle_" bundle-id)
           categories-by-bundle (bundles/categories-in-bundle ds bundle-id)]
-
-      ; service needed
+      ;TODO: service needed
       (congest/deregister! js job-id)
       (->> (jobs/prepare-congest-metadata
             ds
