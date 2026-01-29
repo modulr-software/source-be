@@ -1,11 +1,13 @@
 (ns source.jobs.handlers
   (:require [source.services.interface :as services]
+            [source.workers.users :as users]
             [source.util :as util]
             [source.services.incoming-posts :as incoming-posts]
             [source.db.util :as db.util]
             [clojure.set :as set]
             [clojure.string :as string]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [congest.jobs :as congest]))
 
 (defmulti handler
   (fn [opts]
@@ -127,3 +129,15 @@
           (hon/delete! ds-bundle {:tname :outgoing-posts})
           (hon/insert! ds-bundle {:tname :outgoing-posts
                                   :data outgoing-posts}))))))
+
+(defn user-deletion-job-id
+  "returns the job id of a user deletion job with the given user id"
+  [user-type user-id]
+  (str "delete_" user-type "_" user-id))
+
+(defmethod handler :delete-user [_]
+  (fn [{:keys [args ds store]}]
+    (try
+      (let [{:keys [user-type user-id]} args]
+        (users/hard-delete-user! ds store (keyword user-type) user-id))
+      (catch Exception e (println "Failed to delete user: " e) :fail))))

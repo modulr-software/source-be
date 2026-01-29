@@ -98,7 +98,9 @@
              :openapi {:security [{:bearerAuth []}]}}
 
       ["" (-> (get me/get)
-              (post me/post))]
+              (post me/post)
+              (delete me/delete-user))]
+      ["/deletion/cancel" (get me/cancel-deletion)]
       ["/business" (-> (get me-business/get)
                        (post me-business/post))]
       ["/sectors" (-> (get me-sectors/get)
