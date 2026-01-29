@@ -10,6 +10,5 @@
                             [:label :string]
                             [:days :int]]]}}}
   [{:keys [ds] :as _request}]
-  (->> (hon/find ds {:tname :cadences
-                     :ret :*})
+  (->> (hon/find ds {:tname :cadences})
        (res/response)))
