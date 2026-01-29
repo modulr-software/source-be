@@ -1,14 +1,11 @@
 (ns source.routes.bundle-posts
-  (:require [source.services.interface :as services]
-            [source.db.util :as db.util]
-            [clojure.walk :as walk]
+  (:require [clojure.walk :as walk]
             [ring.util.response :as res]
-            [clojure.set :as set]
-            [honey.sql.helpers :as hsql]
-            [source.services.analytics.interface :as analytics]))
+            [source.services.analytics.interface :as analytics]
+            [source.workers.bundles :as bundles]))
 
 (defn post
-  {:summary "get all outgoing posts in the uuid-authorized bundle"
+  {:summary "get all (optionally filtered) outgoing posts in the uuid-authorized bundle, updates impression analytics"
    :parameters {:body [:map [:category-ids [:vector :int]]]
                 :query [:map
                         [:uuid :string]
@@ -35,48 +32,13 @@
                404 {:boy [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [{:keys [limit start type latest]} (walk/keywordize-keys query-params)
-          {:keys [category-ids]} body
-
-          content-type-comp (when type [:= :content-type-id type])
-          start (when start (try (Integer/parseInt start) (catch Exception _)))
-          limit (when limit (try (Integer/parseInt limit) (catch Exception _)))
-
-          all-feed-ids (mapv :id (services/feeds ds))
-          blocked-feed-ids (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]}))
-          available-feed-ids (vec (remove (set blocked-feed-ids) all-feed-ids))
-
-          blocked-post-ids (mapv :post-id (services/filtered-posts ds {:where [:= :bundle-id bundle-id]}))
-
-          filtered-posts (services/outgoing-posts bundle-ds (-> (hsql/where content-type-comp
-                                                                            [:not [:in :id blocked-post-ids]]
-                                                                            [:in :feed-id available-feed-ids])
-                                                                (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))))
-
-          categorised-posts (vec
-                             (if (seq category-ids)
-                               (->> filtered-posts
-                                    (mapv
-                                     (fn [post]
-                                       (when (seq (set/intersection
-                                                   (set category-ids)
-                                                   (->> {:feed-id (:feed-id post)}
-                                                        (services/categories-by-feed ds)
-                                                        (mapv :id)
-                                                        (set))))
-                                         post)))
-                                    (remove nil?))
-                               filtered-posts))
-
-          valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
-          started-posts (if valid-start?
-                          (subvec categorised-posts start)
-                          categorised-posts)
-
-          limited-posts (if (and (some? limit) (> (count started-posts) limit))
-                          (subvec started-posts 0 limit)
-                          started-posts)]
-
-      (analytics/insert-post-impressions! ds limited-posts bundle-id)
-      (res/response limited-posts))))
+  (let [{:keys [limit start type latest]} (walk/keywordize-keys query-params)
+        posts (->> {:bundle-id bundle-id
+                    :limit limit
+                    :start start
+                    :type type
+                    :latest latest
+                    :category-ids (:category-ids body)}
+                   (bundles/get-outgoing-posts ds))]
+    (analytics/insert-post-impressions! ds posts bundle-id)
+    (res/response posts)))

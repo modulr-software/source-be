@@ -1,7 +1,7 @@
 (ns source.routes.me
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.util :as util]))
+  (:require [ring.util.response :as res]
+            [source.util :as util]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get logged in user by access token"
@@ -20,8 +20,8 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user] :as _request}]
-  (let [user (->> user
-                  (services/user ds))]
+  (let [user (hon/find-one ds {:tname :users
+                               :where [:= :id (:id user)]})]
     (->> (dissoc user :password)
          (res/response))))
 
@@ -43,6 +43,7 @@
     (if (not success)
       (-> (res/response {:message error})
           (res/status 400))
-      (do (services/update-user! ds {:id (:id user)
-                                     :data data})
+      (do (hon/update! ds {:tname :users
+                           :where [:= :id (:id user)]
+                           :data data})
           (res/response {:message "successfully updated user"})))))

@@ -1,4 +1,4 @@
-(ns source.services-new.schemas
+(ns source.workers.schemas
   (:require [malli.util :as mu]))
 
 (def Business

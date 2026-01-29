@@ -1,6 +1,6 @@
 (ns source.routes.providers
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all providers"
@@ -14,7 +14,8 @@
                             [:placeholder-url [:maybe :string]]]]}}}
 
   [{:keys [ds] :as _request}]
-  (-> (services/providers ds)
+  (-> (hon/find ds {:tname :providers
+                    :ret :*})
       (res/response)))
 
 (defn post
@@ -28,6 +29,7 @@
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body] :as _request}]
-  (services/insert-provider! ds {:data body
-                                 :ret :1})
+  (hon/insert! ds {:tname :providers
+                   :data body
+                   :ret :1})
   (res/response {:message "successfully added provider"}))

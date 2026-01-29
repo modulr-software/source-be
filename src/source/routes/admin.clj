@@ -1,8 +1,8 @@
 (ns source.routes.admin
-  (:require [source.services.users :as users]
-            [source.password :as pw]
+  (:require [source.password :as pw]
             [source.util :as util]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "registers an admin user"
@@ -17,7 +17,8 @@
   [{:keys [ds body] :as _request}]
 
   (let [{:keys [data error success]} (util/validate post body)
-        user (users/user ds {:where [:= :email (:email data)]})
+        user (hon/find-one ds {:tname :users
+                               :where [:= :email (:email data)]})
         {:keys [password confirm-password]} data]
     (cond
 
@@ -38,6 +39,6 @@
                                 :password pw
                                 :type "admin")
                          (dissoc :confirm-password))]
-        (users/insert-user! ds {:data new-user})
+        (hon/insert! ds {:tname :users
+                         :data new-user})
         (res/response {:message "successfully created user"})))))
-

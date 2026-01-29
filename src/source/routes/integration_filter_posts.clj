@@ -1,6 +1,6 @@
 (ns source.routes.integration-filter-posts
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "gets all filtered post ids by integration id"
@@ -15,4 +15,5 @@
 
   [{:keys [ds path-params] :as _request}]
 
-  (res/response (services/filtered-posts ds {:where [:= :bundle-id (:id path-params)]})))
+  (res/response (hon/find ds {:tname :filtered-posts
+                              :where [:= :bundle-id (:id path-params)]})))

@@ -25,15 +25,6 @@
        (assoc :on-conflict [:feed-id :category-id])
        (assoc :do-update-set {:category-id :excluded.category-id}))))
 
-(defn delete-feed-category! [ds {:keys [id where] :as opts}]
-  (->> {:tname :feed-categories
-        :where (if (some? id)
-                 [:= :id id]
-                 where)
-        :ret :1}
-       (merge opts)
-       (db/delete! ds)))
-
 (defn categories-by-feed [ds {:keys [feed-id where] :as _opts}]
   (hon/execute! ds
                 {:select [[:feed-categories.category-id :id] :name]

@@ -1,6 +1,6 @@
 (ns source.routes.admin-feeds
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all feeds"
@@ -22,5 +22,6 @@
                              [:state [:enum "live" "not live" "pending"]]]]}}}
 
   [{:keys [ds] :as _request}]
-  (-> (services/feeds ds)
+  (-> (hon/find ds {:tname :feeds
+                    :ret :*})
       (res/response)))

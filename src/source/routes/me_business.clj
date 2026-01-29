@@ -1,7 +1,7 @@
 (ns source.routes.me-business
   (:require [source.util :as util]
             [ring.util.response :as res]
-            [source.services.interface :as services]))
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get business for logged-in user"
@@ -18,9 +18,11 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user] :as _request}]
-  (let [{:keys [business-id]} (services/user ds {:id (:id user)})
+  (let [{:keys [business-id]} (hon/find-one ds {:tname :users
+                                                :where [:= :id (:id user)]})
         business (if business-id
-                   (services/business ds {:id business-id})
+                   (hon/find-one ds {:tname :businesses
+                                     :where [:= :id business-id]})
                    {})]
     (res/response business)))
 
@@ -43,14 +45,18 @@
       (-> (res/response {:message error})
           (res/status 400))
 
-      (let [{:keys [business-id]} (services/user ds {:id (:id user)})
+      (let [{:keys [business-id]} (hon/find-one ds {:tname :users
+                                                    :where [:= :id (:id user)]})
             business (when (nil? business-id)
-                       (services/insert-business! ds {:data data
-                                                      :ret :1}))]
+                       (hon/insert! ds {:tname :businesses
+                                        :data data
+                                        :ret :1}))]
         (if (nil? business-id)
-          (services/update-user! ds {:id (:id user)
-                                     :data {:business-id (:id business)}})
-          (services/update-business! ds {:id business-id
-                                         :data data}))
+          (hon/update! ds {:tname :users
+                           :where [:= :id (:id user)]
+                           :data {:business-id (:id business)}})
+          (hon/update! ds {:tname :businesses
+                           :where  [:= :id business-id]
+                           :data data}))
 
         (res/response {:message "successfully added or updated business"})))))

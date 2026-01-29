@@ -1,6 +1,6 @@
 (ns source.routes.category
   (:require [ring.util.response :as res]
-            [source.services.interface :as services]))
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get category by id"
@@ -11,4 +11,5 @@
                            [:name :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (res/response (services/category ds path-params)))
+  (res/response (hon/find-one ds {:tname :categories
+                                  :where [:= :id (:id path-params)]})))

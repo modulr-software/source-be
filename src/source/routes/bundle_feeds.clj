@@ -1,14 +1,12 @@
 (ns source.routes.bundle-feeds
   (:require [ring.util.response :as res]
-            [source.services.interface :as services]
             [source.db.util :as db.util]
             [clojure.walk :as walk]
-            [honey.sql.helpers :as hsql]
-            [source.services.analytics.interface :as analytics]
-            [source.db.honey :as hon]))
+            [source.workers.bundles :as bundles]
+            [source.services.analytics.interface :as analytics]))
 
 (defn post
-  {:summary "get all feeds present in the bundle authorised by uuid"
+  {:summary "get all feeds present in the bundle authorised by uuid, updating impression analytics."
    :parameters {:query [:map
                         [:uuid :string]
                         [:type {:optional true} :int]
@@ -34,32 +32,17 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [{:keys [category-ids]} body
-          {:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)
-          feed-ids (mapv :feed-id (services/outgoing-posts bundle-ds))
-          category-filtered-feed-ids (if (empty? category-ids)
-                                       feed-ids
-                                       (->> (hsql/where
-                                             [:in :feed-id feed-ids]
-                                             [:in :category-id category-ids])
-                                            (services/feed-categories ds)
-                                            (mapv :feed-id)))
-          blocked-feed-ids (if (some? nonfiltered)
-                             []
-                             (mapv :feed-id (services/filtered-feeds ds {:where [:= :bundle-id bundle-id]})))
-          query (-> (when type [:= :content-type-id type])
-                    (hsql/where [:in :id category-filtered-feed-ids]
-                                [:not [:in :id blocked-feed-ids]])
-                    (hsql/order-by (when latest [:created-at :desc])))
-          type-filtered (services/feeds ds query)]
-
-      (analytics/insert-feed-impressions! ds type-filtered bundle-id)
-      (res/response type-filtered))))
+  (let [{:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)
+        feeds (->> {:bundle-id bundle-id
+                    :type type
+                    :latest latest
+                    :category-ids (:category-ids body)
+                    :nonfiltered nonfiltered}
+                   (bundles/get-outgoing-feeds ds))]
+    (analytics/insert-feed-impressions! ds feeds bundle-id)
+    (res/response feeds)))
 
 (comment
   (def ds (db.util/conn :master))
-
-  
 
   ())

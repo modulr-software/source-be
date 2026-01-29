@@ -1,6 +1,6 @@
 (ns source.routes.businesses
-  (:require [source.services.businesses :as businesses]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all businesses"
@@ -15,7 +15,8 @@
                              [:twitter [:maybe :string]]]]]}}}
 
   [{:keys [ds] :as _request}]
-  (res/response {:businesses (businesses/businesses ds)}))
+  (res/response {:businesses (hon/find ds {:tname :businesses
+                                           :ret :*})}))
 
 (comment
   (require '[source.db.util :as db.util])

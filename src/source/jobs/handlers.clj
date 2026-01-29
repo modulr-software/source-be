@@ -4,7 +4,8 @@
             [source.services.incoming-posts :as incoming-posts]
             [source.db.util :as db.util]
             [clojure.set :as set]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [source.db.honey :as hon]))
 
 (defmulti handler
   (fn [opts]
@@ -18,7 +19,7 @@
   (fn [{:keys [args]}]
     (println "hello" (get args :name) args)))
 
-(defn update-feed-posts-job-id 
+(defn update-feed-posts-job-id
   "returns the job id of an update-feed-posts job with the given email and feed-id"
   [email feed-id]
   (str email "-" feed-id))
@@ -50,25 +51,30 @@
                                                         thumbnail
                                                         extracted-display)}))
                                  extracted-posts)
-            existing-posts (services/incoming-posts ds {:where [:= :creator-id creator-id]})
-            existing-feed (services/feed ds {:id feed-id})]
-        (services/update-feed! ds {:id feed-id
-                                   :data {:title (get-in extracted [:feed :title])
-                                          :display-picture (if (and (:display-picture existing-feed)
-                                                                    (seq (:display-picture existing-feed)))
-                                                             (:display-picture existing-feed)
-                                                             extracted-display)
-                                          :updated-at (util/get-utc-timestamp-string)}})
+            existing-posts (hon/find ds {:tname :incoming-posts
+                                         :where [:= :creator-id creator-id]})
+            existing-feed (hon/find-one ds {:tname :feeds
+                                            :where [:= :id feed-id]})]
+        (hon/update! ds {:tname :feeds
+                         :where [:= :id feed-id]
+                         :data {:title (get-in extracted [:feed :title])
+                                :display-picture (if (and (:display-picture existing-feed)
+                                                          (seq (:display-picture existing-feed)))
+                                                   (:display-picture existing-feed)
+                                                   extracted-display)
+                                :updated-at (util/get-utc-timestamp-string)}})
         (run!
          (fn [post]
            (if (some #(= (:post-id post) (:post-id %)) existing-posts)
-             (services/update-incoming-post! ds {:where [:= :post-id (:post-id post)]
-                                                 :data post})
-             (services/insert-incoming-post! ds {:data post})))
+             (hon/update! ds {:tname :incoming-posts
+                              :where [:= :post-id (:post-id post)]
+                              :data post})
+             (hon/insert! ds {:tname :incoming-posts
+                              :data post})))
          extended-posts))
       (catch Exception _ :fail))))
 
-(defn update-bundle-job-id 
+(defn update-bundle-job-id
   "returns the job id of an update-bundle job with the given bundle id"
   [bundle-id]
   (str "bundle_" bundle-id))
@@ -109,7 +115,8 @@
             ids (mapv :post-id top-by-long-heuristics)
 
             ; get all incoming posts with the above id numbers
-            posts-in (services/incoming-posts ds {:where [:in :id ids]})
+            posts-in (hon/find ds {:tname :incoming-posts
+                                   :where [:in :id ids]})
             ; remove redacted posts
             outgoing-posts (reduce (fn [acc {:keys [redacted] :as post}]
                                      (if (:= redacted 0)
@@ -117,5 +124,6 @@
                                        acc))
                                    [] posts-in)]
         (when (seq posts-in)
-          (services/delete-outgoing-post! ds-bundle {})
-          (services/insert-outgoing-post! ds-bundle {:data outgoing-posts}))))))
+          (hon/delete! ds-bundle {:tname :outgoing-posts})
+          (hon/insert! ds-bundle {:tname :outgoing-posts
+                                  :data outgoing-posts}))))))

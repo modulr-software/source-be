@@ -1,6 +1,7 @@
 (ns source.routes.integration-filter-post
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.workers.integrations :as integrations]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "Returns true if the post with the given id is filtered out by the integration with the given id"
@@ -15,9 +16,10 @@
 
   [{:keys [ds path-params] :as _request}]
 
-  (let [returned (services/filtered-feeds ds {:where [:and
-                                                      [:= :bundle-id (:id path-params)]
-                                                      [:= :post-id (:post-id path-params)]]})
+  (let [returned (hon/find ds {:tname :filtered-feeds
+                               :where [:and
+                                       [:= :bundle-id (:id path-params)]
+                                       [:= :post-id (:post-id path-params)]]})
         blocked (if (seq returned) true false)]
     (res/response {:filtered blocked})))
 
@@ -35,13 +37,8 @@
                       403 [:map [:message :string]]}}}
 
   [{:keys [ds path-params body] :as _request}]
-
-  (let [{:keys [filtered]} body
-        {:keys [id post-id]} path-params]
-    (if filtered
-      (services/insert-filtered-posts! ds {:data {:post-id post-id
-                                                  :bundle-id id}})
-      (services/delete-filtered-post! ds {:where [:and
-                                                  [:= :post-id post-id]
-                                                  [:= :bundle-id id]]}))
-    (res/response {:message "successfully updated post filtering"})))
+  (->> {:filtered (:filtered body)
+        :bundle-id (:id path-params)
+        :post-id (:post-id path-params)}
+       (integrations/update-filtered-posts! ds))
+  (res/response {:message "successfully updated post filtering"}))

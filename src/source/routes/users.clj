@@ -1,6 +1,6 @@
 (ns source.routes.users
   (:require [ring.util.response :as res]
-            [source.services.users :as users]))
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all users"
@@ -22,7 +22,8 @@
                 403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds] :as _request}]
-  (res/response {:users (users/users ds)}))
+  (res/response {:users (hon/find ds {:tname :users
+                                      :ret :*})}))
 
 (comment
   (require '[source.db.interface :as db])

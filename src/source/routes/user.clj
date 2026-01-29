@@ -1,7 +1,7 @@
 (ns source.routes.user
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.util :as util]))
+  (:require [ring.util.response :as res]
+            [source.util :as util]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get user by id"
@@ -24,8 +24,8 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (let [user (->> path-params
-                  (services/user ds))]
+  (let [user (hon/find-one ds {:tname :users
+                               :where [:= :id (:id path-params)]})]
     (->> (dissoc user :password)
          (assoc {} :user)
          (res/response))))
@@ -68,9 +68,9 @@
       (-> (res/response error)
           (res/status 400))
 
-      (do (services/update-user! ds
-                                 {:id (:id path-params)
-                                  :values data})
+      (do (hon/update! ds {:tname :users
+                           :where [:= :id (:id path-params)]
+                           :data data})
           (res/response {:message "successfully updated user"})))))
 
 (comment

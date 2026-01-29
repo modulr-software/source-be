@@ -2,7 +2,6 @@
   (:require [source.middleware.auth.util :as util]
             [source.db.util :as db.util]
             [ring.util.response :as res]
-            [source.services.users :as users]
             [source.services.bundles :as bundles]
             [source.db.honey :as db]))
 
@@ -33,8 +32,9 @@
   (fn [request]
     (let [ds (db.util/conn :master)
           user-type (get-in request [:user :type])
-          expected-type (->> {:id (get-in request [:user :id])}
-                             (users/user ds)
+          expected-type (->> {:tname :users
+                              :where [:= :id (get-in request [:user :id])]}
+                             (db/find-one ds)
                              (:type))]
       (cond
         (not (some? required-type)) (handler request)

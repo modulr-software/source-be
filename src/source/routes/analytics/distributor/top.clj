@@ -2,13 +2,15 @@
   (:require [source.services.analytics.interface :as analytics]
             [ring.util.response :as res]
             [clojure.set :as set]
-            [source.services.interface :as services]
-            [source.util :as utils]))
+            [source.util :as utils]
+            [source.db.honey :as hon]))
 
 (defn record-names [ds top-field ids]
   (if (= top-field :post-id)
-    (services/incoming-posts ds {:where [:in :id ids]})
-    (services/feeds ds {:where [:in :id ids]})))
+    (hon/find ds {:tname :incoming-posts
+                  :where [:in :id ids]})
+    (hon/find ds {:tname :feeds
+                  :where [:in :id ids]})))
 
 (defn get
   {:summary "Get the top n records with the highest number of impressions, clicks and views, in terms of the given top field. Optionally filtered by content type.

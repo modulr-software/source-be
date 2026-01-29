@@ -1,6 +1,6 @@
 (ns source.routes.content-types
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get all content types"
@@ -10,5 +10,5 @@
                             [:name :string]]]}}}
 
   [{:keys [ds] :as _request}]
-  (-> (services/content-types ds)
+  (-> (hon/find ds {:tname :content-types})
       (res/response)))

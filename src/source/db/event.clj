@@ -1,14 +1,13 @@
 (ns source.db.event
-  (:require [source.services.event-categories :as ec]
-            [source.services.analytics.interface :as analytics]
-            [source.services.outgoing-posts :as outgoing-posts]
+  (:require [source.services.analytics.interface :as analytics]
             [source.services.feed-categories :as feed-categories]
             [source.db.util :as db.util]
             [source.util :as util]
             [source.db.honey :as db]))
 
 (defn get-post-categories [bundle-ds ds post-id]
-  (let [feed-id (-> (outgoing-posts/outgoing-post bundle-ds {:id post-id})
+  (let [feed-id (-> (db/find-one bundle-ds {:tname :outgoing-posts
+                                            :where [:= :id post-id]})
                     (:feed-id))]
     (feed-categories/category-id ds {:feed-id feed-id})))
 
@@ -29,12 +28,14 @@
                                                                   :timestamp timestamp}
                                                            :ret :*})
                        (first))]
-      (ec/insert-event-category! bundle-ds {:data {:event-id event-id
-                                                   :category-id (:category-id categories)}}))
+      (db/insert! bundle-ds {:tname :event-categories
+                             :data {:event-id event-id
+                                    :category-id (:category-id categories)}}))
     (let [event-id (-> (analytics/insert-event! creator-ds {:data {:post_id post-id
                                                                    :event_type type
                                                                    :timestamp timestamp}
                                                             :ret :*})
                        (first))]
-      (ec/insert-event-category! creator-ds {:data {:event-id event-id
-                                                    :category-id (:category-id categories)}}))))
+      (db/insert! creator-ds {:tname :event-categories
+                              :data {:event-id event-id
+                                     :category-id (:category-id categories)}}))))

@@ -192,7 +192,8 @@
                                             category-ids)))
                               (flatten)
                               (vec))]
-    (insert-event-categories! ds {:data event-categories})))
+    (when (seq event-categories)
+      (insert-event-categories! ds {:data event-categories}))))
 
 (defn insert-feed-impressions!
   "Given a list of feeds and a bundle id, inserts impression event reconds 
@@ -225,9 +226,9 @@
                         :creator-id creator-id
                         :bundle-id bundle-id
                         :distributor-id (:user-id bundle)}) posts)
-        events' (insert-event! ds {:data events
-                                   :ret :*})]
-    (insert-post-event-categories! ds events' posts)))
+        events' (when (seq posts) (insert-event! ds {:data events
+                                                     :ret :*}))]
+    (when (seq events') (insert-post-event-categories! ds events' posts))))
 
 (defn insert-feed-click!
   "Given a feed and a bundle id, inserts a click event record 

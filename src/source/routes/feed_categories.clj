@@ -1,6 +1,7 @@
 (ns source.routes.feed-categories
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.workers.feeds :as feeds]))
 
 (defn get
   {:summary "get all categories belonging to the feed with the given id"
@@ -26,10 +27,6 @@
                         [:name :string]]]}
    :responses {200 {:body [:map [:message :string]]}}}
   [{:keys [ds path-params body] :as _request}]
-  (let [update-data (reduce (fn [acc {:keys [id]}]
-                              (conj acc {:feed-id (:id path-params)
-                                         :category-id id})) [] body)]
-    (when (seq update-data)
-      (services/delete-feed-category! ds {:where [:= :feed-id (:id path-params)]})
-      (services/insert-feed-category! ds {:data update-data}))
-    (res/response {:message "successfully updated feed categories"})))
+  (feeds/update-feed-categories! ds {:feed-id (:id path-params)
+                                     :categories body})
+  (res/response {:message "successfully updated feed categories"}))

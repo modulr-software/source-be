@@ -1,6 +1,7 @@
 (ns source.routes.provider
   (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+            [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn get
   {:summary "get provider by id"
@@ -15,8 +16,8 @@
                            [:placeholder-url [:maybe :string]]]}}}
 
   [{:keys [ds path-params] :as _request}]
-  (->> path-params
-       (services/provider ds)
+  (->> (hon/find-one ds {:tname :providers
+                         :where [:= :id (:id path-params)]})
        (res/response)))
 
 (defn post
@@ -32,8 +33,9 @@
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params body] :as _request}]
-  (services/update-provider! ds {:id (:id path-params)
-                                 :data body})
+  (hon/update! ds {:tname :providers
+                   :where [:= :id (:id path-params)]
+                   :data body})
   (res/response {:message "successfully updated provider"}))
 
 (defn delete
@@ -43,7 +45,7 @@
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [store ds path-params] :as _request}]
-  (->> path-params
-       (services/delete-provider! ds))
+  (hon/delete! ds {:tname :providers
+                   :where [:= :id (:id path-params)]})
   (services/delete-selection-schemas-by-provider! store ds (:id path-params))
   (res/response {:message "successfully deleted provider"}))

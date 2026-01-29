@@ -1,6 +1,6 @@
 (ns source.routes.post-prune
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]))
+  (:require [ring.util.response :as res]
+            [source.db.honey :as hon]))
 
 (defn post
   {:summary "Update redacted status of post with the given id"
@@ -13,8 +13,9 @@
                 403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds path-params user body] :as _request}]
-  (services/update-incoming-post! ds {:where [:and
-                                              [:= :id (:post-id path-params)]
-                                              [:= :creator-id (:id user)]]
-                                      :data {:redacted (if (:redacted body) 1 0)}})
+  (hon/update! ds {:tname :incoming-posts
+                   :where [:and
+                           [:= :id (:post-id path-params)]
+                           [:= :creator-id (:id user)]]
+                   :data {:redacted (if (:redacted body) 1 0)}})
   (res/response {:message "successfully updated post"}))
