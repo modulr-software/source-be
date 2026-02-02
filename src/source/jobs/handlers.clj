@@ -126,7 +126,7 @@
 
             ; remove redacted posts
             outgoing-posts (reduce (fn [acc {:keys [redacted] :as post}]
-                                     (if (= redacted 0)
+                                     (if (:= redacted 0)
                                        (conj acc (dissoc post :redacted))
                                        acc))
                                    [] posts-in)]
