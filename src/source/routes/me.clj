@@ -4,7 +4,8 @@
             [source.db.honey :as hon]
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [source.workers.users :as users]))
 
 (defn get
   {:summary "get logged in user by access token"
@@ -58,10 +59,7 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
-
-    (hon/update! ds {:tname :users
-                     :where [:= :id id]
-                     :data {:removed 1}})
+    (users/soft-delete-user! ds (keyword type) id)
 
     ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
@@ -89,8 +87,6 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
-    (hon/update! ds {:tname :users
-                     :where [:= :id id]
-                     :data {:removed 0}})
+    (users/cancel-soft-user-deletion! ds (keyword type) id)
     (congest/deregister! js job-id)
     (res/response {:message "successfully cancelled user deletion"})))

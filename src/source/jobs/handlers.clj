@@ -6,8 +6,7 @@
             [source.db.util :as db.util]
             [clojure.set :as set]
             [clojure.string :as string]
-            [source.db.honey :as hon]
-            [congest.jobs :as congest]))
+            [source.db.honey :as hon]))
 
 (defmulti handler
   (fn [opts]

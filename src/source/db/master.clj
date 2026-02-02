@@ -1,7 +1,5 @@
 (ns source.db.master
-  (:require [source.db.tables :as tables]
-            [source.db.honey :as hon]
-            [source.db.util :as db.util]))
+  (:require [source.db.tables :as tables]))
 
 (def users
   (tables/create-table-sql
@@ -80,21 +78,21 @@
 
 (def filtered-feeds
   (tables/create-table-sql
-    :filtered-feeds
-    (tables/table-id)
-    [:feed-id :integer :not nil]
-    [:bundle-id :integer :not nil]
-    (tables/foreign-key :feed-id :feeds :id)
-    (tables/foreign-key :bundle-id :bundles :id)))
+   :filtered-feeds
+   (tables/table-id)
+   [:feed-id :integer :not nil]
+   [:bundle-id :integer :not nil]
+   (tables/foreign-key :feed-id :feeds :id)
+   (tables/foreign-key :bundle-id :bundles :id)))
 
 (def filtered-posts
   (tables/create-table-sql
-    :filtered-posts
-    (tables/table-id)
-    [:post-id :integer :not nil]
-    [:bundle-id :integer :not nil]
-    (tables/foreign-key :post-id :incoming-posts :id)
-    (tables/foreign-key :bundle-id :bundles :id)))
+   :filtered-posts
+   (tables/table-id)
+   [:post-id :integer :not nil]
+   [:bundle-id :integer :not nil]
+   (tables/foreign-key :post-id :incoming-posts :id)
+   (tables/foreign-key :bundle-id :bundles :id)))
 
 (def feeds
   (tables/create-table-sql
@@ -252,9 +250,9 @@
 
 (def business-types
   (tables/create-table-sql
-    :business-types 
-    (tables/table-id)
-    [:name :text :not nil]))
+   :business-types
+   (tables/table-id)
+   [:name :text :not nil]))
 
 (comment
   (require '[honey.sql :as sql])

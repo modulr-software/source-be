@@ -32,3 +32,21 @@
                                                :where [:= :id business-id]}))
     (hon/delete! ds {:tname :users
                      :where [:= :id user-id]})))
+
+(defn soft-delete-user! [ds user-type user-id]
+  (hon/update! ds {:tname :users
+                   :where [:= :id user-id]
+                   :data {:removed true}})
+  (when (= user-type :creator)
+    (hon/update! ds {:tname :incoming-posts
+                     :where [:= :creator-id user-id]
+                     :data {:redacted true}})))
+
+(defn cancel-soft-user-deletion! [ds user-type user-id]
+  (hon/update! ds {:tname :users
+                   :where [:= :id user-id]
+                   :data {:removed false}})
+  (when (= user-type :creator)
+    (hon/update! ds {:tname :incoming-posts
+                     :where [:= :creator-id user-id]
+                     :data {:redacted false}})))
