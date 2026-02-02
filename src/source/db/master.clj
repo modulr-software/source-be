@@ -1,5 +1,7 @@
 (ns source.db.master
-  (:require [source.db.tables :as tables]))
+  (:require [source.db.tables :as tables]
+            [source.db.honey :as hon]
+            [source.db.util :as db.util]))
 
 (def users
   (tables/create-table-sql

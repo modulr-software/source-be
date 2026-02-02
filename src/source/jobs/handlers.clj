@@ -29,51 +29,56 @@
 (defmethod handler :update-feed-posts [_]
   (fn [{:keys [args ds store]}]
     (try
-      (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
-            selection-schemas (->> [:= :provider-id provider-id]
-                                   (assoc {} :where)
-                                   (services/selection-schemas ds))
-            latest-ss (->> selection-schemas
-                           (reduce (fn [acc {:keys [id]}]
-                                     (conj acc id)) [])
-                           (apply max -1))
-            extracted (services/extract-data store {:schema-id latest-ss
-                                                    :url url})
-            extracted-posts (get-in extracted [:feed :posts])
-            extracted-display (get-in extracted [:feed :display-picture])
-            extended-posts (mapv (fn [{:keys [posted-at thumbnail] :as post}]
-                                   (merge post
-                                          {:feed-id feed-id
-                                           :creator-id creator-id
-                                           :content-type-id content-type-id
-                                           :posted-at (util/format-rss-date posted-at)
-                                           :thumbnail (if (and thumbnail
-                                                               (seq thumbnail)
-                                                               (not (string/includes? thumbnail ".mp3")))
-                                                        thumbnail
-                                                        extracted-display)}))
-                                 extracted-posts)
-            existing-posts (hon/find ds {:tname :incoming-posts
-                                         :where [:= :creator-id creator-id]})
-            existing-feed (hon/find-one ds {:tname :feeds
-                                            :where [:= :id feed-id]})]
-        (hon/update! ds {:tname :feeds
-                         :where [:= :id feed-id]
-                         :data {:title (get-in extracted [:feed :title])
-                                :display-picture (if (and (:display-picture existing-feed)
-                                                          (seq (:display-picture existing-feed)))
-                                                   (:display-picture existing-feed)
-                                                   extracted-display)
-                                :updated-at (util/get-utc-timestamp-string)}})
-        (run!
-         (fn [post]
-           (if (some #(= (:post-id post) (:post-id %)) existing-posts)
-             (hon/update! ds {:tname :incoming-posts
-                              :where [:= :post-id (:post-id post)]
-                              :data post})
-             (hon/insert! ds {:tname :incoming-posts
-                              :data post})))
-         extended-posts))
+      (when (-> (hon/find ds {:tname :users
+                              :where [:= :id (:creator-id args)]})
+                (:removed)
+                (= 0))
+        (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
+              selection-schemas (->> [:= :provider-id provider-id]
+                                     (assoc {} :where)
+                                     (services/selection-schemas ds))
+              latest-ss (->> selection-schemas
+                             (reduce (fn [acc {:keys [id]}]
+                                       (conj acc id)) [])
+                             (apply max -1))
+              extracted (services/extract-data store {:schema-id latest-ss
+                                                      :url url})
+              extracted-posts (get-in extracted [:feed :posts])
+              extracted-display (get-in extracted [:feed :display-picture])
+              extended-posts (mapv (fn [{:keys [posted-at thumbnail] :as post}]
+                                     (merge post
+                                            {:feed-id feed-id
+                                             :creator-id creator-id
+                                             :content-type-id content-type-id
+                                             :posted-at (util/format-rss-date posted-at)
+                                             :thumbnail (if (and thumbnail
+                                                                 (seq thumbnail)
+                                                                 (not (string/includes? thumbnail ".mp3")))
+                                                          thumbnail
+                                                          extracted-display)}))
+                                   extracted-posts)
+              existing-posts (hon/find ds {:tname :incoming-posts
+                                           :where [:= :creator-id creator-id]})
+              existing-feed (hon/find-one ds {:tname :feeds
+                                              :where [:= :id feed-id]})]
+          (hon/update! ds {:tname :feeds
+                           :where [:= :id feed-id]
+                           :data {:title (get-in extracted [:feed :title])
+                                  :display-picture (if (and (:display-picture existing-feed)
+                                                            (seq (:display-picture existing-feed)))
+                                                     (:display-picture existing-feed)
+                                                     extracted-display)
+                                  :updated-at (util/get-utc-timestamp-string)}})
+          (run!
+           (fn [post]
+             (if (some #(= (:post-id post) (:post-id %)) existing-posts)
+               (hon/update! ds {:tname :incoming-posts
+                                :where [:= :post-id (:post-id post)]
+                                :data post})
+               (hon/insert! ds {:tname :incoming-posts
+                                :data post})))
+           extended-posts)))
+
       (catch Exception _ :fail))))
 
 (defn update-bundle-job-id
@@ -119,9 +124,10 @@
             ; get all incoming posts with the above id numbers
             posts-in (hon/find ds {:tname :incoming-posts
                                    :where [:in :id ids]})
+
             ; remove redacted posts
             outgoing-posts (reduce (fn [acc {:keys [redacted] :as post}]
-                                     (if (:= redacted 0)
+                                     (if (= redacted 0)
                                        (conj acc (dissoc post :redacted))
                                        acc))
                                    [] posts-in)]

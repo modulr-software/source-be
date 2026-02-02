@@ -58,6 +58,11 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
+
+    (hon/update! ds {:tname :users
+                     :where [:= :id id]
+                     :data {:removed 1}})
+
     ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
@@ -81,8 +86,11 @@
   {:summary "cancel deletion of logged-in user by access token"
    :responses {200 {:body [:map [:message :string]]}}}
 
-  [{:keys [js user] :as _request}]
+  [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
+    (hon/update! ds {:tname :users
+                     :where [:= :id id]
+                     :data {:removed 0}})
     (congest/deregister! js job-id)
     (res/response {:message "successfully cancelled user deletion"})))
