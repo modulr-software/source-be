@@ -1,7 +1,8 @@
 (ns source.routes.feed
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
-            [source.workers.feeds :as feeds]))
+            [source.workers.feeds :as feeds]
+            [source.jobs.handlers :as handlers]))
 
 (defn get
   {:summary "get feed by id"
@@ -63,10 +64,11 @@
                                        [:= :user-id (:id user)]
                                        [:= :id id]]})
         {:keys [email]} (hon/find-one ds {:tname :users
-                                          :where [:= :id (:id user)]})]
+                                          :where [:= :id (:id user)]})
+        job-id (handlers/update-feed-posts-job-id email id)]
     (if (some? feed)
       (do
-        (feeds/hard-delete-feed! ds js email id)
+        (feeds/hard-delete-feed! ds js job-id id)
         (res/response {:message "successfully deleted feed"}))
       (-> (res/response {:message "unauthorized"})
           (res/status 403)))))

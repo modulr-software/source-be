@@ -50,9 +50,11 @@
   (fn [request]
     (let [ds (db.util/conn :master)
           bundle-uuid (get-in request [:query-params :uuid])
-          {:keys [id]} (db/find-one ds {:tname :bundles
-                                        :where [:= :uuid bundle-uuid]})]
-      (if (some? id)
+          {:keys [id user-id]} (db/find-one ds {:tname :bundles
+                                                :where [:= :uuid bundle-uuid]})
+          {:keys [removed]} (db/find-one ds {:tname :users
+                                             :where [:= :id user-id]})]
+      (if (and (some? id) (= removed 0))
         (-> request
             (assoc :bundle-id id)
             (handler))
@@ -67,8 +69,10 @@
   (fn [request]
     (let [ds (db.util/conn :master)
           token (util/auth-token request)
-          existing-bundle (bundles/bundle ds {:where [:= :hash token]})]
-      (if (some? existing-bundle)
+          {:keys [user-id] :as existing-bundle} (bundles/bundle ds {:where [:= :hash token]})
+          {:keys [removed]} (db/find-one ds {:tname :users
+                                             :where [:= :id user-id]})]
+      (if (and (some? existing-bundle) (= removed 0))
         (-> request
             (assoc :bundle-id (:id existing-bundle))
             (handler))

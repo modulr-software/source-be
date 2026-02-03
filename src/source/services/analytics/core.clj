@@ -169,7 +169,7 @@
                                             category-ids)))
                               (flatten)
                               (vec))]
-    (insert-event-categories! ds {:data event-categories})))
+    (when (seq event-categories) (insert-event-categories! ds {:data event-categories}))))
 
 (defn insert-post-event-categories!
   "Given a list of events and a list of posts (or a single event/post),

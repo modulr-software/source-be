@@ -1,7 +1,11 @@
 (ns source.routes.me
   (:require [ring.util.response :as res]
             [source.util :as util]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.jobs.core :as jobs]
+            [source.jobs.handlers :as handlers]
+            [congest.jobs :as congest]
+            [source.workers.users :as users]))
 
 (defn get
   {:summary "get logged in user by access token"
@@ -47,3 +51,42 @@
                            :where [:= :id (:id user)]
                            :data data})
           (res/response {:message "successfully updated user"})))))
+
+(defn delete-user
+  {:summary "delete logged-in user by access token"
+   :responses {200 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds js user] :as _request}]
+  (let [{:keys [id type]} user
+        job-id (handlers/user-deletion-job-id type id)]
+    (users/soft-delete-user! ds id)
+
+    ; TODO: service needed
+    (->> (jobs/prepare-congest-metadata
+          ds
+          js
+          {:id job-id
+           :initial-delay (* 1000 60 60 24 30)
+           :auto-start true
+           :stop-after-fail false,
+           :interval (* 1000 60 60 24 30)
+           :recurring? false
+           :kill-after 1
+           :args {:user-type type
+                  :user-id id}
+           :handler :delete-user
+           :created-at (util/get-utc-timestamp-string)
+           :sleep false})
+         (congest/register! js))
+    (res/response {:message "successfully scheduled user deletion"})))
+
+(defn cancel-deletion
+  {:summary "cancel deletion of logged-in user by access token"
+   :responses {200 {:body [:map [:message :string]]}}}
+
+  [{:keys [ds js user] :as _request}]
+  (let [{:keys [id type]} user
+        job-id (handlers/user-deletion-job-id type id)]
+    (users/cancel-soft-user-deletion! ds id)
+    (congest/deregister! js job-id)
+    (res/response {:message "successfully cancelled user deletion"})))

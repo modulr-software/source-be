@@ -1,14 +1,12 @@
 (ns source.workers.feeds
   (:require [source.util :as utils]
             [source.services.xml-schemas :as xml]
-            [source.jobs.core :as jobs]
             [congest.jobs :as congest]
-            [source.db.honey :as hon]
-            [source.jobs.handlers :as handlers]))
+            [source.db.honey :as hon]))
 
 (defn create-feed!
   "Creates feed with incoming posts pulled from RSS feed and starts associated job"
-  [ds js store {:keys [user-id feed-metadata]}]
+  [ds store {:keys [user-id feed-metadata]}]
   (let [{:keys [provider-id rss-url content-type-id]} feed-metadata
         datetime (utils/get-utc-timestamp-string)
         selection-schemas (->> [:= :provider-id provider-id]
@@ -36,33 +34,11 @@
                                        :creator-id user-id
                                        :content-type-id content-type-id
                                        :thumbnail (or (:thumbnail post) (:display-picture new-feed))}))
-                             extracted-posts)
-        {:keys [email]} (hon/find-one ds {:tname :users
-                                          :where [:= :id user-id]})]
-
+                             extracted-posts)]
     (if (some? extracted-posts)
       (do
         (hon/insert! ds {:tname :incoming-posts
                          :data extended-posts})
-
-        (->> (jobs/prepare-congest-metadata
-              ds
-              store
-              {:id (str email "-" (:id new-feed))
-               :initial-delay (* 1000 60 60 24)
-               :auto-start true
-               :stop-after-fail false,
-               :interval (* 1000 60 60 24)
-               :recurring? true
-               :args {:feed-id (:id new-feed)
-                      :creator-id user-id
-                      :content-type-id content-type-id
-                      :provider-id provider-id
-                      :url rss-url}
-               :handler :update-feed-posts
-               :created-at (utils/get-utc-timestamp-string)
-               :sleep false})
-             (congest/register! js))
         new-feed)
       false)))
 
@@ -72,9 +48,8 @@
                    :data feed-metadata
                    :ret :1}))
 
-(defn hard-delete-feed! [ds js creator-email feed-id]
-  (let [job-id (handlers/update-feed-posts-job-id creator-email feed-id)
-        post-ids (mapv :id (hon/find ds {:tname :incoming-posts
+(defn hard-delete-feed! [ds js job-id feed-id]
+  (let [post-ids (mapv :id (hon/find ds {:tname :incoming-posts
                                          :where [:= :feed-id feed-id]
                                          :ret :*}))]
     (hon/delete! ds {:tname :filtered-feeds
