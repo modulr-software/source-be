@@ -59,7 +59,7 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
-    (users/soft-delete-user! ds (keyword type) id)
+    (users/soft-delete-user! ds id)
 
     ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
@@ -87,6 +87,6 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
-    (users/cancel-soft-user-deletion! ds (keyword type) id)
+    (users/cancel-soft-user-deletion! ds id)
     (congest/deregister! js job-id)
     (res/response {:message "successfully cancelled user deletion"})))

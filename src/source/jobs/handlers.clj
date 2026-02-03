@@ -28,10 +28,7 @@
 (defmethod handler :update-feed-posts [_]
   (fn [{:keys [args ds store]}]
     (try
-      (when (-> (hon/find ds {:tname :users
-                              :where [:= :id (:creator-id args)]})
-                (:removed)
-                (= 0))
+      (when (users/removed? ds (:creator-id args))
         (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
               selection-schemas (->> [:= :provider-id provider-id]
                                      (assoc {} :where)
@@ -124,9 +121,16 @@
             posts-in (hon/find ds {:tname :incoming-posts
                                    :where [:in :id ids]})
 
+            creator-ids (mapv :creator-id posts-in)
+            active-creator-ids (->> (hon/find ds {:tname :users
+                                                  :where [:in :id creator-ids]})
+                                    (filterv #(or (nil? (:removed %)) (= (:removed %) 0)))
+                                    (mapv :id))
+
             ; remove redacted posts
-            outgoing-posts (reduce (fn [acc {:keys [redacted] :as post}]
-                                     (if (:= redacted 0)
+            outgoing-posts (reduce (fn [acc {:keys [redacted creator-id] :as post}]
+                                     (if (and (or (nil? redacted) (= redacted 0))
+                                              (some #{creator-id} active-creator-ids))
                                        (conj acc (dissoc post :redacted))
                                        acc))
                                    [] posts-in)]
