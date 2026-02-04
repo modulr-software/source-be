@@ -9,7 +9,6 @@
      :source.db.master
      [:events
       :event-categories])))
-
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
     (tables/drop-tables!

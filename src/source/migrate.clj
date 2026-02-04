@@ -1,6 +1,6 @@
 (ns source.migrate
   (:require [k16.mallard :as mallard]
-            [k16.mallard.store.sqlite :as store]
+            [k16.mallard.store.postgres :as store]
             [k16.mallard.loader.fs :as loader.fs]
             [next.jdbc :as jdbc]
             [source.db.util :as db.util]
@@ -22,10 +22,16 @@
   (loader.fs/load! "src/source/bundle_migrations"))
 
 (defn run-migrations [args]
-  (let [context {:db-master (jdbc/get-datasource {:dbname (db.util/db-path "master") :dbtype "sqlite"})}
-        db-migrate (jdbc/get-datasource {:dbname (db.util/db-path "migrate") :dbtype "sqlite"})
+  (let [context {:db-master (jdbc/get-datasource {:dbname (db.util/db-name "master")
+                                                  :user "postgres"
+                                                  :password "55589783"
+                                                  :dbtype "postgresql"})}
+        db-migrate (jdbc/get-datasource {:dbname (db.util/db-name "migrate")
+                                         :user "postgres"
+                                         :password "55589783"
+                                         :dbtype "postgresql"})
         datastore (store/create-datastore
-                   {:db db-migrate
+                   {:ds db-migrate
                     :table-name "migrations"})]
     (mallard/run {:context context
                   :store datastore
@@ -34,10 +40,12 @@
 
 (defn migrate-bundle [bundle-id args]
   (let [db-name (db.util/db-name :bundle bundle-id)
-        context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-path db-name)
-                                                  :dbtype "sqlite"})}
+        context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-name db-name)
+                                                  :user "postgres"
+                                                  :password "55589783"
+                                                  :dbtype "postgresql"})}
         datastore (store/create-datastore
-                   {:db (:db-bundle context)
+                   {:ds (:db-bundle context)
                     :table-name "migrations"})]
     (mallard/run {:context context
                   :store datastore

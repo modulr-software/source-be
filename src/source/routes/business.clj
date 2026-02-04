@@ -14,14 +14,9 @@
    :responses {201 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body] :as _request}]
-
-  (let [{:keys [data error success]} (utils/validate post body)]
-    (if (not success) (-> (res/response error)
-                          (res/status 400))
-
-        (do (hon/insert! ds {:tname :businesses
-                             :data data})
-            (res/response {:message "successfully added business"})))))
+  (hon/insert! ds {:tname :businesses
+                   :data body})
+  (res/response {:message "successfully added business"}))
 
 (defn patch
   {:summary "update a business by id"
@@ -36,17 +31,10 @@
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body path-params] :as _request}]
-
-  (let [{:keys [data error success]} (utils/validate patch body)]
-    (if (not success)
-
-      (-> (res/response error)
-          (res/status 400))
-
-      (do (hon/update! ds {:tname :businesses
-                           :where  [:= :id (:id path-params)]
-                           :data data})
-          (res/response {:message "successfully updated business"})))))
+  (hon/update! ds {:tname :businesses
+                   :where  [:= :id (:id path-params)]
+                   :data body})
+  (res/response {:message "successfully updated business"}))
 
 (comment
   (require '[source.db.util :as db.util])

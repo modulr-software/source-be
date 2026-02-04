@@ -7,11 +7,13 @@
             [source.util :as utils]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [next.jdbc :as jdbc]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
                                                :bundle-metadata bundle-metadata})]
+    (jdbc/execute! ds [(str "CREATE DATABASE bundle_" (:id new-bundle))])
     (migrate/migrate-bundle (:id new-bundle) ["up"])
 
     (with-open [bundle-ds (db.util/conn :bundle (:id new-bundle))]

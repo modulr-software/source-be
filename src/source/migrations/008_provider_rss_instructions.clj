@@ -8,12 +8,12 @@
     (hon/execute!
      ds-master
      (-> (hsql/alter-table :providers)
-         (hsql/add-column :instructions :string)))
+         (hsql/add-column :instructions :text)))
 
     (hon/execute!
      ds-master
      (-> (hsql/alter-table :providers)
-         (hsql/add-column :placeholder-url :string)))))
+         (hsql/add-column :placeholder-url :text)))))
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]

@@ -16,6 +16,7 @@
                            [:placeholder-url [:maybe :string]]]}}}
 
   [{:keys [ds path-params] :as _request}]
+  (println (:id path-params))
   (->> (hon/find-one ds {:tname :providers
                          :where [:= :id (:id path-params)]})
        (res/response)))

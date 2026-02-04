@@ -100,6 +100,11 @@
 
   (def ds (db.util/conn :master))
 
+  (-> (hsql/select :*)
+      (hsql/from :providers)
+      (hsql/where [:= :id [:cast "2" :int]])
+      (sql/format))
+
   (find ds {:tname :incoming-posts
             :limit 5
             :order-by [[:id :asc]]
