@@ -27,9 +27,9 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id path-params] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [post (hon/find-one bundle-ds {:tname :outgoing-posts
-                                        :where [:= :id (:id path-params)]
-                                        :ret :1})]
-      (analytics/insert-post-click! ds post bundle-id)
-      (res/response post))))
+  (let [bundle-ds (db.util/conn :bundle bundle-id)
+        post (hon/find-one bundle-ds {:tname :outgoing-posts
+                                      :where [:= :id (:id path-params)]
+                                      :ret :1})]
+    (analytics/insert-post-click! ds post bundle-id)
+    (res/response post)))

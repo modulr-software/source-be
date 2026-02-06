@@ -28,7 +28,7 @@
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [path-params body] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle (:id path-params))]
+  (let [bundle-ds (db.util/conn :bundle (:id path-params))]
     (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id (:id path-params)
                                                             :categories body})
     (res/response {:message "successfully updated integration categories"})))

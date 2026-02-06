@@ -46,8 +46,8 @@
 
 ;;NEW
 (defn categories-in-bundle [ds bundle-id]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [category-ids (bundle-categories/category-id bundle-ds {:bundle-id bundle-id})
-          id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)]
-      (hon/find ds {:tname :categories
-                    :where [:in :id id-vec]}))))
+  (let [bundle-ds (db.util/conn :bundle bundle-id)
+        category-ids (bundle-categories/category-id bundle-ds {:bundle-id bundle-id})
+        id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)]
+    (hon/find ds {:tname :categories
+                  :where [:in :id id-vec]})))

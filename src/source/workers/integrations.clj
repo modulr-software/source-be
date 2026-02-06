@@ -16,7 +16,7 @@
     (jdbc/execute! ds [(str "CREATE DATABASE bundle_" (:id new-bundle))])
     (migrate/migrate-bundle (:id new-bundle) ["up"])
 
-    (with-open [bundle-ds (db.util/conn :bundle (:id new-bundle))]
+    (let [bundle-ds (db.util/conn :bundle (:id new-bundle))]
       (bundle-categories/insert-bundle-categories! bundle-ds {:bundle-id (:id new-bundle)
                                                               :categories categories})
       (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
@@ -24,7 +24,7 @@
     new-bundle))
 
 (defn update-integration! [ds {:keys [bundle-id bundle-metadata categories content-types]}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
+  (let [bundle-ds (db.util/conn :bundle bundle-id)]
     (bundles/update-bundle! ds {:id bundle-id
                                 :data bundle-metadata})
     (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id bundle-id

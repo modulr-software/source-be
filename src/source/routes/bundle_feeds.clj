@@ -32,7 +32,7 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [{:keys [type latest nonfiltered]} (walk/keywordize-keys query-params)
+  (let [{:keys [type latest nonfiltered]} query-params
         feeds (->> {:bundle-id bundle-id
                     :type type
                     :latest latest
