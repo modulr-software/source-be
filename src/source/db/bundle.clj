@@ -51,6 +51,13 @@
    [:event-type :text :not nil]
    [:timestamp :text :not nil]))
 
+(defn tname [tname id]
+  (-> (str (name tname) "-" id)
+      (keyword)))
+
+(defn tnames [tnames id]
+  (mapv #(tname % id) tnames))
+
 (comment
   (sql/format event-categories)
   (sql/format outgoing-posts)
