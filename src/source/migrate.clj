@@ -5,7 +5,8 @@
             [next.jdbc :as jdbc]
             [source.db.util :as db.util]
             [source.db.honey :as db]
-            [source.db.tables :as tables]))
+            [source.db.tables :as tables]
+            [source.config :as conf]))
 
 ;; This is our interface for running migrations.
 ;;
@@ -15,6 +16,11 @@
 ;; - seed the appropriate tables with data.
 ;; - (TODO) generate malli schemas to match the affected db schemas 
 
+(def ^:private postgres-ds
+  {:user (conf/read-value :database :user)
+   :password (conf/read-value :database :password)
+   :dbtype (conf/read-value :database :type)})
+
 (def ^:private migrations
   (loader.fs/load! "src/source/migrations"))
 
@@ -22,14 +28,10 @@
   (loader.fs/load! "src/source/bundle_migrations"))
 
 (defn run-migrations [args]
-  (let [context {:db-master (jdbc/get-datasource {:dbname (db.util/db-name "master")
-                                                  :user "postgres"
-                                                  :password "55589783"
-                                                  :dbtype "postgresql"})}
-        db-migrate (jdbc/get-datasource {:dbname (db.util/db-name "migrate")
-                                         :user "postgres"
-                                         :password "55589783"
-                                         :dbtype "postgresql"})
+  (let [context {:db-master (jdbc/get-datasource (-> {:dbname (db.util/db-name "master")}
+                                                     (merge postgres-ds)))}
+        db-migrate (jdbc/get-datasource (-> {:dbname (db.util/db-name "migrate")}
+                                            (merge postgres-ds)))
         datastore (store/create-datastore
                    {:ds db-migrate
                     :table-name "migrations"})]
@@ -40,10 +42,8 @@
 
 (defn migrate-bundle [bundle-id args]
   (let [db-name (db.util/db-name :bundle bundle-id)
-        context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-name db-name)
-                                                  :user "postgres"
-                                                  :password "55589783"
-                                                  :dbtype "postgresql"})}
+        context {:db-bundle (jdbc/get-datasource (-> {:dbname (db.util/db-name db-name)}
+                                                     (merge postgres-ds)))}
         datastore (store/create-datastore
                    {:ds (:db-bundle context)
                     :table-name "migrations"})]
