@@ -12,17 +12,18 @@
   or select all. returns results as unqualified lower maps by default."
   [ds sqlmap & {:keys [ret exec-opts]}]
   (assert (and (some? ds) (some? sqlmap) (or (some? ret) (nil? ret))))
-  (let [ps (sql/format sqlmap)
-        exec-opts' (merge
-                    {:builder-fn rs/as-unqualified-lower-maps}
-                    exec-opts)
-        result (cske/transform-keys
-                csk/->kebab-case-keyword
-                (jdbc/execute! ds ps exec-opts'))]
-    (cond
-      (= ret :1) (first result)
-      (= ret :*) result
-      :else nil)))
+  (with-open [conn (db.util/get-connection ds)]
+    (let [ps (sql/format sqlmap)
+          exec-opts' (merge
+                      {:builder-fn rs/as-unqualified-lower-maps}
+                      exec-opts)
+          result (cske/transform-keys
+                  csk/->kebab-case-keyword
+                  (jdbc/execute! conn ps exec-opts'))]
+      (cond
+        (= ret :1) (first result)
+        (= ret :*) result
+        :else nil))))
 
 (defn find
   "does find one or find all for a given table name and where clause. The where
@@ -58,7 +59,7 @@
               (-> (hsql/insert-into (csk/->snake_case_keyword tname))
                   (hsql/values vals)
                   (hsql/returning :*))
-              :ret (or ret :1))))
+              :ret (or ret nil))))
 
 (defn delete!
   "deletes a record or set of records that match a predicate where clause. the where
@@ -98,16 +99,9 @@
 (comment
   (hsql/where :or [:= :id 1] [:= :id 2])
 
-  (def ds (db.util/conn :master))
+  (def ds (db.util/conn :bundle 5))
 
-  (-> (hsql/select :*)
-      (hsql/from :providers)
-      (hsql/where [:= :id [:cast "2" :int]])
-      (sql/format))
-
-  (find ds {:tname :incoming-posts
-            :limit 5
-            :order-by [[:id :asc]]
+  (find ds {:tname :outgoing-posts
             :ret :*})
 
   (insert! ds {:tname :sectors

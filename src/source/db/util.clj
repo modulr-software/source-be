@@ -17,17 +17,21 @@
   ([type id]
    (str (name type) "_" id)))
 
-(defn- -conn [dbname]
-  (let [conn (-> {:dbtype (conf/read-value :database :type)
-                  :user "postgres"
-                  :password "55589783"
-                  :host "localhost"
-                  :port 5432}
-                 (merge {:dbname (db-name dbname)})
+(defn get-connection [ds]
+  (let [conn (-> ds
                  (jdbc/get-connection))]
     (try (jdbc/execute! conn ["CREATE DOMAIN DATETIME TEXT"]) (catch Exception _))
     (jdbc/with-options conn {:builder-fn rs/as-unqualified-lower-maps})
     conn))
+
+(defn- -conn [dbname]
+  (-> {:dbtype (conf/read-value :database :type)
+       :user (conf/read-value :database :user)
+       :password (conf/read-value :database :password)
+       :host (conf/read-value :database :host)
+       :maximum-pool-size 10
+       :port 5432}
+      (merge {:dbname (db-name dbname)})))
 
 (defn conn
   ([]

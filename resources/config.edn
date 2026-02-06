@@ -4,6 +4,9 @@
  :cors-origin #or [#env CORS_ORIGIN "http://localhost:8080"]
  :env #or [#env ENV "dev"]
  :database {:dir #or [#env DATABASE_DIR ".db/"]
+            :user #or [#env POSTGRES_USER "postgres"]
+            :password #env POSTGRES_PASSWORD
+            :host #or [#env POSTGRES_HOST "localhost"]
             :type "postgresql"}
  :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
          :username #env EMAIL_USERNAME
