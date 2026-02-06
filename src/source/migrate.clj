@@ -35,17 +35,18 @@
         datastore (store/create-datastore
                    {:ds db-migrate
                     :table-name "migrations"})]
+    (try (jdbc/execute! (:db-master context) ["CREATE DOMAIN DATETIME TEXT"]) (catch Exception _))
     (mallard/run {:context context
                   :store datastore
                   :operations migrations}
                  args)))
 
 (defn migrate-bundle [bundle-id args]
-  (let [db-name (db.util/db-name :bundle bundle-id)
-        context {:db-bundle (jdbc/get-datasource (-> {:dbname (db.util/db-name db-name)}
-                                                     (merge postgres-ds)))}
+  (let [context {:db-master (jdbc/get-datasource (-> {:dbname (db.util/db-name "master")}
+                                                     (merge postgres-ds)))
+                 :bundle-id bundle-id}
         datastore (store/create-datastore
-                   {:ds (:db-bundle context)
+                   {:ds (:db-master context)
                     :table-name "migrations"})]
     (mallard/run {:context context
                   :store datastore
