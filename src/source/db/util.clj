@@ -26,12 +26,8 @@
 
 (defn- -conn [dbname]
   (-> {:dbtype (conf/read-value :database :type)
-       :user (conf/read-value :database :user)
-       :password (conf/read-value :database :password)
-       :host (conf/read-value :database :host)
-       :maximum-pool-size 10
-       :port 5432}
-      (merge {:dbname (db-name dbname)})))
+       :jdbcUrl (str "jdbc:" (conf/read-value :database :url) "/" dbname)
+       :maximum-pool-size 10}))
 
 (defn conn
   ([]
