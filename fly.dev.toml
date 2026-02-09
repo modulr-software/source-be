@@ -13,7 +13,6 @@ primary_region = 'jnb'
   ENV = 'prod'
   GOOGLE_CLIENT_ID = '449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com'
   GOOGLE_REDIRECT_URI = 'https://source-be-staging.fly.dev/oauth2/google/callback'
-  DATABASE_DIR = '/data'
   SUPPORT_ADDRESS="keaganncollins@gmail.com"
   EMAIL_USERNAME="merveillevaneck@gmail.com"
 

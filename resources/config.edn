@@ -3,8 +3,7 @@
  :admins-encrypted-path "resources/admins_encrypted.json"
  :cors-origin #or [#env CORS_ORIGIN "http://localhost:8080"]
  :env #or [#env ENV "dev"]
- :database {:dir #or [#env DATABASE_DIR ".db/"]
-            :url #or [#env DATABASE_URL "postgres://localhost:5432/"]
+ :database {:url #or [#env DATABASE_URL "postgres://localhost:5432/"]
             :type "postgresql"}
  :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
          :username #env EMAIL_USERNAME
