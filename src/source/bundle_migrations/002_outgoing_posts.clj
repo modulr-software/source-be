@@ -3,11 +3,13 @@
             [source.db.tables :as tables]))
 
 (defn run-up! [context]
-  (let [{:keys [ds-master bundle-id]} context]
+  (let [{:keys [ds-master bundle-id]} context
+        tables [:outgoing-posts]]
     (tables/create-tables!
      ds-master
      :source.db.bundle
-     (-> [:outgoing-posts]
+     tables
+     (-> tables
          (bundle/tnames bundle-id)))))
 
 (defn run-down! [context]

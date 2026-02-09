@@ -7,8 +7,7 @@
    :event-categories
    (tables/table-id)
    [:event-id :integer :not nil]
-   [:category-id :text :not nil]
-   (tables/foreign-key :event-id :analytics :id)))
+   [:category-id :text :not nil]))
 
 (def outgoing-posts
   (tables/create-table-sql

@@ -3,15 +3,15 @@
             [source.db.tables :as tables]))
 
 (defn run-up! [context]
-  (let [{:keys [ds-master bundle-id]} context]
+  (let [{:keys [ds-master bundle-id]} context
+        tables [:outgoing-posts
+                :bundle-categories
+                :post-heuristics]]
     (tables/create-tables!
      ds-master
      :source.db.bundle
-     (-> [:outgoing-posts
-          :bundle-categories
-          :post-heuristics
-          :analytics
-          :event-categories]
+     tables
+     (-> tables
          (bundle/tnames bundle-id)))))
 
 (defn run-down! [context]
@@ -20,7 +20,5 @@
      ds-master
      (-> [:outgoing-posts
           :bundle-categories
-          :post-heuristics
-          :analytics
-          :event-categories]
+          :post-heuristics]
          (bundle/tnames bundle-id)))))

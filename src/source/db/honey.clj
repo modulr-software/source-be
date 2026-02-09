@@ -99,10 +99,7 @@
 (comment
   (hsql/where :or [:= :id 1] [:= :id 2])
 
-  (def ds (db.util/conn :bundle 5))
-
-  (find ds {:tname :outgoing-posts
-            :ret :*})
+  (def ds (db.util/conn))
 
   (insert! ds {:tname :sectors
                :values {:name "something"}

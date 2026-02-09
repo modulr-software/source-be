@@ -1,7 +1,5 @@
 (ns source.routes.integration-categories
-  (:require [source.services.interface :as services]
-            [ring.util.response :as res]
-            [source.db.util :as db.util]
+  (:require [ring.util.response :as res]
             [source.services.bundles :as bundles]
             [source.services.bundle-categories :as bundle-categories]))
 
@@ -27,8 +25,7 @@
                         [:name :string]]]}
    :responses {200 {:body [:map [:message :string]]}}}
 
-  [{:keys [path-params body] :as _request}]
-  (let [bundle-ds (db.util/conn :bundle (:id path-params))]
-    (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id (:id path-params)
-                                                            :categories body})
-    (res/response {:message "successfully updated integration categories"})))
+  [{:keys [ds path-params body] :as _request}]
+  (bundle-categories/update-bundle-categories! ds {:bundle-id (:id path-params)
+                                                   :categories body})
+  (res/response {:message "successfully updated integration categories"}))

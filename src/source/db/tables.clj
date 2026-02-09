@@ -33,16 +33,21 @@
   resolvable keyword, resolves the symbol to retrieve defined
   sql create table honey statements, prepares jdbc statements from them,
   and executes with next.jdbc, returning the result of the execution."
-  [ds ns tname]
-  (->> (resolve-sql-def ns tname)
-       (hon/execute! ds)))
+  ([ds ns tname]
+   (create-table! ds ns tname tname))
+  ([ds ns tname new-tname]
+   (let [table-stmt (-> (resolve-sql-def ns tname)
+                        (assoc :create-table [new-tname :if-not-exists]))]
+     (hon/execute! ds table-stmt))))
 
 (defn create-tables!
   "Like create-table! but accepts a vector of keywords for table names
   and runs create-table with ns on every table name keyword in the vector."
-  [ds ns tables]
-  (mapv #(create-table! ds ns %)
-        tables))
+  ([ds ns tables]
+   (create-tables! ds ns tables tables))
+  ([ds ns tables new-tnames]
+   (mapv (fn [t nt]
+           (create-table! ds ns t nt)) tables new-tnames)))
 
 (defn tables
   "returns all current tables in a postgres datasource"

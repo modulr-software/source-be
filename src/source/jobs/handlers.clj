@@ -6,7 +6,8 @@
             [source.db.util :as db.util]
             [clojure.set :as set]
             [clojure.string :as string]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.db.bundle :as bundle]))
 
 (defmulti handler
   (fn [opts]
@@ -86,7 +87,6 @@
 (defmethod handler :update-bundle [_]
   (fn [{:keys [args ds]}]
     (let [{:keys [bundle-id categories]} args
-          ds-bundle (db.util/conn :bundle bundle-id)
           incoming-posts (services/incoming-posts-with-feeds ds {:where [:= :feeds.state "live"]})
           posts-categories (incoming-posts/categories-by-posts ds {:where [:= :state "live"]})]
       (run!
@@ -105,15 +105,17 @@
                matches (count (set/intersection (set post-categories-vec)
                                                 (set match-categories-vec)))]
             ; use matches as a score and upsert long-heuristic for this post
-           (services/upsert-post-heuristics! ds-bundle {:data [{:post-id (:id post)
-                                                                :long-heuristic matches}]})))
+           (services/upsert-post-heuristics! ds {:bundle-id bundle-id
+                                                 :data [{:post-id (:id post)
+                                                         :long-heuristic matches}]})))
        incoming-posts)
 
       ; pull highest scored posts by long heuristics into outgoing posts
             ; top 1000 post-heuristics records ordered by long heuristic in descending order
-      (let [top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
+      (let [top-by-long-heuristics (services/top-posts-by-heuristic ds
                                                                     {:heuristic :long-heuristic
-                                                                     :limit 1000})
+                                                                     :limit 1000
+                                                                     :bundle-id bundle-id})
             ; convert into a vector of id numbers
             ids (mapv :post-id top-by-long-heuristics)
 
@@ -135,9 +137,9 @@
                                        acc))
                                    [] posts-in)]
         (when (seq posts-in)
-          (hon/delete! ds-bundle {:tname :outgoing-posts})
-          (hon/insert! ds-bundle {:tname :outgoing-posts
-                                  :data outgoing-posts}))))))
+          (hon/delete! ds {:tname (bundle/tname :outgoing-posts bundle-id)})
+          (hon/insert! ds {:tname (bundle/tname :outgoing-posts bundle-id)
+                           :data outgoing-posts}))))))
 
 (defn user-deletion-job-id
   "returns the job id of a user deletion job with the given user id"

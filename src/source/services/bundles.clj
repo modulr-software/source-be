@@ -1,9 +1,7 @@
 (ns source.services.bundles
   (:require [source.db.interface :as db]
             [source.util :as utils]
-            [source.services.bundle-categories :as bundle-categories]
-            [source.db.util :as db.util]
-            [source.db.honey :as hon]))
+            [source.db.bundle :as bundle]))
 
 (defn insert-bundle! [ds {:keys [_values _ret] :as opts}]
   (->> {:tname :bundles}
@@ -46,8 +44,8 @@
 
 ;;NEW
 (defn categories-in-bundle [ds bundle-id]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        category-ids (bundle-categories/category-id bundle-ds {:bundle-id bundle-id})
+  (let [category-ids (db/find-one ds {:tname (bundle/tname :bundle-categories bundle-id)
+                                      :where [:= :bundle-id bundle-id]})
         id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)]
-    (hon/find ds {:tname :categories
-                  :where [:in :id id-vec]})))
+    (db/find ds {:tname :categories
+                 :where [:in :id id-vec]})))
