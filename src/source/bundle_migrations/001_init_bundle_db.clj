@@ -1,5 +1,5 @@
 (ns source.bundle-migrations.001-init-bundle-db
-  (:require [source.db.bundle :as bundle]
+  (:require [source.db.bundle]
             [source.db.tables :as tables]
             [source.db.util :as db.util]))
 
