@@ -7,7 +7,8 @@
             [source.util :as utils]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [source.db.bundle :as bundle]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
@@ -37,7 +38,10 @@
                    :where [:= :bundle-id bundle-id]})
   (hon/delete! ds {:tname :events
                    :where [:= :bundle-id bundle-id]})
-  (tables/drop-all-tables! (db.util/conn :bundle bundle-id))
+  (tables/drop-tables! ds (bundle/tnames [:outgoing-posts
+                                          :bundle-categories
+                                          :post-heuristics]
+                                         bundle-id))
   (hon/delete! ds {:tname :bundles
                    :where [:= :id bundle-id]})
   (congest/deregister! js job-id))
