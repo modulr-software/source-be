@@ -1,18 +1,20 @@
 (ns source.bundle-migrations.002-outgoing-posts
-  (:require [source.db.bundle :as bundle]
-            [source.db.tables :as tables]))
+  (:require [source.db.bundle]
+            [source.db.tables :as tables]
+            [source.db.util :as db.util]))
 
 (defn run-up! [context]
-  (let [{:keys [ds-master bundle-id]} context]
-    (tables/create-tables!
+  (let [{:keys [ds-master bundle-id]} context
+        tables [:outgoing-posts]]
+    (tables/create-bundle-tables!
      ds-master
      :source.db.bundle
-     (-> [:outgoing-posts]
-         (bundle/tnames bundle-id)))))
+     tables
+     bundle-id)))
 
 (defn run-down! [context]
   (let [{:keys [ds-master bundle-id]} context]
     (tables/drop-tables!
      ds-master
      (-> [:outgoing-posts]
-         (bundle/tnames bundle-id)))))
+         (db.util/tnames bundle-id)))))

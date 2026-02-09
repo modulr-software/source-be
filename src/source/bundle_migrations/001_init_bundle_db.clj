@@ -1,18 +1,18 @@
 (ns source.bundle-migrations.001-init-bundle-db
-  (:require [source.db.bundle :as bundle]
-            [source.db.tables :as tables]))
+  (:require [source.db.bundle]
+            [source.db.tables :as tables]
+            [source.db.util :as db.util]))
 
 (defn run-up! [context]
-  (let [{:keys [ds-master bundle-id]} context]
-    (tables/create-tables!
+  (let [{:keys [ds-master bundle-id]} context
+        tables [:outgoing-posts
+                :bundle-categories
+                :post-heuristics]]
+    (tables/create-bundle-tables!
      ds-master
      :source.db.bundle
-     (-> [:outgoing-posts
-          :bundle-categories
-          :post-heuristics
-          :analytics
-          :event-categories]
-         (bundle/tnames bundle-id)))))
+     tables
+     bundle-id)))
 
 (defn run-down! [context]
   (let [{:keys [ds-master bundle-id]} context]
@@ -20,7 +20,5 @@
      ds-master
      (-> [:outgoing-posts
           :bundle-categories
-          :post-heuristics
-          :analytics
-          :event-categories]
-         (bundle/tnames bundle-id)))))
+          :post-heuristics]
+         (db.util/tnames bundle-id)))))

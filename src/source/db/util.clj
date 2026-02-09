@@ -43,6 +43,18 @@
    (assert (or (= db-type :bundle) (= db-type :creator)))
    (-conn (db-name db-type id))))
 
+(defn tname
+  ([tname id]
+   {:tname (->> (str (name tname) "-" id)
+                (keyword))})
+  ([data-map tname id]
+   (->> (str (name tname) "-" id)
+        (keyword)
+        (assoc data-map :tname))))
+
+(defn tnames [tnames id]
+  (mapv #(tname % id) tnames))
+
 (comment
   (def ds (conn :bundle 1))
   (jdbc/execute! ds ["DELETE FROM providers;"])

@@ -1,16 +1,15 @@
 (ns source.workers.bundles
-  (:require [source.db.util :as db.util]
-            [source.db.honey :as hon]
+  (:require [source.db.honey :as hon]
             [honey.sql.helpers :as hsql]
             [clojure.set :as set]
-            [source.services.feed-categories :as feed-categories]))
+            [source.services.feed-categories :as feed-categories]
+            [source.db.bundle :as bundle]
+            [source.db.util :as db.util]))
 
 (defn get-bundle-categories
   "Get all categories for feeds/posts in bundle"
   [ds bundle-id]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        feed-ids (->> (hon/find bundle-ds {:tname :outgoing-posts
-                                           :ret :*})
+  (let [feed-ids (->> (hon/find ds (db.util/tname :outgoing-posts bundle-id))
                       (mapv :feed-id))
         category-ids (->> (hon/find ds {:tname :feed-categories
                                         :where [:in :feed-id feed-ids]
@@ -23,9 +22,7 @@
 (defn get-outgoing-feeds
   "Gets a filtered list of outgoing feeds for the associated bundle."
   [ds {:keys [bundle-id type latest category-ids nonfiltered]}]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        feed-ids (mapv :feed-id (hon/find bundle-ds {:tname :outgoing-posts
-                                                     :ret :*}))
+  (let [feed-ids (mapv :feed-id (hon/find ds (db.util/tname :outgoing-posts bundle-id)))
         category-filtered-feed-ids (if (empty? category-ids)
                                      feed-ids
                                      (->> (hsql/where
@@ -41,7 +38,7 @@
                                                         :where [:= :bundle-id bundle-id]
                                                         :ret :*})))
         query (-> (hsql/where (when type [:= :content-type-id type])
-                              [:in :id category-filtered-feed-ids]
+                              (when (seq category-filtered-feed-ids) [:in :id category-filtered-feed-ids])
                               (when (seq blocked-feed-ids) [:not [:in :id blocked-feed-ids]]))
                   (assoc :order-by (when latest [[:created-at :desc]]))
                   (merge {:tname :feeds
@@ -52,8 +49,7 @@
 (defn get-outgoing-posts
   "Get outgoing posts based on short heuristics and update analytics impressions"
   [ds {:keys [bundle-id limit start type latest category-ids]}]
-  (let [bundle-ds (db.util/conn :bundle bundle-id)
-        all-feed-ids (mapv :id (hon/find ds {:tname :feeds
+  (let [all-feed-ids (mapv :id (hon/find ds {:tname :feeds
                                              :ret :*}))
         blocked-feed-ids (mapv :feed-id (hon/find ds {:tname :filtered-feeds
                                                       :where [:= :bundle-id bundle-id]
@@ -64,12 +60,11 @@
                                                       :where [:= :bundle-id bundle-id]
                                                       :ret :*}))
 
-        filtered-posts (hon/find bundle-ds (-> (hsql/where (when type [:= :content-type-id type])
-                                                           (when (seq blocked-post-ids) [:not [:in :id blocked-post-ids]])
-                                                           [:in :feed-id available-feed-ids])
-                                               (assoc :order-by (when (= latest "true") [[[:posted-at :desc]]]))
-                                               (merge {:tname :outgoing-posts
-                                                       :ret :*})))
+        filtered-posts (hon/find ds (-> (hsql/where (when type [:= :content-type-id type])
+                                                    (when (seq blocked-post-ids) [:not [:in :id blocked-post-ids]])
+                                                    [:in :feed-id available-feed-ids])
+                                        (assoc :order-by (when (= latest "true") [[[:posted-at :desc]]]))
+                                        (merge (db.util/tname :outgoing-posts bundle-id))))
 
         categorised-posts (vec
                            (if (seq category-ids)

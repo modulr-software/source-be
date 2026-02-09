@@ -42,12 +42,12 @@
                  args)))
 
 (defn migrate-bundle [bundle-id args]
-  (let [context {:db-master (jdbc/get-datasource (-> {:dbname (db.util/db-name "master")}
+  (let [context {:ds-master (jdbc/get-datasource (-> {:dbname (db.util/db-name "master")}
                                                      (merge postgres-ds)))
                  :bundle-id bundle-id}
         datastore (store/create-datastore
-                   {:ds (:db-master context)
-                    :table-name "migrations"})]
+                   {:ds (:ds-master context)
+                    :table-name (str "migrations_" bundle-id)})]
     (mallard/run {:context context
                   :store datastore
                   :operations bundle-migrations}
