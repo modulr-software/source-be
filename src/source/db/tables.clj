@@ -32,22 +32,28 @@
   "Given keywords ns and table, parses the keywords into a
   resolvable keyword, resolves the symbol to retrieve defined
   sql create table honey statements, prepares jdbc statements from them,
-  and executes with next.jdbc, returning the result of the execution."
-  ([ds ns tname]
-   (create-table! ds ns tname tname))
-  ([ds ns tname new-tname]
-   (let [table-stmt (-> (resolve-sql-def ns tname)
-                        (assoc :create-table [new-tname :if-not-exists]))]
-     (hon/execute! ds table-stmt))))
+  and executes with next.jdbc, returning the result of the execution.
+  tname can either be a resolvable var keyword, or a vector containing
+  a resolvable var keyword and a table name to be assigned"
+  [ds ns tname]
+  (let [multi? (vector? tname)
+        tname' (if multi? (first tname) tname)
+        new-tname (if multi? (last tname) tname)
+        table-stmt (-> (resolve-sql-def ns tname')
+                       (assoc :create-table [new-tname :if-not-exists]))]
+    (hon/execute! ds table-stmt)))
 
 (defn create-tables!
   "Like create-table! but accepts a vector of keywords for table names
   and runs create-table with ns on every table name keyword in the vector."
-  ([ds ns tables]
-   (create-tables! ds ns tables tables))
-  ([ds ns tables new-tnames]
-   (mapv (fn [t nt]
-           (create-table! ds ns t nt)) tables new-tnames)))
+  [ds ns tables]
+  (mapv #(create-table! ds ns %) tables))
+
+(defn create-bundle-tables!
+  [ds ns tables bundle-id]
+  (->> (mapv (fn [t] [t (-> (db.util/tname t bundle-id)
+                            :tname)]) tables)
+       (mapv #(create-table! ds ns %))))
 
 (defn tables
   "returns all current tables in a postgres datasource"

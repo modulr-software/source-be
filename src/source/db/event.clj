@@ -4,11 +4,12 @@
             [source.db.util :as db.util]
             [source.util :as util]
             [source.db.honey :as db]
-            [source.db.bundle :as bundle]))
+            [source.db.bundle :as bundle]
+            [honey.sql.helpers :as hsql]))
 
 (defn get-post-categories [ds post-id bundle-id]
-  (let [feed-id (-> (db/find-one ds {:tname (bundle/tname :outgoing-posts bundle-id)
-                                     :where [:= :id post-id]})
+  (let [feed-id (-> (db/find-one ds (-> (db.util/tname :outgoing-posts bundle-id)
+                                        (hsql/where [:= :id post-id])))
                     (:feed-id))]
     (feed-categories/category-id ds {:feed-id feed-id})))
 
@@ -26,9 +27,9 @@
                                                            :timestamp timestamp}
                                                     :ret :*})
                        (first))]
-      (db/insert! ds {:tname (bundle/tname :event-categories bundle-id)
-                      :data {:event-id event-id
-                             :category-id (:category-id categories)}}))
+      (db/insert! ds (-> (db.util/tname :event-categories bundle-id)
+                         (assoc :data {:event-id event-id
+                                       :category-id (:category-id categories)}))))
     (let [event-id (-> (analytics/insert-event! creator-ds {:data {:post_id post-id
                                                                    :event_type type
                                                                    :timestamp timestamp}

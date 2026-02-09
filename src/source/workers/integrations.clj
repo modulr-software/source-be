@@ -38,10 +38,10 @@
                    :where [:= :bundle-id bundle-id]})
   (hon/delete! ds {:tname :events
                    :where [:= :bundle-id bundle-id]})
-  (tables/drop-tables! ds (bundle/tnames [:outgoing-posts
-                                          :bundle-categories
-                                          :post-heuristics]
-                                         bundle-id))
+  (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
+                                           :bundle-categories
+                                           :post-heuristics]
+                                          bundle-id))
   (hon/delete! ds {:tname :bundles
                    :where [:= :id bundle-id]})
   (congest/deregister! js job-id))

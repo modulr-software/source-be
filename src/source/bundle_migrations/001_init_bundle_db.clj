@@ -7,12 +7,11 @@
         tables [:outgoing-posts
                 :bundle-categories
                 :post-heuristics]]
-    (tables/create-tables!
+    (tables/create-bundle-tables!
      ds-master
      :source.db.bundle
      tables
-     (-> tables
-         (bundle/tnames bundle-id)))))
+     bundle-id)))
 
 (defn run-down! [context]
   (let [{:keys [ds-master bundle-id]} context]

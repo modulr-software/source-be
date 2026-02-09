@@ -137,9 +137,9 @@
                                        acc))
                                    [] posts-in)]
         (when (seq posts-in)
-          (hon/delete! ds {:tname (bundle/tname :outgoing-posts bundle-id)})
-          (hon/insert! ds {:tname (bundle/tname :outgoing-posts bundle-id)
-                           :data outgoing-posts}))))))
+          (hon/delete! ds (db.util/tname :outgoing-posts bundle-id))
+          (hon/insert! ds (-> (db.util/tname :outgoing-posts bundle-id)
+                              (assoc :data outgoing-posts))))))))
 
 (defn user-deletion-job-id
   "returns the job id of a user deletion job with the given user id"
