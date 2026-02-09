@@ -1,6 +1,7 @@
 (ns source.bundle-migrations.001-init-bundle-db
   (:require [source.db.bundle :as bundle]
-            [source.db.tables :as tables]))
+            [source.db.tables :as tables]
+            [source.db.util :as db.util]))
 
 (defn run-up! [context]
   (let [{:keys [ds-master bundle-id]} context
@@ -20,4 +21,4 @@
      (-> [:outgoing-posts
           :bundle-categories
           :post-heuristics]
-         (bundle/tnames bundle-id)))))
+         (db.util/tnames bundle-id)))))
