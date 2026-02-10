@@ -24,6 +24,7 @@
    [:cors-origin :string]
    [:env :string]
    [:database [:map
+               [:dir :string]
                [:url :string]
                [:type :string]]]
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])

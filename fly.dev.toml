@@ -11,10 +11,11 @@ primary_region = 'fra'
 [env]
   CORS_ORIGIN = 'https://source-staging.fly.dev'
   ENV = 'prod'
+  DATABASE_DIR = '/data'
   GOOGLE_CLIENT_ID = '449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com'
   GOOGLE_REDIRECT_URI = 'https://source-be-staging.fly.dev/oauth2/google/callback'
-  SUPPORT_ADDRESS="keaganncollins@gmail.com"
-  EMAIL_USERNAME="merveillevaneck@gmail.com"
+  SUPPORT_ADDRESS = 'keaganncollins@gmail.com'
+  EMAIL_USERNAME = 'merveillevaneck@gmail.com'
 
 [http_service]
   internal_port = 3000
