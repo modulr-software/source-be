@@ -4,7 +4,7 @@
 #
 
 app = 'source-be-staging'
-primary_region = 'jnb'
+primary_region = 'fra'
 
 [build]
 
