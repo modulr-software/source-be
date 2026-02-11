@@ -70,7 +70,7 @@
           filtered-posts (hon/find bundle-ds (-> (hsql/where (when type [:= :content-type-id type])
                                                              [:not [:in :id blocked-post-ids]]
                                                              [:in :feed-id available-feed-ids])
-                                                 (hsql/order-by (when (= latest "true") [[:posted-at :desc]]))
+                                                 (hsql/order-by (when (= latest "true") [:posted-at :desc]))
                                                  (merge {:tname :outgoing-posts
                                                          :ret :*})))
 
