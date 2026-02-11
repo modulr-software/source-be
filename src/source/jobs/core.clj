@@ -40,13 +40,20 @@
   "Get congest-ready metadata of all jobs marked as running"
   [ds store]
   (let [jobs (services/jobs ds)]
-    (reduce (fn [acc {:keys [job-id job-metadata-id args handler status]}]
-              (when (= status "running")
-                (let [metadata (-> (services/job-metadata ds {:id job-metadata-id})
-                                   (assoc :id job-id
-                                          :args args
-                                          :handler handler))]
-                  (conj acc (prepare-congest-metadata ds store metadata))))) [] jobs)))
+    (mapv (fn [{:keys [job-id job-metadata-id args handler status]} i]
+            (when (= status "running")
+              (let [{:keys [initial-delay
+                            interval]
+                     :as m} (-> (services/job-metadata ds {:id job-metadata-id})
+                                (assoc :id job-id
+                                       :args args
+                                       :handler handler))
+                    metadata (assoc m
+                                    :initial-delay (+ initial-delay (* 1000 5 i))
+                                    :interval (+ interval (* 1000 5 i)))]
+                (prepare-congest-metadata ds store metadata))))
+          jobs
+          (-> jobs count inc range))))
 
 (comment
   (require '[source.db.util :as db.util]

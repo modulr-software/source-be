@@ -1,7 +1,6 @@
 (ns source.routes.bundle-feeds
   (:require [ring.util.response :as res]
             [source.db.util :as db.util]
-            [clojure.walk :as walk]
             [source.workers.bundles :as bundles]
             [source.services.analytics.interface :as analytics]))
 
@@ -39,7 +38,9 @@
                     :category-ids (:category-ids body)
                     :nonfiltered nonfiltered}
                    (bundles/get-outgoing-feeds ds))]
-    (analytics/insert-feed-impressions! ds feeds bundle-id)
+    (try
+      (analytics/insert-feed-impressions! ds feeds bundle-id)
+      (catch Exception e (println (.getMessage e))))
     (res/response feeds)))
 
 (comment

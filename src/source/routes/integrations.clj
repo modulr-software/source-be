@@ -5,7 +5,9 @@
             [source.util :as util]
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [source.db.honey :as hon]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "get all integrations"
@@ -60,7 +62,17 @@
                          :categories (:categories body)
                          :content-types (:content-types body)}
                         (integrations/create-integration! ds))
-        categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))]
+        categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))
+
+        ; TEMPORARY BLOCK
+        ; TODO: delete this and fix the problem in jobs that causes outgoing posts to be empty
+       ;posts (->> (hon/find ds {:tname :incoming-posts
+       ;                         :limit 2000})
+       ;           (mapv #(dissoc % :redacted)))
+       ;_ (hon/insert! ds (-> (db.util/tname :outgoing-posts (:id new-bundle))
+       ;                      (assoc :data posts)))
+        ; END OF TEMPORARY BLOCK
+        ]
     ;TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
@@ -71,7 +83,6 @@
            :stop-after-fail false,
            :interval (* 1000 60 60 24)
            :recurring? true
-           :ds ds
            :args {:bundle-id (:id new-bundle)
                   :categories categories-by-bundle}
            :handler :update-bundle

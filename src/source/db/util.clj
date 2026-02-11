@@ -26,18 +26,14 @@
 
 (defn- -conn [dbname]
   (-> {:dbtype (conf/read-value :database :type)
-       :jdbcUrl (str "jdbc:" (conf/read-value :database :url) "/" dbname)
-       :maximum-pool-size 10}))
+       :jdbcUrl (str "jdbc:" (conf/read-value :database :url) ":5432/" dbname)}))
 
 (defn conn
   ([]
    (conn :master))
   ([db-type]
-   (assert (= db-type :master))
-   (-conn (db-name db-type)))
-  ([db-type id]
-   (assert (or (= db-type :bundle) (= db-type :creator)))
-   (-conn (db-name db-type id))))
+   (assert (or (= db-type :master) (= db-type :migrate)))
+   (-conn (db-name db-type))))
 
 (defn tname
   ([tname id]
@@ -50,8 +46,3 @@
 
 (defn tnames [tnames id]
   (mapv #(tname % id) tnames))
-
-(comment
-  (def ds (conn :bundle 1))
-  (jdbc/execute! ds ["DELETE FROM providers;"])
-  ())

@@ -2,7 +2,6 @@
   (:require [ring.util.response :as res]
             [source.services.analytics.interface :as analytics]
             [source.db.honey :as hon]
-            [source.db.bundle :as bundle]
             [source.db.util :as db.util]
             [honey.sql.helpers :as hsql]))
 
@@ -31,5 +30,7 @@
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [post (hon/find-one ds (-> (db.util/tname :outgoing-posts bundle-id)
                                   (hsql/where [:= :id (:id path-params)])))]
-    (analytics/insert-post-click! ds post bundle-id)
+    (try
+      (analytics/insert-post-click! ds post bundle-id)
+      (catch Exception e (println (.getMessage e))))
     (res/response post)))
