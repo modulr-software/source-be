@@ -60,21 +60,6 @@
          (res/response {:message "The bundle you are looking for does not exist."})
          (res/status 404))))))
 
-(defn wrap-auth-api-key
-  "validates the api key from the Authorization header for unauthenticated 
-  users and attaches the bundle-id to the request"
-  [handler]
-  (fn [request]
-    (let [ds (db.util/conn :master)
-          token (util/auth-token request)
-          existing-bundle (bundles/bundle ds {:where [:= :hash token]})]
-      (if (some? existing-bundle)
-        (-> request
-            (assoc :bundle-id (:id existing-bundle))
-            (handler))
-        (-> (res/response {:message "The bundle you are looking for does not exist."})
-            (res/status 404))))))
-
 (comment
   (let [authed-request {:headers {"Authorization"
                                   (str
