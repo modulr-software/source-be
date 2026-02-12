@@ -3,7 +3,8 @@
             [honey.sql.helpers :as hsql]
             [clojure.set :as set]
             [source.services.feed-categories :as feed-categories]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [honey.sql :as sql]))
 
 (defn get-bundle-categories
   "Get all categories for feeds/posts in bundle"
@@ -65,9 +66,11 @@
                                         (assoc :order-by (when (= latest "true") [[:posted-at :desc]]))
                                         (merge (db.util/tname :outgoing-posts bundle-id))))
 
+        shuffled (shuffle filtered-posts)
+
         categorised-posts (vec
                            (if (seq category-ids)
-                             (->> filtered-posts
+                             (->> shuffled
                                   (mapv
                                    (fn [post]
                                      (when (seq (set/intersection
@@ -78,7 +81,7 @@
                                                       (set))))
                                        post)))
                                   (remove nil?))
-                             filtered-posts))
+                             shuffled))
 
         valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
         started-posts (if valid-start?
