@@ -228,8 +228,8 @@
    [:event :text [:check [:in :event ["impression" "click" "view"]]]]
    [:feed-id :integer :not nil]
    [:post-id :integer]
-   [:content-type-id :not nil]
-   [:creator-id :not nil]
+   [:content-type-id :integer :not nil]
+   [:creator-id :integer :not nil]
    [:bundle-id :integer :not nil]
    [:distributor-id :integer :not nil]
    (tables/foreign-key :feed-id :feeds :id)

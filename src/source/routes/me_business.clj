@@ -1,6 +1,5 @@
 (ns source.routes.me-business
-  (:require [source.util :as util]
-            [ring.util.response :as res]
+  (:require [ring.util.response :as res]
             [source.db.honey :as hon]))
 
 (defn get
@@ -40,23 +39,18 @@
                400 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user body] :as _request}]
-  (let [{:keys [data error success]} (util/validate post body)]
-    (if (not success)
-      (-> (res/response {:message error})
-          (res/status 400))
+  (let [{:keys [business-id]} (hon/find-one ds {:tname :users
+                                                :where [:= :id (:id user)]})
+        business (when (nil? business-id)
+                   (hon/insert! ds {:tname :businesses
+                                    :data body
+                                    :ret :1}))]
+    (if (nil? business-id)
+      (hon/update! ds {:tname :users
+                       :where [:= :id (:id user)]
+                       :data {:business-id (:id business)}})
+      (hon/update! ds {:tname :businesses
+                       :where  [:= :id business-id]
+                       :data body}))
 
-      (let [{:keys [business-id]} (hon/find-one ds {:tname :users
-                                                    :where [:= :id (:id user)]})
-            business (when (nil? business-id)
-                       (hon/insert! ds {:tname :businesses
-                                        :data data
-                                        :ret :1}))]
-        (if (nil? business-id)
-          (hon/update! ds {:tname :users
-                           :where [:= :id (:id user)]
-                           :data {:business-id (:id business)}})
-          (hon/update! ds {:tname :businesses
-                           :where  [:= :id business-id]
-                           :data data}))
-
-        (res/response {:message "successfully added or updated business"})))))
+    (res/response {:message "successfully added or updated business"})))

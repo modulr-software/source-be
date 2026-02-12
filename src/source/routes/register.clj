@@ -29,15 +29,10 @@
 
   [{:keys [ds body] :as _request}]
 
-  (let [{:keys [data error success]} (util/validate post body)
-        {:keys [email password confirm-password]} data
+  (let [{:keys [email password confirm-password]} body
         existing-user (hon/find-one ds {:tname :users
                                         :where [:= :email email]})]
     (cond
-
-      (not success) (-> (res/response error)
-                        (res/status 400))
-
       (not (= password confirm-password))
       (-> (res/response {:error "Passwords do not match!"}))
 
@@ -45,7 +40,7 @@
       (-> (res/response {:error "An account for this email already exists!"}))
 
       :else
-      (-> (services/register ds data)
+      (-> (services/register ds body)
           (res/response)))))
 
 (comment

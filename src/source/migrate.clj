@@ -1,6 +1,6 @@
 (ns source.migrate
   (:require [k16.mallard :as mallard]
-            [k16.mallard.store.sqlite :as store]
+            [k16.mallard.store.postgres :as store]
             [k16.mallard.loader.fs :as loader.fs]
             [next.jdbc :as jdbc]
             [source.db.util :as db.util]
@@ -22,23 +22,23 @@
   (loader.fs/load! "src/source/bundle_migrations"))
 
 (defn run-migrations [args]
-  (let [context {:db-master (jdbc/get-datasource {:dbname (db.util/db-path "master") :dbtype "sqlite"})}
-        db-migrate (jdbc/get-datasource {:dbname (db.util/db-path "migrate") :dbtype "sqlite"})
+  (let [context {:db-master (jdbc/get-datasource (db.util/conn))}
+        db-migrate (jdbc/get-datasource (db.util/conn :migrate))
         datastore (store/create-datastore
-                   {:db db-migrate
+                   {:ds db-migrate
                     :table-name "migrations"})]
+    (try (jdbc/execute! (:db-master context) ["CREATE DOMAIN DATETIME TEXT"]) (catch Exception _))
     (mallard/run {:context context
                   :store datastore
                   :operations migrations}
                  args)))
 
 (defn migrate-bundle [bundle-id args]
-  (let [db-name (db.util/db-name :bundle bundle-id)
-        context {:db-bundle (jdbc/get-datasource {:dbname (db.util/db-path db-name)
-                                                  :dbtype "sqlite"})}
+  (let [context {:ds-master (jdbc/get-datasource (db.util/conn))
+                 :bundle-id bundle-id}
         datastore (store/create-datastore
-                   {:db (:db-bundle context)
-                    :table-name "migrations"})]
+                   {:ds (:ds-master context)
+                    :table-name (str "migrations_" bundle-id)})]
     (mallard/run {:context context
                   :store datastore
                   :operations bundle-migrations}

@@ -58,7 +58,7 @@
               (-> (hsql/insert-into (csk/->snake_case_keyword tname))
                   (hsql/values vals)
                   (hsql/returning :*))
-              :ret (or ret :1))))
+              :ret (or ret nil))))
 
 (defn delete!
   "deletes a record or set of records that match a predicate where clause. the where
@@ -98,12 +98,7 @@
 (comment
   (hsql/where :or [:= :id 1] [:= :id 2])
 
-  (def ds (db.util/conn :master))
-
-  (find ds {:tname :incoming-posts
-            :limit 5
-            :order-by [[:id :asc]]
-            :ret :*})
+  (def ds (db.util/conn))
 
   (insert! ds {:tname :sectors
                :values {:name "something"}

@@ -61,17 +61,10 @@
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds body path-params] :as _request}]
-
-  (let [{:keys [data error success]} (util/validate patch body)]
-    (if (not success)
-
-      (-> (res/response error)
-          (res/status 400))
-
-      (do (hon/update! ds {:tname :users
-                           :where [:= :id (:id path-params)]
-                           :data data})
-          (res/response {:message "successfully updated user"})))))
+  (hon/update! ds {:tname :users
+                   :where [:= :id (:id path-params)]
+                   :data body})
+  (res/response {:message "successfully updated user"}))
 
 (comment
   (require '[source.db.interface :as db])

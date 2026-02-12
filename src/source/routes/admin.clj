@@ -1,6 +1,5 @@
 (ns source.routes.admin
   (:require [source.password :as pw]
-            [source.util :as util]
             [ring.util.response :as res]
             [source.db.honey :as hon]))
 
@@ -16,15 +15,10 @@
 
   [{:keys [ds body] :as _request}]
 
-  (let [{:keys [data error success]} (util/validate post body)
-        user (hon/find-one ds {:tname :users
-                               :where [:= :email (:email data)]})
-        {:keys [password confirm-password]} data]
+  (let [user (hon/find-one ds {:tname :users
+                               :where [:= :email (:email body)]})
+        {:keys [password confirm-password]} body]
     (cond
-
-      (not success) (-> (res/response error)
-                        (res/status 400))
-
       (not (= password confirm-password))
       (-> (res/response {:message "passwords do not match!"})
           (res/status 400))
@@ -35,7 +29,7 @@
 
       :else
       (let [pw (pw/hash-password password)
-            new-user (-> (assoc data
+            new-user (-> (assoc body
                                 :password pw
                                 :type "admin")
                          (dissoc :confirm-password))]

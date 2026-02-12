@@ -7,28 +7,27 @@
             [source.util :as utils]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [source.db.bundle :as bundle]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
                                                :bundle-metadata bundle-metadata})]
     (migrate/migrate-bundle (:id new-bundle) ["up"])
 
-    (with-open [bundle-ds (db.util/conn :bundle (:id new-bundle))]
-      (bundle-categories/insert-bundle-categories! bundle-ds {:bundle-id (:id new-bundle)
-                                                              :categories categories})
-      (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
-                                                             :content-types content-types}))
+    (bundle-categories/insert-bundle-categories! ds {:bundle-id (:id new-bundle)
+                                                     :categories categories})
+    (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
+                                                           :content-types content-types})
     new-bundle))
 
 (defn update-integration! [ds {:keys [bundle-id bundle-metadata categories content-types]}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (bundles/update-bundle! ds {:id bundle-id
-                                :data bundle-metadata})
-    (bundle-categories/update-bundle-categories! bundle-ds {:bundle-id bundle-id
-                                                            :categories categories})
-    (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
-                                                           :content-types content-types})))
+  (bundles/update-bundle! ds {:id bundle-id
+                              :data bundle-metadata})
+  (bundle-categories/update-bundle-categories! ds {:bundle-id bundle-id
+                                                   :categories categories})
+  (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
+                                                         :content-types content-types}))
 
 (defn hard-delete-bundle! [ds js job-id bundle-id]
   (hon/delete! ds {:tname :filtered-feeds
@@ -39,7 +38,10 @@
                    :where [:= :bundle-id bundle-id]})
   (hon/delete! ds {:tname :events
                    :where [:= :bundle-id bundle-id]})
-  (tables/drop-all-tables! (db.util/conn :bundle bundle-id))
+  (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
+                                           :bundle-categories
+                                           :post-heuristics]
+                                          bundle-id))
   (hon/delete! ds {:tname :bundles
                    :where [:= :id bundle-id]})
   (congest/deregister! js job-id))

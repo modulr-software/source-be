@@ -30,6 +30,7 @@
     (try
       (when (users/removed? ds (:creator-id args))
         (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
+              _ (println "feed" feed-id "job started")
               selection-schemas (->> [:= :provider-id provider-id]
                                      (assoc {} :where)
                                      (services/selection-schemas ds))
@@ -73,47 +74,56 @@
                                 :data post})
                (hon/insert! ds {:tname :incoming-posts
                                 :data post})))
-           extended-posts)))
+           extended-posts)
+          (println "feed" feed-id "job finished")))
 
-      (catch Exception _ :fail))))
+      (catch Exception e (println "feed job failed: " e) :fail))))
 
 (defn update-bundle-job-id
   "returns the job id of an update-bundle job with the given bundle id"
   [bundle-id]
   (str "bundle_" bundle-id))
 
+(defn determine-post-score [post posts-categories categories]
+  ; calculate score for post
+  ; determine number of categories matched
+  ; get vector of category ids in the given post, e.g. [1 3]
+  (let [post-categories-vec (->> posts-categories
+                                 (mapv (fn [{:keys [post-id id]}]
+                                         (when (= post-id (:id post)) id)))
+                                 (filterv identity))
+        ; get vector of category ids in categories to match, e.g. [1 2 3 4]
+        match-categories-vec (reduce (fn [acc {:keys [id]}]
+                                       (conj acc id)) [] categories)
+        ; get number of matches between the 2 vectors, e.g. #{1 3} intersect #{1 2 3 4} -> (count #{1 3}) -> 2
+        matches (count (set/intersection (set post-categories-vec)
+                                         (set match-categories-vec)))]
+    ; use matches as a score to upsert long-heuristic for this post
+    {:post-id (:id post)
+     :long-heuristic matches}))
+
 ; run long heuristics and pull the highest scoring incoming posts into the bundle's outgoing posts
 (defmethod handler :update-bundle [_]
   (fn [{:keys [args ds]}]
     (let [{:keys [bundle-id categories]} args
-          ds-bundle (db.util/conn :bundle bundle-id)
+          _ (println "starting bundle" bundle-id "job")
           incoming-posts (services/incoming-posts-with-feeds ds {:where [:= :feeds.state "live"]})
-          posts-categories (incoming-posts/categories-by-posts ds {:where [:= :state "live"]})]
-      (run!
-       (fn [post]
-          ; calculate score for post
-          ; determine number of categories matched
-              ; get vector of category ids in the given post, e.g. [1 3]
-         (let [post-categories-vec (->> posts-categories
-                                        (mapv (fn [{:keys [post-id id]}]
-                                                (when (= post-id (:id post)) id)))
-                                        (filterv identity))
-               ; get vector of category ids in categories to match, e.g. [1 2 3 4]
-               match-categories-vec (reduce (fn [acc {:keys [id]}]
-                                              (conj acc id)) [] categories)
-               ; get number of matches between the 2 vectors, e.g. #{1 3} intersect #{1 2 3 4} -> (count #{1 3}) -> 2
-               matches (count (set/intersection (set post-categories-vec)
-                                                (set match-categories-vec)))]
-            ; use matches as a score and upsert long-heuristic for this post
-           (services/upsert-post-heuristics! ds-bundle {:data [{:post-id (:id post)
-                                                                :long-heuristic matches}]})))
-       incoming-posts)
+          posts-categories (incoming-posts/categories-by-posts ds {:where [:= :state "live"]})
+          heuristics (mapv
+                      #(determine-post-score % posts-categories categories)
+                      incoming-posts)]
+      ; use precalculated heuristics and insert this data to the database
+      (try
+        (services/upsert-post-heuristics! ds {:bundle-id bundle-id
+                                              :data heuristics})
+        (catch Exception e (println "bundle" bundle-id "upserting post heuristics failed: " (.getMessage e))))
 
       ; pull highest scored posts by long heuristics into outgoing posts
             ; top 1000 post-heuristics records ordered by long heuristic in descending order
-      (let [top-by-long-heuristics (services/top-posts-by-heuristic ds-bundle
+      (let [top-by-long-heuristics (services/top-posts-by-heuristic ds
                                                                     {:heuristic :long-heuristic
-                                                                     :limit 1000})
+                                                                     :limit 1000
+                                                                     :bundle-id bundle-id})
             ; convert into a vector of id numbers
             ids (mapv :post-id top-by-long-heuristics)
 
@@ -135,9 +145,11 @@
                                        acc))
                                    [] posts-in)]
         (when (seq posts-in)
-          (hon/delete! ds-bundle {:tname :outgoing-posts})
-          (hon/insert! ds-bundle {:tname :outgoing-posts
-                                  :data outgoing-posts}))))))
+          (hon/delete! ds (db.util/tname :outgoing-posts bundle-id))
+          (hon/insert! ds (-> (db.util/tname :outgoing-posts bundle-id)
+                              (assoc :data outgoing-posts))))
+
+        (println "bundle" bundle-id "job done")))))
 
 (defn user-deletion-job-id
   "returns the job id of a user deletion job with the given user id"

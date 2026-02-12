@@ -65,29 +65,28 @@
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
-
     (ds/create-datastore :datahike)
 
     (tables/create-tables!
      ds-master
      :source.db.master
-     [:users
+     [:businesses
+      :users
+      :content-types
+      :providers
       :sectors
       :categories
-      :content-types
       :cadences
       :baselines
       :bundles
       :feeds
       :feed-categories
-      :providers
-      :businesses
       :user-sectors
       :feed-sectors
       :selection-schemas
       :incoming-posts
-      :jobs
-      :job-metadata])
+      :job-metadata
+      :jobs])
 
     (db/insert! ds-master baselines-seed)
     (db/insert! ds-master cadences-seed)

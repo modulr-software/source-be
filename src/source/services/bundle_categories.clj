@@ -1,19 +1,7 @@
 (ns source.services.bundle-categories
-  (:require [source.db.interface :as db]))
-
-(defn insert-bundle-category! [ds {:keys [_data _ret] :as opts}]
-  (->> {:tname :bundle-categories}
-       (merge opts)
-       (db/insert! ds)))
-
-(defn delete-bundle-category! [ds {:keys [id where] :as opts}]
-  (->> {:tname :bundle-categories
-        :where (if (some? id)
-                 [:= :id id]
-                 where)
-        :ret :1}
-       (merge opts)
-       (db/delete! ds)))
+  (:require [source.db.interface :as db]
+            [source.db.bundle :as bundle]
+            [source.db.util :as db.util]))
 
 (defn category-id [ds {:keys [bundle-id where] :as opts}]
   (->> {:tname :bundle-categories
@@ -28,11 +16,14 @@
   (let [bundle-categories (mapv (fn [{:keys [id]}]
                                   {:bundle-id bundle-id
                                    :category-id id}) categories)]
-    (insert-bundle-category! ds {:data bundle-categories})))
+    (db/insert! ds (-> (db.util/tname :bundle-categories bundle-id)
+                       (assoc :data bundle-categories)))))
 
 (defn update-bundle-categories! [ds {:keys [bundle-id categories]}]
   (let [bundle-categories (mapv (fn [{:keys [id]}]
                                   {:bundle-id bundle-id
                                    :category-id id}) categories)]
-    (delete-bundle-category! ds {:where [:= :bundle-id bundle-id]})
-    (insert-bundle-category! ds {:data bundle-categories})))
+    (db/delete! ds {:tname (db.util/tname :bundle-categories bundle-id)
+                    :where [:= :bundle-id bundle-id]})
+    (db/insert! ds (-> (db.util/tname :bundle-categories bundle-id)
+                       (assoc :data bundle-categories)))))
