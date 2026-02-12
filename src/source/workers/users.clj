@@ -44,7 +44,7 @@
                    :data {:removed false}}))
 
 (defn removed? [ds user-id]
-  (-> (hon/find ds {:tname :users
-                    :where [:= :id user-id]})
-      (:removed)
-      (= 0)))
+  (let [removed? (-> (hon/find ds {:tname :users
+                                   :where [:= :id user-id]})
+                     (:removed))]
+    (when (or (nil? removed?) (= removed? 0)) true)))

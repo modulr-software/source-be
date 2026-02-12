@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for source-be-staging on 2025-07-08T14:36:46+02:00
+# fly.toml app configuration file generated for source-be-staging on 2026-02-10T10:41:37+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -10,12 +10,18 @@ primary_region = 'fra'
 
 [env]
   CORS_ORIGIN = 'https://source-staging.fly.dev'
-  ENV = 'prod'
   DATABASE_DIR = '/data'
+  EMAIL_USERNAME = 'merveillevaneck@gmail.com'
+  ENV = 'prod'
   GOOGLE_CLIENT_ID = '449412212863-h1rre1gdmfgq96jt160fdd30bfatjiqb.apps.googleusercontent.com'
   GOOGLE_REDIRECT_URI = 'https://source-be-staging.fly.dev/oauth2/google/callback'
   SUPPORT_ADDRESS = 'keaganncollins@gmail.com'
-  EMAIL_USERNAME = 'merveillevaneck@gmail.com'
+
+[[mounts]]
+  source = 'source_storage_staging'
+  destination = '/data'
+  initial_size = '50gb'
+  processes = ['app']
 
 [http_service]
   internal_port = 3000
@@ -28,9 +34,3 @@ primary_region = 'fra'
   memory = '2gb'
   cpu_kind = 'shared'
   cpus = 2
-
-[mounts]
-  source = 'source_storage_staging'
-  destination = '/data'
-  processes = ['app']
-  initial_size = '50gb'

@@ -12,18 +12,17 @@
   or select all. returns results as unqualified lower maps by default."
   [ds sqlmap & {:keys [ret exec-opts]}]
   (assert (and (some? ds) (some? sqlmap) (or (some? ret) (nil? ret))))
-  (with-open [conn (db.util/get-connection ds)]
-    (let [ps (sql/format sqlmap)
-          exec-opts' (merge
-                      {:builder-fn rs/as-unqualified-lower-maps}
-                      exec-opts)
-          result (cske/transform-keys
-                  csk/->kebab-case-keyword
-                  (jdbc/execute! conn ps exec-opts'))]
-      (cond
-        (= ret :1) (first result)
-        (= ret :*) result
-        :else nil))))
+  (let [ps (sql/format sqlmap)
+        exec-opts' (merge
+                    {:builder-fn rs/as-unqualified-lower-maps}
+                    exec-opts)
+        result (cske/transform-keys
+                csk/->kebab-case-keyword
+                (jdbc/execute! ds ps exec-opts'))]
+    (cond
+      (= ret :1) (first result)
+      (= ret :*) result
+      :else nil)))
 
 (defn find
   "does find one or find all for a given table name and where clause. The where

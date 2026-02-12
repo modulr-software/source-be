@@ -5,8 +5,7 @@
             [next.jdbc :as jdbc]
             [source.db.util :as db.util]
             [source.db.honey :as db]
-            [source.db.tables :as tables]
-            [source.config :as conf]))
+            [source.db.tables :as tables]))
 
 ;; This is our interface for running migrations.
 ;;
@@ -16,11 +15,6 @@
 ;; - seed the appropriate tables with data.
 ;; - (TODO) generate malli schemas to match the affected db schemas 
 
-(def ^:private postgres-ds
-  {:user (conf/read-value :database :user)
-   :password (conf/read-value :database :password)
-   :dbtype (conf/read-value :database :type)})
-
 (def ^:private migrations
   (loader.fs/load! "src/source/migrations"))
 
@@ -28,10 +22,8 @@
   (loader.fs/load! "src/source/bundle_migrations"))
 
 (defn run-migrations [args]
-  (let [context {:db-master (jdbc/get-datasource (-> {:dbname (db.util/db-name "master")}
-                                                     (merge postgres-ds)))}
-        db-migrate (jdbc/get-datasource (-> {:dbname (db.util/db-name "migrate")}
-                                            (merge postgres-ds)))
+  (let [context {:db-master (jdbc/get-datasource (db.util/conn))}
+        db-migrate (jdbc/get-datasource (db.util/conn :migrate))
         datastore (store/create-datastore
                    {:ds db-migrate
                     :table-name "migrations"})]
@@ -42,8 +34,7 @@
                  args)))
 
 (defn migrate-bundle [bundle-id args]
-  (let [context {:ds-master (jdbc/get-datasource (-> {:dbname (db.util/db-name "master")}
-                                                     (merge postgres-ds)))
+  (let [context {:ds-master (jdbc/get-datasource (db.util/conn))
                  :bundle-id bundle-id}
         datastore (store/create-datastore
                    {:ds (:ds-master context)

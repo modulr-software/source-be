@@ -3,7 +3,6 @@
             [honey.sql.helpers :as hsql]
             [clojure.set :as set]
             [source.services.feed-categories :as feed-categories]
-            [source.db.bundle :as bundle]
             [source.db.util :as db.util]))
 
 (defn get-bundle-categories
@@ -12,11 +11,11 @@
   (let [feed-ids (->> (hon/find ds (db.util/tname :outgoing-posts bundle-id))
                       (mapv :feed-id))
         category-ids (->> (hon/find ds {:tname :feed-categories
-                                        :where [:in :feed-id feed-ids]
+                                        :where (when (seq feed-ids) [:in :feed-id feed-ids])
                                         :ret :*})
                           (mapv :category-id))]
     (hon/find ds {:tname :categories
-                  :where [:in :id category-ids]
+                  :where (when (seq category-ids) [:in :id category-ids])
                   :ret :*})))
 
 (defn get-outgoing-feeds
@@ -63,7 +62,7 @@
         filtered-posts (hon/find ds (-> (hsql/where (when type [:= :content-type-id type])
                                                     (when (seq blocked-post-ids) [:not [:in :id blocked-post-ids]])
                                                     [:in :feed-id available-feed-ids])
-                                        (assoc :order-by (when (= latest "true") [[[:posted-at :desc]]]))
+                                        (assoc :order-by (when (= latest "true") [[:posted-at :desc]]))
                                         (merge (db.util/tname :outgoing-posts bundle-id))))
 
         categorised-posts (vec

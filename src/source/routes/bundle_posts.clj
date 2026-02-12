@@ -40,5 +40,7 @@
                     :latest latest
                     :category-ids (:category-ids body)}
                    (bundles/get-outgoing-posts ds))]
-    (analytics/insert-post-impressions! ds posts bundle-id)
+    (try
+      (analytics/insert-post-impressions! ds posts bundle-id)
+      (catch Exception e (println (.getMessage e))))
     (res/response posts)))

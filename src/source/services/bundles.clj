@@ -45,8 +45,8 @@
 
 ;;NEW
 (defn categories-in-bundle [ds bundle-id]
-  (let [category-ids (db/find-one ds (-> (db.util/tname :bundle-categories bundle-id)
-                                         (hsql/where [:= :bundle-id bundle-id])))
+  (let [category-ids (db/find ds (-> (db.util/tname :bundle-categories bundle-id)
+                                     (hsql/where [:= :bundle-id bundle-id])))
         id-vec (mapv (fn [{:keys [category-id]}] category-id) category-ids)]
     (db/find ds {:tname :categories
                  :where [:in :id id-vec]})))
