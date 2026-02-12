@@ -28,5 +28,7 @@
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [feed (hon/find-one ds {:tname :feeds
                                :where [:= :id (:id path-params)]})]
-    (analytics/insert-feed-click! ds feed bundle-id)
+    (try
+      (analytics/insert-feed-click! ds feed bundle-id)
+      (catch Exception e (println (.getMessage e))))
     (res/response feed)))

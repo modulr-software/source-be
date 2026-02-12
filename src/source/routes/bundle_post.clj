@@ -1,8 +1,9 @@
 (ns source.routes.bundle-post
-  (:require [source.db.util :as db.util]
-            [ring.util.response :as res]
+  (:require [ring.util.response :as res]
             [source.services.analytics.interface :as analytics]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.db.util :as db.util]
+            [honey.sql.helpers :as hsql]))
 
 (defn get
   {:summary "get a single outgoing post in the uuid-authorized bundle by post id, updates click analytics"
@@ -27,9 +28,9 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id path-params] :as _request}]
-  (with-open [bundle-ds (db.util/conn :bundle bundle-id)]
-    (let [post (hon/find-one bundle-ds {:tname :outgoing-posts
-                                        :where [:= :id (:id path-params)]
-                                        :ret :1})]
+  (let [post (hon/find-one ds (-> (db.util/tname :outgoing-posts bundle-id)
+                                  (hsql/where [:= :id (:id path-params)])))]
+    (try
       (analytics/insert-post-click! ds post bundle-id)
-      (res/response post))))
+      (catch Exception e (println (.getMessage e))))
+    (res/response post)))

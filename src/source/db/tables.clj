@@ -1,6 +1,8 @@
 (ns source.db.tables
   (:require [source.db.honey :as hon]
-            [honey.sql.helpers :as hsql]))
+            [honey.sql.helpers :as hsql]
+            [source.db.util :as db.util]
+            [honey.sql :as sql]))
 
 (defn create-table-sql
   "returns a honey data DSL structure for creating a table tname
@@ -30,33 +32,44 @@
   "Given keywords ns and table, parses the keywords into a
   resolvable keyword, resolves the symbol to retrieve defined
   sql create table honey statements, prepares jdbc statements from them,
-  and executes with next.jdbc, returning the result of the execution."
+  and executes with next.jdbc, returning the result of the execution.
+  tname can either be a resolvable var keyword, or a vector containing
+  a resolvable var keyword and a table name to be assigned"
   [ds ns tname]
-  (->> (resolve-sql-def ns tname)
-       (hon/execute! ds)))
+  (let [multi? (vector? tname)
+        tname' (if multi? (first tname) tname)
+        new-tname (if multi? (last tname) tname)
+        table-stmt (-> (resolve-sql-def ns tname')
+                       (assoc :create-table [new-tname :if-not-exists]))]
+    (hon/execute! ds table-stmt)))
 
 (defn create-tables!
   "Like create-table! but accepts a vector of keywords for table names
   and runs create-table with ns on every table name keyword in the vector."
   [ds ns tables]
-  (mapv #(create-table! ds ns %)
-        tables))
+  (mapv #(create-table! ds ns %) tables))
+
+(defn create-bundle-tables!
+  [ds ns tables bundle-id]
+  (->> (mapv (fn [t] [t (-> (db.util/tname t bundle-id)
+                            :tname)]) tables)
+       (mapv #(create-table! ds ns %))))
 
 (defn tables
-  "returns all current tables in a sqlite datasource"
+  "returns all current tables in a postgres datasource"
   [ds]
-  (->> {:tname :sqlite-master
-        :where [:and [:= :type "table"] [:<> :name "sqlite_sequence"]]
+  (->> {:tname :information_schema.tables
+        :where [:and [:= :table-schema "public"] [:= :table-type "BASE TABLE"]]
         :ret :*}
        (hon/find ds)))
 
 (defn table-name
   "return the name of a table record"
   [table]
-  (:name table))
+  (:table-name table))
 
 (defn table-names
-  "retrieves and returns all table names for an sqlite datasource"
+  "retrieves and returns all table names for an postgres datasource"
   [ds]
   (->> (tables ds)
        (mapv table-name)))
@@ -66,12 +79,12 @@
   with defaults: integer primary key autoincrement. Can be used
   with (create-table-sql) to simplify creating table ids."
   []
-  [:id :integer [:primary-key] :autoincrement])
+  [:id :integer :generated :by :default :as :identity :primary :key])
 
 (defn drop-table-sql
   "returns a honey data DSL structure for dropping a table tname"
   [tname]
-  (hsql/drop-table tname))
+  {:drop-table [tname [:cascade]]})
 
 (defn drop-table!
   "given a table tname, this function drops the table tname from 

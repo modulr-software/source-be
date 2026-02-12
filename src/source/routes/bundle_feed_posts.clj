@@ -31,5 +31,7 @@
   (let [posts (hon/find ds {:tname :incoming-posts
                             :where [:= :feed-id (:id path-params)]
                             :ret :*})]
-    (analytics/insert-post-impressions! ds posts bundle-id)
+    (try
+      (analytics/insert-post-impressions! ds posts bundle-id)
+      (catch Exception e (println (.getMessage e))))
     (res/response posts)))

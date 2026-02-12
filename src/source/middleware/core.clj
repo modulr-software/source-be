@@ -65,13 +65,24 @@
                                           (util/validate schema))]
     (->> (when error
            (str "In " (name param-type) ":\n" error))
-         (assoc validated :error))))
+         (assoc validated :param-type param-type :error))))
+
+(defn- attach-validations [request validations]
+  (reduce (fn [acc {:keys [data param-type]}]
+            (cond
+              (= param-type :body) (assoc acc :body data)
+              (= param-type :path) (assoc acc :path-params data)
+              (= param-type :query) (assoc acc :query-params data)
+              :else acc)) request validations))
 
 (defn wrap-input-validation [handler openapi-meta]
   (fn [request]
-    (let [errors (->> (mapv (partial validate-param request) (:parameters openapi-meta))
+    (let [validations (->> (mapv (partial validate-param request) (:parameters openapi-meta)))
+          errors (->> validations
                       (filter #(:error %))
-                      (mapv :error))]
+                      (mapv :error))
+          request (->> validations
+                       (attach-validations request))]
       (if (seq errors)
         (-> (res/response {:message (string/join "\n" errors)})
             (res/status 400))

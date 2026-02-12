@@ -17,21 +17,32 @@
   ([type id]
    (str (name type) "_" id)))
 
-(defn- -conn [dbname]
-  (let [conn (-> {:dbtype (conf/read-value :database :type)}
-                 (merge {:dbname (db-path dbname)})
+(defn get-connection [ds]
+  (let [conn (-> ds
                  (jdbc/get-connection))]
-    (jdbc/execute! conn ["PRAGMA journal_mode = WAL;"])
-    (jdbc/execute! conn ["PRAGMA synchronous = NORMAL;"])
+    (try (jdbc/execute! conn ["CREATE DOMAIN DATETIME TEXT"]) (catch Exception _))
     (jdbc/with-options conn {:builder-fn rs/as-unqualified-lower-maps})
     conn))
+
+(defn- -conn [dbname]
+  (-> {:dbtype (conf/read-value :database :type)
+       :jdbcUrl (str "jdbc:" (conf/read-value :database :url) ":5432/" dbname)}))
 
 (defn conn
   ([]
    (conn :master))
   ([db-type]
-   (assert (= db-type :master))
-   (-conn (db-name db-type)))
-  ([db-type id]
-   (assert (or (= db-type :bundle) (= db-type :creator)))
-   (-conn (db-name db-type id))))
+   (assert (or (= db-type :master) (= db-type :migrate)))
+   (-conn (db-name db-type))))
+
+(defn tname
+  ([tname id]
+   {:tname (->> (str (name tname) "-" id)
+                (keyword))})
+  ([data-map tname id]
+   (->> (str (name tname) "-" id)
+        (keyword)
+        (assoc data-map :tname))))
+
+(defn tnames [tnames id]
+  (mapv #(tname % id) tnames))

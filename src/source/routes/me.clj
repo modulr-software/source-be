@@ -43,14 +43,10 @@
                400 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user body] :as _request}]
-  (let [{:keys [data error success]} (util/validate post body)]
-    (if (not success)
-      (-> (res/response {:message error})
-          (res/status 400))
-      (do (hon/update! ds {:tname :users
-                           :where [:= :id (:id user)]
-                           :data data})
-          (res/response {:message "successfully updated user"})))))
+  (hon/update! ds {:tname :users
+                   :where [:= :id (:id user)]
+                   :data body})
+  (res/response {:message "successfully updated user"}))
 
 (defn delete-user
   {:summary "delete logged-in user by access token"

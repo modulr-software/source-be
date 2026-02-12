@@ -7,8 +7,7 @@
    :event-categories
    (tables/table-id)
    [:event-id :integer :not nil]
-   [:category-id :text :not nil]
-   (tables/foreign-key :event-id :analytics :id)))
+   [:category-id :text :not nil]))
 
 (def outgoing-posts
   (tables/create-table-sql
@@ -25,19 +24,14 @@
    [:season :integer]
    [:episode :integer]
    [:content-type-id :integer :not nil]
-   [:posted-at :datetime]
-   (tables/foreign-key :feed-id :feeds :id)
-   (tables/foreign-key :creator-id :users :id)
-   (tables/foreign-key :content-type-id :content-types :id)))
+   [:posted-at :datetime]))
 
 (def bundle-categories
   (tables/create-table-sql
    :bundle-categories
    (tables/table-id)
    [:bundle-id :int :not nil]
-   [:category-id :int :not nil]
-   (tables/foreign-key :bundle-id :bundles :id)
-   (tables/foreign-key :category-id :categories :id)))
+   [:category-id :int :not nil]))
 
 (def post-heuristics
   (tables/create-table-sql
@@ -55,6 +49,13 @@
    [:post-id :integer :not nil]
    [:event-type :text :not nil]
    [:timestamp :text :not nil]))
+
+(defn tname [tname id]
+  (-> (str (name tname) "-" id)
+      (keyword)))
+
+(defn tnames [tnames id]
+  (mapv #(tname % id) tnames))
 
 (comment
   (sql/format event-categories)
