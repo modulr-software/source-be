@@ -4,7 +4,9 @@
             [clojure.set :as set]
             [source.services.feed-categories :as feed-categories]
             [source.db.util :as db.util]
-            [honey.sql :as sql]))
+            [source.prandom.core :as prandom])
+  (:import [java.time LocalDateTime]
+           [java.time.format DateTimeFormatter]))
 
 (defn get-bundle-categories
   "Get all categories for feeds/posts in bundle"
@@ -66,11 +68,20 @@
                                         (assoc :order-by (when (= latest "true") [[:posted-at :desc]]))
                                         (merge (db.util/tname :outgoing-posts bundle-id))))
 
-        shuffled (shuffle filtered-posts)
+        order-map (->> (.format (LocalDateTime/now) (DateTimeFormatter/ofPattern "yyyy-MM-dd HH"))
+                       (prandom/seeded-shuffle (count filtered-posts))
+                       (map-indexed (fn [i item] [item i]))
+                       (into {}))
+
+        shuffled-posts (if (= latest "true")
+                         filtered-posts
+                         (->> (zipmap (-> filtered-posts count inc range) filtered-posts)
+                              (sort-by #(get order-map (first %)))
+                              (mapv last)))
 
         categorised-posts (vec
                            (if (seq category-ids)
-                             (->> shuffled
+                             (->> shuffled-posts
                                   (mapv
                                    (fn [post]
                                      (when (seq (set/intersection
@@ -81,7 +92,7 @@
                                                       (set))))
                                        post)))
                                   (remove nil?))
-                             shuffled))
+                             shuffled-posts))
 
         valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
         started-posts (if valid-start?
