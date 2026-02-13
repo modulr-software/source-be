@@ -7,8 +7,8 @@
   "Delete job record and metadata associated therewith"
   [{:keys [ds id]}]
   (let [{:keys [job-metadata-id id]} (services/job ds {:where [:= :job-id id]})]
-    (services/delete-job-metadata! ds {:id job-metadata-id})
-    (services/delete-job! ds {:id id})))
+    (services/delete-job! ds {:id id})
+    (services/delete-job-metadata! ds {:id job-metadata-id})))
 
 (defn update-job!
   "Update job status and last heartbeat"

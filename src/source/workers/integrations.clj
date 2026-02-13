@@ -7,8 +7,7 @@
             [source.util :as utils]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
-            [congest.jobs :as congest]
-            [source.db.bundle :as bundle]))
+            [congest.jobs :as congest]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
