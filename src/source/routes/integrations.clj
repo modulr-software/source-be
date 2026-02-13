@@ -5,9 +5,7 @@
             [source.util :as util]
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
-            [congest.jobs :as congest]
-            [source.db.honey :as hon]
-            [source.db.util :as db.util]))
+            [congest.jobs :as congest]))
 
 (defn get
   {:summary "get all integrations"
