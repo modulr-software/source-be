@@ -4,10 +4,11 @@
             [source.services.analytics.interface :as analytics]))
 
 (defn get
-  {:summary "get feed associated with the uuid-authorized bundle by id, updates click analytics for the given feed"
-   :parameters {:query [:map [:uuid :string]]
+  {:summary "Get a single RSS feed by id from RSS feeds within the uuid-authorized bundle. 
+   This endpoint will update click analytics for the returned RSS feed."
+   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
-                                  :description "feed id"} :int]]}
+                                  :description "Feed ID"} :int]]}
    :responses  {200 {:body [:map
                             [:id :int]
                             [:title :string]

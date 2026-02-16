@@ -137,7 +137,3 @@
 (defn apply-bundle [app]
   (-> app
       (auth/wrap-bundle-id)))
-
-(defn apply-api-key [app]
-  (-> app
-      (auth/wrap-auth-api-key)))

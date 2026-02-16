@@ -1,0 +1,1255 @@
+{
+	"info": {
+		"_postman_id": "5858dc0c-cdd1-4c48-a7b8-5e7bb0519be5",
+		"name": "Source",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23875094"
+	},
+	"item": [
+		{
+			"name": "Home",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "yeet",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"toast@toast.com\",\n    \"password\": \"Pa55w.rd\",\n    \"confirm-password\": \"Pa55w.rd\",\n    \"firstname\": \"toast\",\n    \"lastname\": \"toast\",\n    \"type\": \"creator\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"keaganncollins@gmail.com\",\n    \"password\": \"Pa55w.rd\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"address\": \"Cape Town\",\n    \"lastname\": \"Collins\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/users/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"users",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Admin",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..k38ZDx6t9xOhPKwi37gmxQ.C-DvEva5l913IgKY7tlyhQ.z0DD0yqQF-vQ2A3sPRt9yw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"toast@toast.com\",\n    \"password\": \"Pa55w.rd\",\n    \"confirm-password\": \"Pa55w.rd\",\n    \"firstname\": \"toast\",\n    \"lastname\": \"toast\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/add-admin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"add-admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Businesses",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..VeiUSfpzZQEfRiCUnTWfqw.seHlV7WJPNHxdwbzxGQ-NZzTp2RYYxmhDI2mPx4jsd0.TCN3XRVFi6jiwa6a6a4ttA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"modulr\",\n    \"url\": \"https://modulr.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/businesses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"businesses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Business",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..VeiUSfpzZQEfRiCUnTWfqw.seHlV7WJPNHxdwbzxGQ-NZzTp2RYYxmhDI2mPx4jsd0.TCN3XRVFi6jiwa6a6a4ttA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"yeet\",\n    \"url\": \"https://yeet.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/businesses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"businesses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Selection Schemas",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"record\": {\n        \"providerId\": 1,\n        \"outputSchemaId\": 1\n    },\n    \"schema\": {\n        \"title\": {\n            \"path\": [\"tag/body\", \"tag/feed\", \"tag/title\", \"content/0\"]\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/admin/selection-schemas",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"selection-schemas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Selection Schemas By Provider",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/admin/selection-schemas/providers/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"selection-schemas",
+						"providers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Selection Schema",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"record\": {\n        \"providerId\": 1,\n        \"outputSchemaId\": 1\n    },\n    \"schema\": {\n        \"title\": {\n            \"path\": [\"tag/body\", \"tag/feed\", \"tag/title\", \"content/0\"]\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/admin/selection-schemas",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"selection-schemas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Output Schemas",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/admin/output-schemas",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"output-schemas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Output Schema",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"schema\": {\n        \"feed\": {\n            \"type\": \"map\",\n            \"schema\": {\n                \"title\": {\n                    \"type\": \"string\"\n                },\n                \"posts\": {\n                    \"type\": \"vector\",\n                    \"schema\": {\n                        \"post-id\": {\n                            \"type\": \"string\"\n                        },\n                        \"title\": {\n                            \"type\": \"string\"\n                        },\n                        \"stream-url\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/admin/output-schemas",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"output-schemas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Extract Data",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"schemaId\": 3,\n    \"url\": \"https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/admin/extract-data",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"extract-data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Providers",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/providers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Provider",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Spotify\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/admin/providers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Jobs",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/admin/jobs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"jobs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Job",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/admin/jobs/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"jobs",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Feeds",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..WnRJPqICwpp9h10Sr3w2cg.2luYqAPIVBDcUZSM_661Iqza0TCkP3lhg_-HbACQzdE.DG0evgm8d9aMn4ZcV8oHnQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/feeds",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"feeds"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Feed",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..WnRJPqICwpp9h10Sr3w2cg.2luYqAPIVBDcUZSM_661Iqza0TCkP3lhg_-HbACQzdE.DG0evgm8d9aMn4ZcV8oHnQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rssUrl\": \"https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ\",\n    \"providerId\": 1,\n    \"contentTypeId\": 1,\n    \"cadenceId\": 1,\n    \"baselineId\": 1\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/feeds",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"feeds"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Categories",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/bundle/categories?uuid=1c1953c7cbeeefd2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"bundle",
+						"categories"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "1c1953c7cbeeefd2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Feeds",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"categoryIds\": [14, 15, 16]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/bundle/feeds?uuid=1c1953c7cbeeefd2&type=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"bundle",
+						"feeds"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "1c1953c7cbeeefd2"
+						},
+						{
+							"key": "type",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Feed",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/bundle/feeds/15?uuid=d5a87ac8f4e90682",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"bundle",
+						"feeds",
+						"15"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "d5a87ac8f4e90682"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Feed Posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/bundle/feeds/15/posts?uuid=d5a87ac8f4e90682",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"bundle",
+						"feeds",
+						"15",
+						"posts"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "d5a87ac8f4e90682"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Feed Post",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/bundle/feeds/57/posts/4073?uuid=d5a87ac8f4e90682",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"bundle",
+						"feeds",
+						"57",
+						"posts",
+						"4073"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "d5a87ac8f4e90682"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Posts",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"categoryIds\": [14]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/bundle/posts?uuid=1c1953c7cbeeefd2&limit=6&start=0&type=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"bundle",
+						"posts"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "1c1953c7cbeeefd2"
+						},
+						{
+							"key": "limit",
+							"value": "6"
+						},
+						{
+							"key": "start",
+							"value": "0"
+						},
+						{
+							"key": "type",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Post",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/bundle/posts/190?uuid=d5a87ac8f4e90682",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"bundle",
+						"posts",
+						"190"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "d5a87ac8f4e90682"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Categories",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "35d38319c1fb1a1f10d1cb83090ae296112a0c606862261b79b8a4f39a5941ab",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/categories",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Category",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "4ba928b9604e00be952642e9ce7d210648dd713c9330df26ecfadbe900c72fac",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/categories/11",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"categories",
+						"11"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Integration",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..avx8YJcoRzOQjg3PRUS6Rg.rTtvfTfHZCExbyV31miHRrHidmNUWbp79hkyWJdyOBA.0HOnXs8Ang1bofzTF5B68A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"poop\",\n    \"tsAndCs\": 1,\n    \"contentTypes\": [{\"id\": 1}],\n    \"categories\": [{\"id\": 9}, {\"id\": 10}]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://source-be-staging.fly.dev/integrations",
+					"protocol": "https",
+					"host": [
+						"source-be-staging",
+						"fly",
+						"dev"
+					],
+					"path": [
+						"integrations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Feed",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..qHwUsdiT1O9yEQ7PvmDGRg.VMc4H5xe4T_6_pItihZJUi8UJQpnX4glob4fgmzKeBc.5EQrSl_mPb_2WXhsG3dH1g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/feeds/18",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"feeds",
+						"18"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Integration",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..qHwUsdiT1O9yEQ7PvmDGRg.VMc4H5xe4T_6_pItihZJUi8UJQpnX4glob4fgmzKeBc.5EQrSl_mPb_2WXhsG3dH1g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/integrations/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"integrations",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..x0B7HOqbRp8kU2WhSt_vFg.J316r0lA44pCWJYtR7D51_yOhuAIhDZFe--rK6UMA34.wCp-1HYrbfg5OJ3QKaDJkQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/me",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Delete User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..qHwUsdiT1O9yEQ7PvmDGRg.VMc4H5xe4T_6_pItihZJUi8UJQpnX4glob4fgmzKeBc.5EQrSl_mPb_2WXhsG3dH1g",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/integrations/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"integrations",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Admin All Feeds",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..TQO_QiitHYM0ydOwsQJVKg.8HnU2p4O-6OrbfE-wZDbIzVWeEt6fgk3IxMiC53pfa8.MhXN4L8Csj5uYHBd9mAMXg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/admin/feeds",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"admin",
+						"feeds"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Categories",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
