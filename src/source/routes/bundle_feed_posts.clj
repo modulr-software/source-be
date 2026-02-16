@@ -4,10 +4,11 @@
             [source.services.analytics.interface :as analytics]))
 
 (defn get
-  {:summary "get all posts in the outgoing feed for the associated uuid-authorized bundle by feed id"
-   :parameters {:query [:map [:uuid :string]]
+  {:summary "Get all posts present within a given RSS feed by feed id, within the uuid-authorized bundle.
+   This endpoint will update impressions analytics for the returned posts."
+   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
-                                  :description "feed id"} :int]]}
+                                  :description "Feed ID"} :int]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]

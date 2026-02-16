@@ -5,14 +5,25 @@
             [source.workers.bundles :as bundles]))
 
 (defn post
-  {:summary "get all (optionally filtered) outgoing posts in the uuid-authorized bundle, updates impression analytics"
+  {:summary "Get a list of posts in the uuid-authorized bundle, determined by analytics.
+   This endpoint updates impression analytics for the returned posts."
    :parameters {:body [:map [:category-ids [:vector :int]]]
                 :query [:map
-                        [:uuid :string]
-                        [:limit {:optional true} :int]
-                        [:start {:optional true} :int]
-                        [:type {:optional true} :int]
-                        [:latest {:optional true} [:enum "true" "false"]]]}
+                        [:uuid {:description "Bundle UUID"} :string]
+                        [:limit
+                         {:optional true
+                          :description "Used for pagination. Specifies a number of posts to be returned."}
+                         :int]
+                        [:start
+                         {:optional true
+                          :description "Used for pagination. Specifies the starting point for the returned posts, incremented by the limit."}
+                         :int]
+                        [:type {:optional true
+                                :description "Filters by content type ID"} :int]
+                        [:latest
+                         {:optional true
+                          :description "Filters by most recently uploaded posts, not determined by analytics"}
+                         [:enum "true" "false"]]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]

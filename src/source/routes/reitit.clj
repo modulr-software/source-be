@@ -47,7 +47,6 @@
             [source.routes.analytics.bundle.posts.-id-.views :as analytics-bundle-posts-id-views]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
-            [source.routes.integration-key :as integration-key]
             [source.routes.integration-categories :as integration-categories]
             [source.routes.integration-filter-feeds :as integration-filter-feeds]
             [source.routes.integration-filter-feed :as integration-filter-feed]
@@ -175,12 +174,11 @@
       ["/:id" (-> (get integration/get)
                   (post integration/post)
                   (delete integration/delete))]
-      ["/:id/key" (post integration-key/post)]
-      ["/:id/categories" (->  (get integration-categories/get)
-                              (post integration-categories/post))]
+      ["/:id/categories" (-> (get integration-categories/get)
+                             (post integration-categories/post))]
       ["/:id/filter/feeds" (get integration-filter-feeds/get)]
-      ["/:id/filter/feeds/:feed-id" (->  (get integration-filter-feed/get)
-                                         (post integration-filter-feed/post))]
+      ["/:id/filter/feeds/:feed-id" (-> (get integration-filter-feed/get)
+                                        (post integration-filter-feed/post))]
       ["/:id/filter/posts" (get integration-filter-posts/get)]
       ["/:id/filter/posts/:post-id" (-> (get integration-filter-post/get)
                                         (post integration-filter-post/post))]]
@@ -226,23 +224,6 @@
       ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
       ["/posts" (post bundle-posts/post)]
       ["/posts/:id" (get bundle-post/get)]]
-
-     ["/api" {:middleware [[mw/apply-api-key]]
-              :tags #{"api"}
-              :swagger {:security [{"apiKey" []}]}
-              :openapi {:security [{:apiKey []}]}}
-
-      ["/bundle" {:middleware [[mw/apply-bundle]]}
-       ["" (get bundle/get)]
-       ["/categories" (get bundle-categories/get)]
-       ["/feeds" (post bundle-feeds/post)]
-       ["/feeds/:id" (get bundle-feed/get)]
-       ["/feeds/:id/posts" (get bundle-feed-posts/get)]
-       ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
-       ["/posts" (post bundle-posts/post)]
-       ["/posts/:id" (get bundle-post/get)]]
-      ["/categories" (get categories/get)]
-      ["/categories/:id" (get category/get)]]
 
      ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
                 :tags #{"admin"}

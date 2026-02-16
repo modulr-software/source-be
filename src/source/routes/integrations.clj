@@ -28,7 +28,7 @@
   (res/response (bundles/bundles ds {:where [:= :user-id (:id user)]})))
 
 (defn post
-  {:summary "add an integration"
+  {:summary "creates an integration and the associated bundle in which content is stored"
    :parameters {:body [:map
                        [:name :string]
                        [:ts-and-cs {:optional true} :int]

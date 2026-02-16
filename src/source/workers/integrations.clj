@@ -4,7 +4,6 @@
             [source.db.util :as db.util]
             [source.services.bundle-categories :as bundle-categories]
             [source.services.bundle-content-types :as bundle-content-types]
-            [source.util :as utils]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
             [congest.jobs :as congest]))
@@ -44,14 +43,6 @@
   (hon/delete! ds {:tname :bundles
                    :where [:= :id bundle-id]})
   (congest/deregister! js job-id))
-
-(defn generate-api-key! [ds user-id bundle-id]
-  (let [uuid (utils/uuid)
-        api-key (utils/sha256 (str user-id bundle-id uuid))]
-    (hon/update! ds {:tname :bundles
-                     :where [:= :id bundle-id]
-                     :data {:hash api-key}})
-    api-key))
 
 (defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
   (if filtered
