@@ -50,7 +50,7 @@
 
 (defn get-outgoing-posts
   "Get outgoing posts based on short heuristics and update analytics impressions"
-  [ds {:keys [bundle-id limit start type latest category-ids]}]
+  [ds {:keys [bundle-id limit start type latest category-ids seed]}]
   (let [all-feed-ids (mapv :id (hon/find ds {:tname :feeds
                                              :ret :*}))
         blocked-feed-ids (mapv :feed-id (hon/find ds {:tname :filtered-feeds
@@ -68,7 +68,9 @@
                                         (assoc :order-by (when (= latest "true") [[:posted-at :desc]]))
                                         (merge (db.util/tname :outgoing-posts bundle-id))))
 
-        order-map (->> (.format (LocalDateTime/now) (DateTimeFormatter/ofPattern "yyyy-MM-dd HH"))
+        order-map (->> (if (or (nil? seed) (= seed ""))
+                         (.format (LocalDateTime/now) (DateTimeFormatter/ofPattern "yyyy-MM-dd HH"))
+                         seed)
                        (prandom/seeded-shuffle (count filtered-posts))
                        (map-indexed (fn [i item] [item i]))
                        (into {}))
