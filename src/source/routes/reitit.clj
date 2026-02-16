@@ -156,8 +156,9 @@
       ["" (get cadences/get)]]
 
      ["/categories" {:tags #{"categories"}}
-      ["" (get categories/get)]
-      ["/:id" (get category/get)]]
+      ["/all" (get categories/get)]
+      ["/all/:id" (get category/get)]
+      ["/used" (get categories/used-categories)]]
 
      ["/baselines" {:tags #{"baselines"}}
       ["" (get baselines/get)]]
@@ -169,8 +170,8 @@
      ["/integrations" {:middleware [[mw/apply-auth]]
                        :tags #{"integrations"}}
 
-      ["" (->  (get integrations/get)
-               (post integrations/post))]
+      ["" (-> (get integrations/get)
+              (post integrations/post))]
       ["/:id" (-> (get integration/get)
                   (post integration/post)
                   (delete integration/delete))]
