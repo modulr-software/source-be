@@ -77,7 +77,7 @@
 (defn swagger-route []
   ["/swagger.json" {:get {:no-doc true
                           :swagger {:info {:title "source-api"
-                                           :description "swagger docs for source api with malli and reitit-ring"
+                                           :description "Swagger docs for Source API with Malli and Reitit-Ring. For usage examples, check out our postman collection on our GitHub Repository: https://github.com/modulr-software/source-be"
                                            :version "0.0.2"}
                                     :tags (tag-definitions)
                                     :securityDefinitions {"auth" {:type :apiKey
