@@ -5,12 +5,16 @@
             [source.services.analytics.interface :as analytics]))
 
 (defn post
-  {:summary "get all feeds present in the bundle authorised by uuid, updating impression analytics."
+  {:summary "Get all RSS feeds present in the bundle authorised by uuid.
+   This endpoint will update impressions analytics for the returned feeds."
    :parameters {:query [:map
-                        [:uuid :string]
-                        [:type {:optional true} :int]
-                        [:latest {:optional true} :boolean]
-                        [:nonfiltered {:optional true} :boolean]]
+                        [:uuid {:description "Bundle UUID"} :string]
+                        [:type {:optional true
+                                :description "Filters by content type ID"} :int]
+                        [:latest {:optional true
+                                  :description "Filters by most recently uploaded feeds"} :boolean]
+                        [:nonfiltered {:optional true
+                                       :description "Marking this field as true will disable all filters"} :boolean]]
                 :body [:map [:category-ids [:vector :int]]]}
    :responses {200 {:body [:vector
                            [:map

@@ -6,10 +6,12 @@
             [honey.sql.helpers :as hsql]))
 
 (defn get
-  {:summary "get a single outgoing post in the uuid-authorized bundle by post id, updates click analytics"
-   :parameters {:query [:map [:uuid :string]]
+  {:summary "Get a single post by post id in the uuid-authorized bundle.
+   Used to return a single post present in the bundle.
+   This endpoint updates click analytics for the returned post."
+   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
-                                  :description "post id"} :int]]}
+                                  :description "Post ID"} :int]]}
    :responses {200 {:body [:map
                            [:id :int]
                            [:post-id :string]

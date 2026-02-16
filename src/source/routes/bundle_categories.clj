@@ -3,8 +3,8 @@
             [ring.util.response :as res]))
 
 (defn get
-  {:summary "get all categories for content present in the uuid-authorized bundle"
-   :parameters {:query [:map [:uuid :string]]}
+  {:summary "Get all categories for which content is present in the uuid-authorized bundle (RSS feeds / posts)"
+   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]

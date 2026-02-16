@@ -68,11 +68,18 @@
                                                   :urls.primaryName "swagger"
                                                   :operationsSorter "alpha"}}))
 
+(defn tag-definitions []
+  [{:name "integrations"
+    :description "Management endpoints for integrations and the associated bundle"}
+   {:name "bundles"
+    :description "Content endpoints for the bundle associated with an integration"}])
+
 (defn swagger-route []
   ["/swagger.json" {:get {:no-doc true
                           :swagger {:info {:title "source-api"
                                            :description "swagger docs for source api with malli and reitit-ring"
-                                           :version "0.0.1"}
+                                           :version "0.0.2"}
+                                    :tags (tag-definitions)
                                     :securityDefinitions {"auth" {:type :apiKey
                                                                   :in :header
                                                                   :name "Authorization"}
@@ -85,7 +92,8 @@
   ["/openapi.json" {:get {:no-doc true
                           :openapi {:info {:title "source-api"
                                            :description "openapi3 docs for source api with malli and reitit-ring"
-                                           :version "0.0.1"}
+                                           :version "0.0.2"}
+                                    :tags (tag-definitions)
                                     :components {:securitySchemes {"bearerAuth" {:type :http
                                                                                  :scheme :bearer
                                                                                  :bearerFormat "JWT"
