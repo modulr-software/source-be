@@ -5,7 +5,7 @@
 
 (defn get
   {:summary "Get a single RSS feed by id from RSS feeds within the uuid-authorized bundle. 
-   This endpoint will update click analytics for the returned feed."
+   This endpoint will update click analytics for the returned RSS feed."
    :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
                                   :description "Feed ID"} :int]]}
