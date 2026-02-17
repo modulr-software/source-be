@@ -23,7 +23,8 @@
                         [:latest
                          {:optional true
                           :description "Filters by most recently uploaded posts, not determined by analytics"}
-                         [:enum "true" "false"]]]}
+                         [:enum "true" "false"]]
+                        [:seed {:optional true} [:maybe :string]]]}
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
@@ -43,12 +44,13 @@
                404 {:boy [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [{:keys [limit start type latest]} (walk/keywordize-keys query-params)
+  (let [{:keys [limit start type latest seed]} (walk/keywordize-keys query-params)
         posts (->> {:bundle-id bundle-id
                     :limit limit
                     :start start
                     :type type
                     :latest latest
+                    :seed seed
                     :category-ids (:category-ids body)}
                    (bundles/get-outgoing-posts ds))]
     (try

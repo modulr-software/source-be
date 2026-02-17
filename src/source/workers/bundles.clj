@@ -3,7 +3,10 @@
             [honey.sql.helpers :as hsql]
             [clojure.set :as set]
             [source.services.feed-categories :as feed-categories]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [source.prandom.core :as prandom])
+  (:import [java.time LocalDateTime]
+           [java.time.format DateTimeFormatter]))
 
 (defn get-bundle-categories
   "Get all categories for feeds/posts in bundle"
@@ -47,7 +50,7 @@
 
 (defn get-outgoing-posts
   "Get outgoing posts based on short heuristics and update analytics impressions"
-  [ds {:keys [bundle-id limit start type latest category-ids]}]
+  [ds {:keys [bundle-id limit start type latest category-ids seed]}]
   (let [all-feed-ids (mapv :id (hon/find ds {:tname :feeds
                                              :ret :*}))
         blocked-feed-ids (mapv :feed-id (hon/find ds {:tname :filtered-feeds
@@ -65,9 +68,22 @@
                                         (assoc :order-by (when (= latest "true") [[:posted-at :desc]]))
                                         (merge (db.util/tname :outgoing-posts bundle-id))))
 
+        order-map (->> (if (or (nil? seed) (= seed ""))
+                         (.format (LocalDateTime/now) (DateTimeFormatter/ofPattern "yyyy-MM-dd HH"))
+                         seed)
+                       (prandom/seeded-shuffle (count filtered-posts))
+                       (map-indexed (fn [i item] [item i]))
+                       (into {}))
+
+        shuffled-posts (if (= latest "true")
+                         filtered-posts
+                         (->> (zipmap (-> filtered-posts count inc range) filtered-posts)
+                              (sort-by #(get order-map (first %)))
+                              (mapv last)))
+
         categorised-posts (vec
                            (if (seq category-ids)
-                             (->> filtered-posts
+                             (->> shuffled-posts
                                   (mapv
                                    (fn [post]
                                      (when (seq (set/intersection
@@ -78,7 +94,7 @@
                                                       (set))))
                                        post)))
                                   (remove nil?))
-                             filtered-posts))
+                             shuffled-posts))
 
         valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
         started-posts (if valid-start?
