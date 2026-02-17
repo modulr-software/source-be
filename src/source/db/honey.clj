@@ -3,9 +3,7 @@
             [camel-snake-kebab.extras :as cske]
             [honey.sql.helpers :as hsql]
             [pg.core :as pg]
-            [pg.honey :as pgh]
-            [source.db.util :as db.util]
-            [source.db.honey :as hon]))
+            [pg.honey :as pgh]))
 
 (defn execute!
   "computes a prepared statement for an sql map and executes select one
@@ -93,8 +91,7 @@
 
 (comment
   (hsql/where :or [:= :id 1] [:= :id 2])
-
-  (def ds (db.util/conn))
+  (def ds {})
 
   (insert! ds {:tname :sectors
                :values {:name "something"}
