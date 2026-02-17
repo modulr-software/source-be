@@ -16,5 +16,5 @@
   (let [{:keys [ds-master bundle-id]} context]
     (tables/drop-tables!
      ds-master
-     (-> [:outgoing-posts]
-         (db.util/tnames bundle-id)))))
+     (mapv :tname (-> [:outgoing-posts]
+                      (db.util/tnames bundle-id))))))

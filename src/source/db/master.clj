@@ -172,6 +172,12 @@
    [:provider-id :integer :not nil]
    (tables/foreign-key :provider-id :providers :id)))
 
+(def output-schemas
+  (tables/create-table-sql
+   :output-schemas
+   (tables/table-id)
+   [:schema :text]))
+
 (def incoming-posts
   (tables/create-table-sql
    :incoming-posts

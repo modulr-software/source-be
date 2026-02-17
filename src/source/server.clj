@@ -1,7 +1,6 @@
 (ns source.server
   (:require [org.httpkit.server :as http]
             [source.db.interface :as db]
-            [source.datastore.interface :as store]
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
             [source.routes.interface :as routes]
@@ -9,15 +8,14 @@
 
 (defonce ^:private *components (atom nil))
 
-(defn initialise-server! [{:keys [ds store js]}]
+(defn initialise-server! [{:keys [ds js]}]
   (http/run-server
    (routes/create-app {:ds ds
-                       :store store
                        :js js})
    {:port 3000}))
 
-(defn initialise-job-service! [{:keys [ds store] :as _deps}]
-  (->> (jobs/interrupted-jobs ds store)
+(defn initialise-job-service! [{:keys [ds] :as _deps}]
+  (->> (jobs/interrupted-jobs ds)
        (congest/create-job-service)))
 
 (defn component-on? [component]
@@ -49,14 +47,11 @@
           (initialise-components! [{:name :ds
                                     :init-fn (fn [_deps] (db/ds :master))
                                     :deps []}
-                                   {:name :store
-                                    :init-fn (fn [_deps] (store/ds :datahike))
-                                    :deps []}
                                    {:name :js
-                                    :deps [:ds :store]
+                                    :deps [:ds]
                                     :init-fn initialise-job-service!}
                                    {:name :server
-                                    :deps [:ds :store :js]
+                                    :deps [:ds :js]
                                     :init-fn initialise-server!}]))
         :else
         (println "Server already running!")))
@@ -80,11 +75,8 @@
       (initialise-components! [{:name :ds
                                 :init-fn (fn [_deps] (db/ds :master))
                                 :deps []}
-                               {:name :store
-                                :init-fn (fn [_deps] (store/ds :datahike))
-                                :deps []}
                                {:name :server
-                                :deps [:ds :store :js]
+                                :deps [:ds :js]
                                 :init-fn initialise-server!}]))
     (do
       (stop-server)

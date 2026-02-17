@@ -54,27 +54,16 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [js ds store user body] :as _request}]
+  [{:keys [js ds user body] :as _request}]
   (let [new-bundle (->> {:user-id (:id user)
                          :bundle-metadata (dissoc body :categories :content-types)
                          :categories (:categories body)
                          :content-types (:content-types body)}
                         (integrations/create-integration! ds))
-        categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))
-
-        ; TEMPORARY BLOCK
-        ; TODO: delete this and fix the problem in jobs that causes outgoing posts to be empty
-       ;posts (->> (hon/find ds {:tname :incoming-posts
-       ;                         :limit 2000})
-       ;           (mapv #(dissoc % :redacted)))
-       ;_ (hon/insert! ds (-> (db.util/tname :outgoing-posts (:id new-bundle))
-       ;                      (assoc :data posts)))
-        ; END OF TEMPORARY BLOCK
-        ]
+        categories-by-bundle (bundles/categories-in-bundle ds (:id new-bundle))]
     ;TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
-          store
           {:id (handlers/update-bundle-job-id (:id new-bundle))
            :initial-delay 0
            :auto-start true

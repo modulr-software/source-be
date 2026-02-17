@@ -1,8 +1,8 @@
 (ns source.routes.xml
-  (:require [source.services.interface :as services]
+  (:require [source.workers.xml-schemas :as xml]
             [ring.util.response :as res]))
 
 (defn post [{:keys [body] :as _request}]
   (let [{:keys [url]} body]
-    (-> (services/ast url)
+    (-> (xml/ast url)
         (res/response))))

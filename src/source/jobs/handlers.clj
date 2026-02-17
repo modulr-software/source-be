@@ -1,5 +1,6 @@
 (ns source.jobs.handlers
   (:require [source.services.interface :as services]
+            [source.workers.xml-schemas :as xml]
             [source.workers.users :as users]
             [source.util :as util]
             [source.services.incoming-posts :as incoming-posts]
@@ -26,20 +27,19 @@
   (str email "-" feed-id))
 
 (defmethod handler :update-feed-posts [_]
-  (fn [{:keys [args ds store]}]
+  (fn [{:keys [args ds]}]
     (try
       (when (users/removed? ds (:creator-id args))
         (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
               _ (println "feed" feed-id "job started")
               selection-schemas (->> [:= :provider-id provider-id]
                                      (assoc {} :where)
-                                     (services/selection-schemas ds))
+                                     (xml/selection-schemas ds))
               latest-ss (->> selection-schemas
                              (reduce (fn [acc {:keys [id]}]
                                        (conj acc id)) [])
                              (apply max -1))
-              extracted (services/extract-data store {:schema-id latest-ss
-                                                      :url url})
+              extracted (xml/extract-data ds latest-ss url)
               extracted-posts (get-in extracted [:feed :posts])
               extracted-display (get-in extracted [:feed :display-picture])
               extended-posts (mapv (fn [{:keys [posted-at thumbnail] :as post}]
@@ -157,8 +157,8 @@
   (str "delete_" user-type "_" user-id))
 
 (defmethod handler :delete-user [_]
-  (fn [{:keys [args ds store]}]
+  (fn [{:keys [args ds]}]
     (try
       (let [{:keys [user-type user-id]} args]
-        (users/hard-delete-user! ds store (keyword user-type) user-id))
+        (users/hard-delete-user! ds (keyword user-type) user-id))
       (catch Exception e (println "Failed to delete user: " e) :fail))))

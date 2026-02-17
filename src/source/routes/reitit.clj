@@ -76,7 +76,7 @@
             [source.routes.approve-feed :as approve-feed]
             [source.routes.reject-feed :as reject-feed]))
 
-(defn create-app [{:keys [ds store js]}]
+(defn create-app [{:keys [ds js]}]
   (ring/ring-handler
    (ring/router
     [(rutil/swagger-route)
@@ -257,7 +257,7 @@
       ["/ast" (post xml/post)]
       ["/extract-data" (post data/post)]]]
 
-    (rutil/data-map [[mw/apply-generic :ds ds :store store :js js]]))
+    (rutil/data-map [[mw/apply-generic :ds ds :js js]]))
    (ring/routes
     (rutil/swagger-ui-handler)
     (ring/create-default-handler))))
@@ -266,11 +266,9 @@
   (require '[source.middleware.auth.util :as auth.util]
            '[source.db.util :as db.util]
            '[congest.jobs :as js]
-           '[source.datastore.interface :as store]
            '[source.rss.youtube :as yt])
 
   (def components {:ds (db.util/conn)
-                   :store (store/ds :datahike)
                    :js (js/create-job-service [])})
 
   (let [app (create-app components)
@@ -428,10 +426,8 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app components)
-        store (store/ds :datahike)
         request {:uri "/admin/selection-schemas"
                  :request-method :post
-                 :store store
                  :body {:record {:provider-id 1
                                  :output-schema-id 1}
                         :schema {:title {:path ["tag/body" "tag/feed" "tag/title" "content/0"]}}}
@@ -451,9 +447,7 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app components)
-        store (store/ds :datahike)
         request {:uri "/admin/selection-schemas"
-                 :store store
                  :request-method :get
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
     (-> request
@@ -477,16 +471,11 @@
         (json/read-json {:key-fn keyword})))
 
   (let [app (create-app components)
-        store (store/ds :datahike)
         request {:uri "/admin/extract-data"
-                 :store store
                  :request-method :post
                  :body {:schema-id 1
                         :url (get-url)}
                  :headers {"authorization" (str "Bearer " (auth.util/sign-jwt {:id 1 :type "admin"}))}}]
-    (println (store/entities-with store :selection-schemas/id))
-    (println (store/find-entities store {:key :selection-schemas/id
-                                         :value 1}))
     (-> request
         app
         :body

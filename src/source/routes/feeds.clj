@@ -57,7 +57,7 @@
                            [:ts-and-cs [:maybe :int]]
                            [:state [:enum "live" "not live" "pending"]]]}}}
 
-  [{:keys [js ds store user body] :as _request}]
+  [{:keys [js ds user body] :as _request}]
   (let [exists (hon/exists? ds {:tname :feeds
                                 :where [:= :rss-url (:rss-url body)]
                                 :ret :1})]
@@ -66,8 +66,8 @@
           (res/status 400))
 
       (let [{:keys [provider-id rss-url content-type-id]} body
-            new-feed (feeds/create-feed! ds store {:user-id (:id user)
-                                                   :feed-metadata body})
+            new-feed (feeds/create-feed! ds {:user-id (:id user)
+                                             :feed-metadata body})
             {:keys [email]} (hon/find-one ds {:tname :users
                                               :where [:= :id (:id user)]})]
         (if new-feed
@@ -75,7 +75,6 @@
             ;TODO: service needed
             (->> (jobs/prepare-congest-metadata
                   ds
-                  store
                   {:id (str email "-" (:id new-feed))
                    :initial-delay (* 1000 60 60 24)
                    :auto-start true
@@ -97,13 +96,11 @@
               (res/status 422)))))))
 
 (comment
-  (require '[source.db.util :as db.util]
-           '[source.datastore.util :as store.util])
+  (require '[source.db.util :as db.util])
 
   (get {:ds (db.util/conn) :user {:id 3}})
   (post {:ds (db.util/conn)
          :js (congest/create-job-service [])
-         :store (store.util/conn :datahike)
          :user {:id 3}
          :body {:rss-url "https://www.youtube.com/feeds/videos.xml?channel_id=UCUyeluBRhGPCW4rPe_UvBZQ"
                 :provider-id 1

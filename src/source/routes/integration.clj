@@ -53,7 +53,7 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [js ds store path-params body] :as _request}]
+  [{:keys [js ds path-params body] :as _request}]
   (let [bundle-id (:id path-params)
         job-id (str "bundle_" bundle-id)
         categories-by-bundle (bundles/categories-in-bundle ds bundle-id)]
@@ -65,7 +65,6 @@
     (congest/deregister! js job-id)
     (->> (jobs/prepare-congest-metadata
           ds
-          store
           {:id job-id
            :initial-delay (* 1000 60 60 24)
            :auto-start true

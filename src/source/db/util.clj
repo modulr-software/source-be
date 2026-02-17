@@ -3,14 +3,6 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]))
 
-(defn db-path [dbname]
-  (let [db-dir (conf/read-value :database :dir)]
-    (str
-     db-dir
-     (when (not (= (last db-dir) \/))
-       "/")
-     dbname)))
-
 (defn db-name
   ([type]
    (name type))
