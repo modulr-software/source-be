@@ -1,28 +1,24 @@
 (ns source.db.honey
   (:require [camel-snake-kebab.core :as csk]
             [camel-snake-kebab.extras :as cske]
-            [honey.sql :as sql]
             [honey.sql.helpers :as hsql]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]
-            [source.db.util :as db.util]))
+            [pg.core :as pg]
+            [pg.honey :as pgh]
+            [source.db.util :as db.util]
+            [source.db.honey :as hon]))
 
 (defn execute!
   "computes a prepared statement for an sql map and executes select one
   or select all. returns results as unqualified lower maps by default."
-  [ds sqlmap & {:keys [ret exec-opts]}]
+  [ds sqlmap & {:keys [ret]}]
   (assert (and (some? ds) (some? sqlmap) (or (some? ret) (nil? ret))))
-  (let [ps (sql/format sqlmap)
-        exec-opts' (merge
-                    {:builder-fn rs/as-unqualified-lower-maps}
-                    exec-opts)
-        result (cske/transform-keys
+  (let [result (cske/transform-keys
                 csk/->kebab-case-keyword
-                (jdbc/execute! ds ps exec-opts'))]
+                (pg/with-conn [conn ds]
+                  (pgh/execute conn sqlmap)))]
     (cond
       (= ret :1) (first result)
-      (= ret :*) result
-      :else nil)))
+      :else result)))
 
 (defn find
   "does find one or find all for a given table name and where clause. The where
@@ -113,5 +109,7 @@
            {:tname :users
             :where [:= :id 3]
             :values {:type "creator"}})
+
+  (find ds {:tname :bundles})
 
   ())

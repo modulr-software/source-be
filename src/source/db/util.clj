@@ -1,7 +1,8 @@
 (ns source.db.util
   (:require [source.config :as conf]
             [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [next.jdbc.result-set :as rs]
+            [pg.core :as pg]))
 
 (defn db-name
   ([type]
@@ -17,8 +18,7 @@
     conn))
 
 (defn- -conn [dbname]
-  (-> {:dbtype (conf/read-value :database :type)
-       :jdbcUrl (str "jdbc:" (conf/read-value :database :url) ":5432/" dbname)}))
+  {:connection-uri (str (conf/read-value :database :url) ":5432/" dbname)})
 
 (defn conn
   ([]
@@ -38,3 +38,14 @@
 
 (defn tnames [tnames id]
   (mapv #(tname % id) tnames))
+
+(comment
+  (def q "SELECT * FROM events")
+
+  (time (pg/with-conn [conn {:connection-uri "postgresql://postgres:postgres@localhost:5432/master?ssl=false"}]
+          (pg/query conn q)))
+
+  (time (jdbc/execute! {:dbtype "postgresql"
+                        :jdbcUrl (str "jdbc:" (conf/read-value :database :url) ":5432/master")} [q]))
+
+  ())
