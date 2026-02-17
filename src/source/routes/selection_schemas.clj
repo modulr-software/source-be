@@ -1,16 +1,14 @@
 (ns source.routes.selection-schemas
   (:require [ring.util.response :as res]
-            [source.services.interface :as services]))
+            [source.workers.xml-schemas :as xml]))
 
 (defn get [{:keys [ds] :as _request}]
-  (-> (services/selection-schemas ds)
+  (-> (xml/selection-schemas ds)
       (res/response)))
 
-(defn post [{:keys [store ds body] :as _request}]
-  (-> (services/insert-selection-schema! store ds body)
-      (first)
+(defn post [{:keys [ds body] :as _request}]
+  (-> (xml/insert-selection-schema! ds body)
       (res/response)))
-
 
 (comment
   (require '[source.db.util :as db.util])

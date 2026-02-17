@@ -1,8 +1,8 @@
 (ns source.middleware.interface
   (:require [source.middleware.core :as mw]))
 
-(defn apply-generic [app & {:keys [ds store js]}]
-  (mw/apply-generic app :ds ds :store store :js js))
+(defn apply-generic [app & {:keys [ds js]}]
+  (mw/apply-generic app :ds ds :js js))
 
 (defn apply-auth
   "accepts required-type as an optional parameter to authorize the route only for the specified user type"

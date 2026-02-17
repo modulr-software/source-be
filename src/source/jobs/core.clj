@@ -7,7 +7,7 @@
 
 (defn prepare-congest-metadata
   "given raw job metadata, returns extended metadata necessary for use with congest"
-  [ds store metadata]
+  [ds metadata]
   (let [i->b (fn [i] (if (integer? i)
                        (if (= i 1) true false)
                        i))
@@ -21,24 +21,23 @@
                :handler-name (:handler metadata)
                :handler (handlers/handler metadata)
                :logger oplog/operation-logger
-               :ds ds
-               :store store)
+               :ds ds)
         (dissoc :recurring))))
 
 (defn start!
   "given a job-id, re-registers an existing job from the database"
-  [js ds store job-id]
+  [js ds job-id]
   (let [{:keys [job-metadata-id args handler]} (services/job ds {:where [:= :job-id job-id]})
         metadata (-> (services/job-metadata ds {:id job-metadata-id})
                      (assoc :id job-id
                             :args args
                             :handler handler))]
     (congest/deregister! js job-id)
-    (congest/register! js (prepare-congest-metadata ds store metadata))))
+    (congest/register! js (prepare-congest-metadata ds metadata))))
 
 (defn interrupted-jobs
   "Get congest-ready metadata of all jobs marked as running"
-  [ds store]
+  [ds]
   (let [jobs (services/jobs ds)]
     (mapv (fn [{:keys [job-id job-metadata-id args handler status]} i]
             (when (= status "running")
@@ -51,16 +50,14 @@
                     metadata (assoc m
                                     :initial-delay (+ initial-delay (* 1000 5 i))
                                     :interval (+ interval (* 1000 5 i)))]
-                (prepare-congest-metadata ds store metadata))))
+                (prepare-congest-metadata ds metadata))))
           jobs
           (-> jobs count inc range))))
 
 (comment
-  (require '[source.db.util :as db.util]
-           '[source.datastore.util :as store.util])
+  (require '[source.db.util :as db.util])
 
   (def ds (db.util/conn))
-  (def store (store.util/conn :datahike))
 
   (def testjob {:id "test"
                 :initial-delay 10
@@ -80,10 +77,10 @@
   (services/delete-job-metadata! ds {})
 
   (def js (congest/create-job-service []))
-  (congest/register! js (prepare-congest-metadata ds store testjob))
+  (congest/register! js (prepare-congest-metadata ds testjob))
   (congest/deregister! js "test")
   (congest/stop! js "test" false)
-  (start! js ds store "test")
-  (interrupted-jobs ds store)
+  (start! js ds "test")
+  (interrupted-jobs ds)
 
   ())

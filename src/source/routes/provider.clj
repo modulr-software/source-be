@@ -1,5 +1,5 @@
 (ns source.routes.provider
-  (:require [source.services.interface :as services]
+  (:require [source.workers.xml-schemas :as xml]
             [ring.util.response :as res]
             [source.db.honey :as hon]))
 
@@ -44,8 +44,8 @@
                                   :description "provider id"} :int]]}
    :responses {200 {:body [:map [:message :string]]}}}
 
-  [{:keys [store ds path-params] :as _request}]
+  [{:keys [ds path-params] :as _request}]
   (hon/delete! ds {:tname :providers
                    :where [:= :id (:id path-params)]})
-  (services/delete-selection-schemas-by-provider! store ds (:id path-params))
+  (xml/delete-selection-schemas-by-provider! ds (:id path-params))
   (res/response {:message "successfully deleted provider"}))

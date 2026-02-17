@@ -24,7 +24,6 @@
    [:cors-origin :string]
    [:env :string]
    [:database [:map
-               [:dir :string]
                [:url :string]
                [:type :string]]]
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
@@ -47,7 +46,6 @@
 
 (comment
   (read-value :supersecretkey)
-  (read-value :database :dir)
   (read-value :oauth2 :google)
   (read-value :cors-origin)
   (read-value :admins-path)

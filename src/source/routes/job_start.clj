@@ -3,7 +3,7 @@
             [ring.util.response :as res]
             [source.services.interface :as services]))
 
-(defn get [{:keys [js ds store path-params]}]
+(defn get [{:keys [js ds path-params]}]
   (let [job (services/job ds path-params)]
-    (jobs/start! js ds store (:job-id job))
+    (jobs/start! js ds (:job-id job))
     (res/response {:message "successfully started job"})))

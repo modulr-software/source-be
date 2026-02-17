@@ -54,7 +54,7 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [js ds store user body] :as _request}]
+  [{:keys [js ds user body] :as _request}]
   (let [new-bundle (->> {:user-id (:id user)
                          :bundle-metadata (dissoc body :categories :content-types)
                          :categories (:categories body)
@@ -64,7 +64,6 @@
     ;TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
-          store
           {:id (handlers/update-bundle-job-id (:id new-bundle))
            :initial-delay 0
            :auto-start true

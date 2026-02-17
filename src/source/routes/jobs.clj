@@ -13,7 +13,7 @@
                     {:metadata metadata}))))
    (res/response)))
 
-(defn post [{:keys [js ds store body] :as _req}]
+(defn post [{:keys [js ds body] :as _req}]
   (let [{:keys [metadata]} body]
-    (congest/register! js (jobs/prepare-congest-metadata ds store metadata))
+    (congest/register! js (jobs/prepare-congest-metadata ds metadata))
     (res/response {:message "successfully registered job"})))

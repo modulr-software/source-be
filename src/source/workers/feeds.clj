@@ -1,12 +1,12 @@
 (ns source.workers.feeds
   (:require [source.util :as utils]
-            [source.services.xml-schemas :as xml]
+            [source.workers.xml-schemas :as xml]
             [congest.jobs :as congest]
             [source.db.honey :as hon]))
 
 (defn create-feed!
   "Creates feed with incoming posts pulled from RSS feed and starts associated job"
-  [ds store {:keys [user-id feed-metadata]}]
+  [ds {:keys [user-id feed-metadata]}]
   (let [{:keys [provider-id rss-url content-type-id]} feed-metadata
         datetime (utils/get-utc-timestamp-string)
         selection-schemas (->> [:= :provider-id provider-id]
@@ -17,7 +17,7 @@
                                  (conj acc id)) [])
                        (apply max -1))
         extracted (when-not (= latest-ss -1)
-                    (xml/extract-data store latest-ss rss-url))
+                    (xml/extract-data ds latest-ss rss-url))
         extracted-posts (get-in extracted [:feed :posts])
         new-feed (hon/insert!
                   ds

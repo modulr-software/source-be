@@ -20,12 +20,6 @@
         (assoc :ds ds)
         (handler))))
 
-(defn wrap-store [handler store]
-  (fn [request]
-    (-> request
-        (assoc :store store)
-        (handler))))
-
 (defn wrap-js
   "attaches the provided job service to the handler's request"
   [handler js]
@@ -37,10 +31,6 @@
 (defn apply-ds [app ds]
   (-> app
       (wrap-ds ds)))
-
-(defn apply-store [app store]
-  (-> app
-      (wrap-store store)))
 
 (defn apply-js
   "middleware for attaching the job service to the request"
@@ -112,11 +102,10 @@
         (assoc :query-params (walk/keywordize-keys query-params))
         (handler))))
 
-(defn apply-generic [app & {:keys [ds store js]}]
+(defn apply-generic [app & {:keys [ds js]}]
   (-> app
       (wrap-exception-logger)
       (apply-ds ds)
-      (apply-store store)
       (apply-js js)
       (wrap-case-conversion)
       (wrap-query)
