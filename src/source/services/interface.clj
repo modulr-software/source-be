@@ -1,6 +1,5 @@
 (ns source.services.interface
   (:require [source.services.auth :as auth]
-            [source.services.xml-schemas :as xml]
             [source.services.bundles :as bundles]
             [source.services.bundle-content-types :as bundle-content-types]
             [source.services.post-heuristics :as post-heuristics]
@@ -10,12 +9,6 @@
 
 (defn register [ds user]
   (auth/register ds user))
-
-(defn insert-selection-schema! [store db {:keys [_schema _record] :as opts}]
-  (xml/insert-selection-schema! store db opts))
-
-(defn selection-schema [ds {:keys [_id] :as opts}]
-  (xml/selection-schema ds opts))
 
 (defn update-bundle! [ds {:keys [_id _data _where] :as opts}]
   (bundles/update-bundle! ds opts))
@@ -39,30 +32,6 @@
 
 (defn top-posts-by-heuristic [ds {:keys [_select _limit _heuristic] :as opts}]
   (post-heuristics/top-posts-by-heuristic ds opts))
-
-(defn selection-schemas
-  ([ds]
-   (selection-schemas ds {}))
-  ([ds opts]
-   (xml/selection-schemas ds opts)))
-
-(defn delete-selection-schemas-by-provider! [store db provider-id]
-  (xml/delete-selection-schemas-by-provider! store db provider-id))
-
-(defn ast [url]
-  (xml/ast url))
-
-(defn extract-data [store {:keys [schema-id url]}]
-  (xml/extract-data store schema-id url))
-
-(defn output-schemas [store]
-  (xml/output-schemas store))
-
-(defn output-schema [store output-schema-id]
-  (xml/output-schema store output-schema-id))
-
-(defn insert-output-schema! [store schema]
-  (xml/insert-output-schema! store schema))
 
 (defn incoming-posts
   ([ds]
