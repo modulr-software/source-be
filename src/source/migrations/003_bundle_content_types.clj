@@ -14,8 +14,8 @@
 
     (run! (fn [{:keys [id content-type-id]}]
             (when (some? content-type-id)
-              (services/insert-bundle-content-types! ds-master {:data {:bundle-id id
-                                                                       :content-types [{:id content-type-id}]}})))
+              (services/insert-bundle-content-types! ds-master {:bundle-id id
+                                                                :content-types [{:id content-type-id}]})))
           bundles)))
 
 (defn run-down! [context]
