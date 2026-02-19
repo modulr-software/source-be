@@ -4,7 +4,8 @@
             [clojure.set :as set]
             [source.services.feed-categories :as feed-categories]
             [source.db.util :as db.util]
-            [source.prandom.core :as prandom])
+            [source.prandom.core :as prandom]
+            [honey.sql :as sql])
   (:import [java.time LocalDateTime]
            [java.time.format DateTimeFormatter]))
 
@@ -62,11 +63,18 @@
                                                       :where [:= :bundle-id bundle-id]
                                                       :ret :*}))
 
-        filtered-posts (hon/find ds (-> (hsql/where (when type [:= :content-type-id type])
-                                                    (when (seq blocked-post-ids) [:not [:in :id blocked-post-ids]])
-                                                    [:in :feed-id available-feed-ids])
-                                        (assoc :order-by (when (= latest "true") [[:posted-at :desc]]))
-                                        (merge (db.util/tname :outgoing-posts bundle-id))))
+        filtered-posts (hon/execute!
+                        ds
+                        (-> (hsql/select :p.*)
+                            (hsql/from [(:tname (db.util/tname :outgoing-posts bundle-id)) :p])
+                            (hsql/join [:feed-categories :fc] [:= :p.feed-id :fc.feed-id])
+                            (hsql/join [:categories :c] [:= :fc.category-id :c.id])
+                            (hsql/where
+                             (when type [:= :content-type-id type])
+                             (when (seq blocked-post-ids) [:not [:in :p.id blocked-post-ids]])
+                             (when (seq available-feed-ids) [:in :p.feed-id available-feed-ids])
+                             (when (seq category-ids) [:in :c.id category-ids]))
+                            (hsql/order-by [:p.posted-at :desc])))
 
         order-map (->> (if (or (nil? seed) (= seed ""))
                          (.format (LocalDateTime/now) (DateTimeFormatter/ofPattern "yyyy-MM-dd HH"))
@@ -81,28 +89,21 @@
                               (sort-by #(get order-map (first %)))
                               (mapv last)))
 
-        categorised-posts (vec
-                           (if (seq category-ids)
-                             (->> shuffled-posts
-                                  (mapv
-                                   (fn [post]
-                                     (when (seq (set/intersection
-                                                 (set category-ids)
-                                                 (->> {:feed-id (:feed-id post)}
-                                                      (feed-categories/categories-by-feed ds)
-                                                      (mapv :id)
-                                                      (set))))
-                                       post)))
-                                  (remove nil?))
-                             shuffled-posts))
-
-        valid-start? (and (some? start) (>= start 0) (< start (count categorised-posts)))
+        valid-start? (and (some? start) (>= start 0) (< start (count shuffled-posts)))
         started-posts (if valid-start?
-                        (subvec categorised-posts start)
-                        categorised-posts)
+                        (subvec shuffled-posts start)
+                        shuffled-posts)
 
         valid-limit? (and (some? limit) (> (count started-posts) limit))
         limited-posts (if valid-limit?
                         (subvec started-posts 0 limit)
                         started-posts)]
     limited-posts))
+
+(comment 
+
+  (time (get-outgoing-posts (db.util/conn) {:bundle-id 14
+                                            :category-ids [50 52 54]
+                                            :latest "false"}))
+  
+  ())
