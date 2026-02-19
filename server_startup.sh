@@ -5,4 +5,4 @@ tailscale funnel 3000 &
 cd /home/merv/Developer/source-be
 
 echo "Starting server..."
-./start.sh
+./merv_start.sh
