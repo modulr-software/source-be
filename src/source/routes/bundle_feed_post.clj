@@ -1,7 +1,9 @@
 (ns source.routes.bundle-feed-post
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
-            [source.services.analytics.interface :as analytics]))
+            [source.services.analytics.interface :as analytics]
+            [source.db.util :as db.util]
+            [honey.sql.helpers :as hsql]))
 
 (defn get
   {:summary "Get a single post by post id belonging to an RSS feed in the associated uuid-authorized bundle. 
@@ -28,9 +30,8 @@
                404 {:body [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id path-params] :as _request}]
-  (let [post (hon/find-one ds {:tname :incoming-posts
-                               :where [:= :id (:post-id path-params)]
-                               :ret :1})]
+  (let [post (hon/find-one ds (-> (db.util/tname :outgoing-posts bundle-id)
+                                  (hsql/where [:= :id (:post-id path-params)])))]
     (try
       (analytics/insert-post-click! ds post bundle-id)
       (catch Exception e (println (.getMessage e))))
