@@ -3,7 +3,8 @@
             [source.db.honey :as hon]))
 
 (defn get
-  {:summary "gets all filtered feed ids by integration id"
+  {:summary "Gets all filtered feed IDs by integration ID"
+   :description "Returns a list of all feed IDs that have been filtered out from the given integration. If a feed appears in this list, it will not be returned when pulling content from the bundle."
    :parameters {:path [:map [:id {:title "id"
                                   :description "integration id"} :int]]}
    :responses {200 {:body [:vector

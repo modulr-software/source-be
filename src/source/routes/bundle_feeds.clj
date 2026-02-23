@@ -7,6 +7,7 @@
 (defn post
   {:summary "Get all RSS feeds present in the bundle authorised by uuid.
    This endpoint will update impressions analytics for the returned RSS feeds."
+   :description "This endpoint can be filtered by content type ID, category IDs, or most recently added feeds."
    :parameters {:query [:map
                         [:uuid {:description "Bundle UUID"} :string]
                         [:type {:optional true

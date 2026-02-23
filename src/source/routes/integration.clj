@@ -9,9 +9,9 @@
             [source.jobs.handlers :as handlers]))
 
 (defn get
-  {:summary "get integration by id"
+  {:summary "Get metadata of integration by ID"
    :parameters {:path [:map [:id {:title "id"
-                                  :description "integration id"} :int]]}
+                                  :description "Integration ID"} :int]]}
    :responses {200 {:body [:map
                            [:id :int]
                            [:name :string]
@@ -36,9 +36,10 @@
     (res/response (assoc integration :content-types content-types))))
 
 (defn post
-  {:summary "update an integration by id"
+  {:summary "Update metadata of the given integration by ID"
+   :description "When the integration is updated, post selection is rerun based on the newly set desired categories and content types."
    :parameters {:path [:map [:id {:title "id"
-                                  :description "integration id"} :int]]
+                                  :description "Integration ID"} :int]]
                 :body [:map
                        [:name :string]
                        [:content-types [:vector
@@ -81,9 +82,10 @@
   (res/response {:message "successfully updated integration"}))
 
 (defn delete
-  {:summary "delete the integration with the given id"
+  {:summary "Delete the given integration by ID"
+   :description "Deletes the integration, bundle and kills the associated post selection job. This action cannot be undone."
    :parameters {:path [:map [:id {:title "id"
-                                  :description "integration id"} :int]]}
+                                  :description "Integration ID"} :int]]}
    :responses {200 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 

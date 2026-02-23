@@ -8,7 +8,7 @@
             [congest.jobs :as congest]))
 
 (defn get
-  {:summary "get all integrations"
+  {:summary "Get metadata of all integrations on the user account"
    :responses {200 {:body [:vector
                            [:map
                             [:id :int]
@@ -28,7 +28,8 @@
   (res/response (bundles/bundles ds {:where [:= :user-id (:id user)]})))
 
 (defn post
-  {:summary "creates an integration and the associated bundle in which content is stored"
+  {:summary "Creates an integration and the associated bundle in which content is stored"
+   :description "When an integration is created, a job is scheduled to periodically run post selection every 24 hours. During post selection, the bundle is filled with relevant content according to desired categories, content types and analytics."
    :parameters {:body [:map
                        [:name :string]
                        [:ts-and-cs {:optional true} :int]

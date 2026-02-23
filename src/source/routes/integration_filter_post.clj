@@ -4,12 +4,12 @@
             [source.db.honey :as hon]))
 
 (defn get
-  {:summary "Returns true if the post with the given id is filtered out by the integration with the given id"
+  {:summary "Returns true if the post with the given ID is filtered out from the given integration by ID"
    :parameters {:path [:map
                        [:id {:title "id"
-                             :description "integration id"} :int]
-                       [:post-id {:title "post-id"
-                                  :description "post id"} :int]]}
+                             :description "Integration ID"} :int]
+                       [:post-id {:title "postId"
+                                  :description "Post ID"} :int]]}
    :responses {200 {:body [:map [:filtered :boolean]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
@@ -24,7 +24,7 @@
     (res/response {:filtered blocked})))
 
 (defn post
-  {:summary "filters out the post with the given id from the bundle with the given bundle id"
+  {:summary "Filters out the post with the given id from the bundle with the given bundle ID"
    :parameters {:path [:map
                        [:id {:title "id"
                              :description "bundle id"} :int]

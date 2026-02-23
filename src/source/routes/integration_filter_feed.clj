@@ -4,12 +4,12 @@
             [source.db.honey :as hon]))
 
 (defn get
-  {:summary "Returns true if the feed with the given id is filtered out by the integration with the given id"
+  {:summary "Returns true if the feed with the given id is filtered out by the given integration by ID"
    :parameters {:path [:map
                        [:id {:title "id"
-                             :description "integration id"} :int]
-                       [:feed-id {:title "feed-id"
-                                  :description "feed id"} :int]]}
+                             :description "Integration ID"} :int]
+                       [:feed-id {:title "FeedId"
+                                  :description "feed ID"} :int]]}
    :responses {200 {:body [:map [:filtered :boolean]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
@@ -24,12 +24,13 @@
     (res/response {:filtered blocked})))
 
 (defn post
-  {:summary "filters out the feed with the given id from the bundle with the given bundle id"
+  {:summary "Filters out the feed with the given id from the given integration by ID"
+   :description "Filtering a feed out from the integration means that the given feed and all its posts will not appear when pulling content from the bundle."
    :parameters {:path [:map
                        [:id {:title "id"
-                             :description "bundle id"} :int]
-                       [:feed-id {:title "feed-id"
-                                  :description "feed id"} :int]]
+                             :description "Integration ID"} :int]
+                       [:feed-id {:title "feedId"
+                                  :description "Feed ID"} :int]]
                 :body [:map
                        [:filtered :boolean]]}
    :responses {:body {200 [:map [:message :string]]

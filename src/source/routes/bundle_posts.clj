@@ -7,6 +7,9 @@
 (defn post
   {:summary "Get a list of posts in the uuid-authorized bundle, determined by analytics.
    This endpoint updates impression analytics for the returned posts."
+   :description "This endpoint pulls a curated list of content (determined by analytics) of the posts that made it into the bundle during post selection. This can be filtered by content type ID, category IDs, or latest (most recently added posts). If results are filtered by latest, they will not be curated by analytics.
+   
+   Results can be paginated using the `start` and `limit` query parameters."
    :parameters {:body [:map [:category-ids [:vector :int]]]
                 :query [:map
                         [:uuid {:description "Bundle UUID"} :string]
