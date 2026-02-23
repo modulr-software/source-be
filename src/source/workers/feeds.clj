@@ -50,8 +50,9 @@
 
 (defn hard-delete-feed! [ds js job-id feed-id]
   (let [post-ids (mapv :id (hon/find ds {:tname :incoming-posts
-                                         :where [:= :feed-id feed-id]
-                                         :ret :*}))]
+                                         :where [:= :feed-id feed-id]}))
+        event-ids (:mapv :id (hon/find ds {:tname :events
+                                           :where [:= :feed-id feed-id]}))]
     (hon/delete! ds {:tname :filtered-feeds
                      :where [:= :feed-id feed-id]})
     (hon/delete! ds {:tname :filtered-posts
@@ -60,6 +61,9 @@
                      :where [:= :feed-id feed-id]})
     (hon/delete! ds {:tname :feed-categories
                      :where [:= :feed-id feed-id]})
+    (if seq event-ids
+        (hon/delete! ds {:tname :event-categories
+                         :where [:in :event-id event-ids]}))
     (hon/delete! ds {:tname :events
                      :where [:= :feed-id feed-id]})
     (hon/delete! ds {:tname :feeds
