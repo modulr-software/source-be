@@ -18,6 +18,7 @@
                             [:views :int]]]}}}
 
   [{:keys [ds user query-params] :as _request}]
-  (let [{:keys [mindate maxdate feed]} (w/keywordize-keys query-params)]
-    (res/response (analytics/interval-statistics-query ds :daily mindate maxdate {:creator-id (:id user)
-                                                                                  :feed-id feed}))))
+  (let [{:keys [mindate maxdate feed]} (w/keywordize-keys query-params)
+        res (analytics/interval-statistics-query ds :daily mindate maxdate {:creator-id (:id user)
+                                                                            :feed-id feed})]
+    (res/response res)))

@@ -1,7 +1,6 @@
 (ns source.routes.analytics.distributor.general
   (:require [source.services.analytics.interface :as analytics]
-            [ring.util.response :as res]
-            [clojure.walk :as w]))
+            [ring.util.response :as res]))
 
 (defn get
   {:summary "Gets the number of impressions, clicks and views per day for a distributor over the given time period. Optionally filtered by bundle.
@@ -18,6 +17,6 @@
                             [:views :int]]]}}}
 
   [{:keys [ds user query-params] :as _request}]
-  (let [{:keys [mindate maxdate bundle]} (w/keywordize-keys query-params)]
+  (let [{:keys [mindate maxdate bundle]} query-params]
     (res/response (analytics/interval-statistics-query ds :daily mindate maxdate {:distributor-id (:id user)
                                                                                   :bundle-id bundle}))))
