@@ -61,9 +61,9 @@
                      :where [:= :feed-id feed-id]})
     (hon/delete! ds {:tname :feed-categories
                      :where [:= :feed-id feed-id]})
-    (if seq event-ids
-        (hon/delete! ds {:tname :event-categories
-                         :where [:in :event-id event-ids]}))
+    (when (seq event-ids)
+      (hon/delete! ds {:tname :event-categories
+                       :where [:in :event-id event-ids]}))
     (hon/delete! ds {:tname :events
                      :where [:= :feed-id feed-id]})
     (hon/delete! ds {:tname :feeds
