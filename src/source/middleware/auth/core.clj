@@ -33,7 +33,7 @@
     (let [ds (db.util/conn :master)
           user-type (get-in request [:user :type])
           expected-type (->> {:tname :users
-                              :id (get-in request [:user :id])}
+                              :where [:= :id (get-in request [:user :id])]}
                              (db/find-one ds)
                              (:type))]
       (cond
