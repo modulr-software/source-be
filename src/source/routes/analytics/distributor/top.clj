@@ -2,7 +2,6 @@
   (:require [source.services.analytics.interface :as analytics]
             [ring.util.response :as res]
             [clojure.set :as set]
-            [source.util :as utils]
             [source.db.honey :as hon]))
 
 (defn record-names [ds top-field ids]

@@ -4,7 +4,16 @@
             [source.services.bundles :as bundles]
             [source.util :as util]
             [source.services.feed-categories :as feed-categories]
-            [honey.sql :as sql]))
+            [honey.sql :as sql]
+            [clojure.walk :as walk]))
+
+(defn convert-all-datetimes-to-string
+  "Uses postwalk to convert all instances of java.time.LocalDate into string"
+  [m]
+  (walk/postwalk (fn [v]
+                   (if (instance? java.time.LocalDate v)
+                     (.toString v)
+                     v)) m))
 
 (defn metric-query
   "Generic select query function for returning analytics data from the events table"
@@ -28,11 +37,12 @@
                   (some? group-by) (merge group-by)
                   (seq category-ids) (-> (hsql/join [:event-categories :ec] [:= :events.id :ec.event-id])
                                          (hsql/where [:in :ec.category-id category-ids])))]
-    (hon/execute!
-     ds
-     (merge {:from [:events]}
-            clauses)
-     {:ret (if ret ret :*)})))
+    (-> ds
+        (hon/execute!
+         (merge {:from [:events]}
+                clauses)
+         {:ret (if ret ret :*)})
+        (convert-all-datetimes-to-string))))
 
 (defn statistics-query
   "Returns the number of impressions, clicks and views, filtered by any other arguments accepted by metric-query.

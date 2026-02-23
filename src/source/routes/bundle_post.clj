@@ -9,6 +9,7 @@
   {:summary "Get a single post by post id in the uuid-authorized bundle.
    Used to return a single post present in the bundle.
    This endpoint updates click analytics for the returned post."
+   :description "This endpoint will pull a single post by ID that made it into the bundle during post selection."
    :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
                                   :description "Post ID"} :int]]}

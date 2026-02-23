@@ -31,16 +31,6 @@
 		{
 			"name": "Get Users",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -126,16 +116,21 @@
 			"response": []
 		},
 		{
+			"name": "Me",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
 			"name": "Update User",
 			"request": {
-				"auth": {
-					"type": "noauth"
-				},
 				"method": "PATCH",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"address\": \"Cape Town\",\n    \"lastname\": \"Collins\"\n}",
+					"raw": "{\n    \"email\": \"toast@toast.com\",\n    \"type\": \"creator\",\n    \"address\": \"Cape Town\",\n    \"firstname\": \"Keagan\",\n    \"lastname\": \"Collins\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -160,16 +155,6 @@
 		{
 			"name": "Add Admin",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..k38ZDx6t9xOhPKwi37gmxQ.C-DvEva5l913IgKY7tlyhQ.z0DD0yqQF-vQ2A3sPRt9yw",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -286,16 +271,6 @@
 				"disableBodyPruning": true
 			},
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -325,16 +300,6 @@
 		{
 			"name": "Get Selection Schemas By Provider",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -357,16 +322,6 @@
 		{
 			"name": "Add Selection Schema",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -396,25 +351,16 @@
 		{
 			"name": "Get Output Schemas",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/admin/output-schemas",
-					"protocol": "http",
+					"raw": "https://source-be-staging.fly.dev/admin/output-schemas",
+					"protocol": "https",
 					"host": [
-						"localhost"
+						"source-be-staging",
+						"fly",
+						"dev"
 					],
-					"port": "3000",
 					"path": [
 						"admin",
 						"output-schemas"
@@ -426,21 +372,11 @@
 		{
 			"name": "Add Output Schema",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"schema\": {\n        \"feed\": {\n            \"type\": \"map\",\n            \"schema\": {\n                \"title\": {\n                    \"type\": \"string\"\n                },\n                \"posts\": {\n                    \"type\": \"vector\",\n                    \"schema\": {\n                        \"post-id\": {\n                            \"type\": \"string\"\n                        },\n                        \"title\": {\n                            \"type\": \"string\"\n                        },\n                        \"stream-url\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+					"raw": "{\n    \"schema\": {\n        \"feed\": {\n            \"type\": \"map\",\n            \"schema\": {\n                \"title\": {\n                    \"type\": \"string\"\n                },\n                \"description\": {\n                    \"type\": \"string\"\n                },\n                \"display-picture\": {\n                    \"type\": \"string\"\n                },\n                \"posts\": {\n                    \"type\": \"vector\",\n                    \"schema\": {\n                        \"post-id\": {\n                            \"type\": \"string\"\n                        },\n                        \"title\": {\n                            \"type\": \"string\"\n                        },\n                        \"thumbnail\": {\n                            \"type\": \"string\"\n                        },\n                        \"info\": {\n                            \"type\": \"string\"\n                        },\n                        \"posted-at\": {\n                            \"type\": \"string\"\n                        },\n                        \"stream-url\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -448,12 +384,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/admin/output-schemas",
-					"protocol": "http",
+					"raw": "https://source-be-staging.fly.dev/admin/output-schemas",
+					"protocol": "https",
 					"host": [
-						"localhost"
+						"source-be-staging",
+						"fly",
+						"dev"
 					],
-					"port": "3000",
 					"path": [
 						"admin",
 						"output-schemas"
@@ -465,16 +402,6 @@
 		{
 			"name": "Extract Data",
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..1n1VNQ-I1Z7VhgW8IWfiPg.YkGk31r1DG073Q5uyW6I0rGbm9YNKB3r_8D_yWUfG60.suZYrgS9-JXGbRF05iRA0g",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -1221,7 +1148,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..TQO_QiitHYM0ydOwsQJVKg.8HnU2p4O-6OrbfE-wZDbIzVWeEt6fgk3IxMiC53pfa8.MhXN4L8Csj5uYHBd9mAMXg",
+							"value": "",
 							"type": "string"
 						}
 					]
@@ -1248,6 +1175,179 @@
 			"request": {
 				"method": "GET",
 				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Analytics Creator General",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/analytics/creator/general?mindate=2026-01-01&maxdate=2026-02-24",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"analytics",
+						"creator",
+						"general"
+					],
+					"query": [
+						{
+							"key": "mindate",
+							"value": "2026-01-01"
+						},
+						{
+							"key": "maxdate",
+							"value": "2026-02-24"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Analytics Creator Deltas",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/analytics/creator/deltas?mindate=2026-01-01&maxdate=2026-02-24",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"analytics",
+						"creator",
+						"deltas"
+					],
+					"query": [
+						{
+							"key": "mindate",
+							"value": "2026-01-01"
+						},
+						{
+							"key": "maxdate",
+							"value": "2026-02-24"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Analytics Creator Top",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/analytics/creator/top?mindate=2026-01-01&maxdate=2026-02-24&n=10&top=post",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"analytics",
+						"creator",
+						"top"
+					],
+					"query": [
+						{
+							"key": "mindate",
+							"value": "2026-01-01"
+						},
+						{
+							"key": "maxdate",
+							"value": "2026-02-24"
+						},
+						{
+							"key": "n",
+							"value": "10"
+						},
+						{
+							"key": "top",
+							"value": "post"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Analytics Creator Top Average",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/analytics/creator/top/average?mindate=2026-01-01&maxdate=2026-02-24",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"analytics",
+						"creator",
+						"top",
+						"average"
+					],
+					"query": [
+						{
+							"key": "mindate",
+							"value": "2026-01-01"
+						},
+						{
+							"key": "maxdate",
+							"value": "2026-02-24"
+						}
+					]
+				}
 			},
 			"response": []
 		}
