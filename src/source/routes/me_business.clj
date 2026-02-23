@@ -1,29 +1,30 @@
 (ns source.routes.me-business
   (:require [ring.util.response :as res]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.routes.openapi :as api]))
 
 (defn get
   {:summary "get business for logged-in user"
    :responses {200 {:body [:map
                            [:id :int]
-                           [:name [:maybe :string]]
-                           [:address [:maybe :string]]
-                           [:url [:maybe :string]]
-                           [:linkedin [:maybe :string]]
-                           [:twitter [:maybe :string]]
-                           [:registration [:maybe :string]]
-                           [:business-type-id [:maybe :int]]]}
+                           [:name :string]
+                           (api/sometimes :address :string)
+                           (api/sometimes :url :string)
+                           (api/sometimes :linkedin :string)
+                           (api/sometimes :twitter :string)
+                           (api/sometimes :registration :string)
+                           (api/sometimes :business-type-id :int)]}
+               404 {:body [:map]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
   [{:keys [ds user] :as _request}]
   (let [{:keys [business-id]} (hon/find-one ds {:tname :users
-                                                :where [:= :id (:id user)]})
-        business (if business-id
-                   (hon/find-one ds {:tname :businesses
-                                     :where [:= :id business-id]})
-                   {})]
-    (res/response business)))
+                                                :where [:= :id (:id user)]})]
+    (if business-id
+      (res/response (hon/find-one ds {:tname :businesses
+                                      :where [:= :id business-id]}))
+      (res/response {}))))
 
 (defn post
   {:summary "add or update business for logged-in user"
