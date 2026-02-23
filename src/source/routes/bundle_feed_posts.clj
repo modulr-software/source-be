@@ -6,6 +6,7 @@
 (defn get
   {:summary "Get all posts present within a given RSS feed by feed id, within the uuid-authorized bundle.
    This endpoint will update impressions analytics for the returned posts."
+   :description "This endpoint will fetch all posts within the given feed, regardless of whether these posts made it into this bundle during post selection."
    :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
                                   :description "Feed ID"} :int]]}

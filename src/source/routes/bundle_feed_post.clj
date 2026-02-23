@@ -8,6 +8,7 @@
 (defn get
   {:summary "Get a single post by post id belonging to an RSS feed in the associated uuid-authorized bundle. 
    This endpoint updates click analytics for the returned post."
+   :description "This endpoint will fetch a single post belonging to the given feed, regardless of whether the post made it into the bundle during post selection."
    :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:post-id {:title "postId"
                                        :description "Post ID"} :int]]}

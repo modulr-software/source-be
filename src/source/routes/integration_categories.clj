@@ -4,7 +4,8 @@
             [source.services.bundle-categories :as bundle-categories]))
 
 (defn get
-  {:summary "get all categories belonging to the integration with the given id"
+  {:summary "Get all categories belonging to the given integration by ID"
+   :description "This endpoint pulls all the categories on which post selection is based."
    :parameters {:path [:map [:id {:title "id"
                                   :description "integration id"} :int]]}
    :responses {200 {:body [:vector
@@ -16,7 +17,8 @@
   (res/response (bundles/categories-in-bundle ds (:id path-params))))
 
 (defn post
-  {:summary "update categories belonging to the integration with the given id"
+  {:summary "Update categories belonging to the given integration by ID"
+   :description "This endpoint updates the list of categories for the given integration on which post selection is based; however, post selection will not immediately be rerun. Post selection will be rerun 24 hours from the previous execution. If you want post selection to be rerun immediately upon update, please use `POST: /integrations{id}`."
    :parameters {:path [:map [:id {:title "id"
                                   :description "integration id"} :int]]
                 :body [:vector
