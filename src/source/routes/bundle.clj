@@ -2,7 +2,6 @@
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
             [source.db.util :as db.util]
-            [honey.sql.helpers :as hsql]
             [pg.core :as pg]))
 
 (defn get
@@ -28,8 +27,7 @@
 (defn exists
   {:summary "Check for the existence of a bundle with the bundle UUID provided"
    :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]}
-   :responses {200 {:body [:map [:exists :boolean]]}
-               404 {:body [:map [:message :string]]}}}
+   :responses {200 {:body [:map [:exists :boolean]]}}}
   [{:keys [ds query-params] :as _request}]
   (res/response
    (-> ds
