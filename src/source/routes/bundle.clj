@@ -1,6 +1,7 @@
 (ns source.routes.bundle
   (:require [ring.util.response :as res]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [pg.core :as pg]))
 
 (defn get
   {:summary "Get metadata for the associated uuid-authorized bundle."
@@ -21,3 +22,14 @@
   [{:keys [ds bundle-id] :as _request}]
   (res/response (hon/find-one ds {:tname :bundles
                                   :where [:= :id bundle-id]})))
+
+(defn exists
+  {:summary "Check for the existence of a bundle with the bundle UUID provided"
+   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]}
+   :responses {200 {:body [:map [:exists :boolean]]}}}
+  [{:keys [ds query-params] :as _request}]
+  (res/response
+   (-> ds
+       (pg/execute "SELECT EXISTS(SELECT 1 FROM bundles WHERE uuid = $1) AS exists" {:params [(:uuid query-params)]})
+       (first))))
+
