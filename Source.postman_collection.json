@@ -625,7 +625,7 @@
 			"response": []
 		},
 		{
-			"name": "Bundle Categories",
+			"name": "Bundle Exists",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -655,6 +655,32 @@
 						{
 							"key": "uuid",
 							"value": "1c1953c7cbeeefd2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bundle Categories",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/bundle/categories?uuid=2bbeb46bbd70c82b",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"bundle",
+						"categories"
+					],
+					"query": [
+						{
+							"key": "uuid",
+							"value": "2bbeb46bbd70c82b"
 						}
 					]
 				}
