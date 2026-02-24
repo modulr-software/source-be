@@ -1,7 +1,6 @@
 (ns source.routes.bundle
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
-            [source.db.util :as db.util]
             [pg.core :as pg]))
 
 (defn get
@@ -33,9 +32,4 @@
    (-> ds
        (pg/execute "SELECT EXISTS(SELECT 1 FROM bundles WHERE uuid = $1) AS exists" {:params [(:uuid query-params)]})
        (first))))
-
-(comment
-  (time (exists {:ds (db.util/conn)
-                 :query-params {:uuid "2bbeb46bbd70c82b"}}))
-  ())
 
