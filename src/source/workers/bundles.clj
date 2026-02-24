@@ -8,16 +8,13 @@
 
 (defn get-bundle-categories
   "Get all categories for feeds/posts in bundle"
-  [ds bundle-id]
-  (let [feed-ids (->> (hon/find ds (db.util/tname :outgoing-posts bundle-id))
-                      (mapv :feed-id))
-        category-ids (->> (hon/find ds {:tname :feed-categories
-                                        :where (when (seq feed-ids) [:in :feed-id feed-ids])
-                                        :ret :*})
-                          (mapv :category-id))]
-    (hon/find ds {:tname :categories
-                  :where (when (seq category-ids) [:in :id category-ids])
-                  :ret :*})))
+  [ds {:keys [bundle-id content-type-id]}]
+  (->> (-> (hsql/select-distinct :c.*)
+           (hsql/from [:categories :c])
+           (hsql/join [:feed-categories :fc] [:= :c.id :fc.category-id])
+           (hsql/join [(:tname (db.util/tname :outgoing-posts bundle-id)) :p] [:= :fc.feed-id :p.feed-id])
+           (hsql/where (when content-type-id [:= :p.content-type-id content-type-id])))
+       (hon/execute! ds)))
 
 (defn get-outgoing-feeds
   "Gets a filtered list of outgoing feeds for the associated bundle."
@@ -86,5 +83,7 @@
   (time (get-outgoing-posts (db.util/conn) {:bundle-id 14
                                             :category-ids [50 52 54]
                                             :latest "false"}))
+
+  (time (get-bundle-categories (db.util/conn) {:bundle-id 14}))
 
   ())
