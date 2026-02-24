@@ -28,35 +28,40 @@
                           :description "Filters by most recently uploaded posts, not determined by analytics"}
                          [:enum "true" "false"]]
                         [:seed {:optional true} [:maybe :string]]]}
-   :responses {200 {:body [:vector
-                           [:map
-                            [:id :int]
-                            [:post-id :string]
-                            [:feed-id :int]
-                            [:creator-id :int]
-                            [:content-type-id :int]
-                            [:title :string]
-                            [:thumbnail [:maybe :string]]
-                            [:info [:maybe :string]]
-                            [:url [:maybe :string]]
-                            [:stream-url [:maybe :string]]
-                            [:season [:maybe :int]]
-                            [:episode [:maybe :int]]
-                            [:redacted {:optional true} [:maybe :int]]
-                            [:posted-at [:maybe :string]]]]}
+   :responses {200 {:body [:map
+                           [:page-size :int]
+                           [:total-size :int]
+                           [:current-index :int]
+                           [:next-index :int]
+                           [:data [:vector
+                                   [:map
+                                    [:id :int]
+                                    [:post-id :string]
+                                    [:feed-id :int]
+                                    [:creator-id :int]
+                                    [:content-type-id :int]
+                                    [:title :string]
+                                    [:thumbnail [:maybe :string]]
+                                    [:info [:maybe :string]]
+                                    [:url [:maybe :string]]
+                                    [:stream-url [:maybe :string]]
+                                    [:season [:maybe :int]]
+                                    [:episode [:maybe :int]]
+                                    [:redacted {:optional true} [:maybe :int]]
+                                    [:posted-at [:maybe :string]]]]]]}
                404 {:boy [:map [:message :string]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [{:keys [limit start type latest seed]} (walk/keywordize-keys query-params)
-        posts (->> {:bundle-id bundle-id
-                    :limit limit
-                    :start start
-                    :type type
-                    :latest latest
-                    :seed seed
-                    :category-ids (:category-ids body)}
-                   (bundles/get-outgoing-posts ds))]
+        {:keys [data] :as posts} (->> {:bundle-id bundle-id
+                                       :limit limit
+                                       :start start
+                                       :type type
+                                       :latest latest
+                                       :seed seed
+                                       :category-ids (:category-ids body)}
+                                      (bundles/get-outgoing-posts ds))]
     (try
-      (analytics/insert-post-impressions! ds posts bundle-id)
+      (analytics/insert-post-impressions! ds data bundle-id)
       (catch Exception e (println (.getMessage e))))
     (res/response posts)))
