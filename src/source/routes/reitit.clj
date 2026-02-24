@@ -225,6 +225,7 @@
       ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
       ["/posts" (post bundle-posts/post)]
       ["/posts/:id" (get bundle-post/get)]]
+     ["/bundle/exists" (get bundle/exists)]
 
      ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
                 :tags #{"admin"}
