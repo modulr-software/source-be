@@ -2,7 +2,8 @@
   (:require [clojure.walk :as walk]
             [ring.util.response :as res]
             [source.services.analytics.interface :as analytics]
-            [source.workers.bundles :as bundles]))
+            [source.workers.bundles :as bundles]
+            [source.routes.openapi :as api]))
 
 (defn post
   {:summary "Get a list of posts in the uuid-authorized bundle, determined by analytics.
@@ -29,10 +30,11 @@
                          [:enum "true" "false"]]
                         [:seed {:optional true} [:maybe :string]]]}
    :responses {200 {:body [:map
-                           [:page-size :int]
-                           [:total-size :int]
-                           [:current-index :int]
-                           [:next-index :int]
+                           [:pagination [:map
+                                         (api/sometimes :page-size :int)
+                                         (api/sometimes :total-size :int)
+                                         (api/sometimes :current-index :int)
+                                         (api/sometimes :next-index :int)]]
                            [:data [:vector
                                    [:map
                                     [:id :int]

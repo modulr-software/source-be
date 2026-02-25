@@ -81,10 +81,10 @@
 
         next-index (+ start limit)]
 
-    {:page-size (count limited-posts)
-     :total-size total-size
-     :current-index start
-     :next-index (when (< next-index total-size) next-index)
+    {:pagination {:page-size (count limited-posts)
+                  :total-size total-size
+                  :current-index start
+                  :next-index (when (< next-index total-size) next-index)}
      :data limited-posts}))
 
 (comment
