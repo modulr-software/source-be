@@ -85,12 +85,12 @@
                         (subvec started-posts 0 limit)
                         started-posts)
 
-        next-index (+ start limit)]
+        next-index (when (and start limit) (+ start limit))]
 
     {:pagination {:page-size (count limited-posts)
                   :total-size total-size
                   :current-index start
-                  :next-index (when (< next-index total-size) next-index)}
+                  :next-index (when (and next-index (< next-index total-size)) next-index)}
      :data limited-posts}))
 
 (comment
