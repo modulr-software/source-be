@@ -112,7 +112,7 @@
 
 (defn paginated [data-schema]
   [:map
-   [:paginated [:map
+   [:pagination [:map
                 [:page-size :int]
                 [:total-size :int]
                 [:current-index :int]
