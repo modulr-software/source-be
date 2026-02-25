@@ -31,9 +31,9 @@
                         [:seed {:optional true} [:maybe :string]]]}
    :responses {200 {:body [:map
                            [:pagination [:map
-                                         (api/sometimes :page-size :int)
-                                         (api/sometimes :total-size :int)
-                                         (api/sometimes :current-index :int)
+                                         [:page-size :int]
+                                         [:total-size :int]
+                                         [:current-index :int]
                                          (api/sometimes :next-index :int)]]
                            [:data [:vector
                                    [:map
@@ -50,8 +50,7 @@
                                     [:season [:maybe :int]]
                                     [:episode [:maybe :int]]
                                     [:redacted {:optional true} [:maybe :int]]
-                                    [:posted-at [:maybe :string]]]]]]}
-               404 {:boy [:map [:message :string]]}}}
+                                    [:posted-at [:maybe :string]]]]]]}}}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [{:keys [limit start type latest seed]} (walk/keywordize-keys query-params)
