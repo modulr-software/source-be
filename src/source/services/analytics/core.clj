@@ -5,7 +5,8 @@
             [source.util :as util]
             [source.services.feed-categories :as feed-categories]
             [honey.sql :as sql]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [pg.core :as pg]))
 
 (defn convert-all-datetimes-to-string
   "Uses postwalk to convert all instances of java.time.LocalDate into string"
@@ -209,86 +210,91 @@
   "Given a list of feeds and a bundle id, inserts impression event reconds 
   for each given feed. Inserts event categories for each feed."
   [ds feeds bundle-id]
-  (let [bundle (bundles/bundle ds {:id bundle-id})
-        events (mapv (fn [{:keys [id content-type-id user-id]}]
-                       {:timestamp (util/get-utc-timestamp-string)
-                        :event "impression"
-                        :feed-id id
-                        :content-type-id content-type-id
-                        :creator-id user-id
-                        :bundle-id bundle-id
-                        :distributor-id (:user-id bundle)}) feeds)
-        events' (insert-event! ds {:data events
-                                   :ret :*})]
-    (insert-feed-event-categories! ds events' feeds)))
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          events (mapv (fn [{:keys [id content-type-id user-id]}]
+                         {:timestamp (util/get-utc-timestamp-string)
+                          :event "impression"
+                          :feed-id id
+                          :content-type-id content-type-id
+                          :creator-id user-id
+                          :bundle-id bundle-id
+                          :distributor-id (:user-id bundle)}) feeds)
+          events' (insert-event! ds {:data events
+                                     :ret :*})]
+      (insert-feed-event-categories! ds events' feeds))))
 
 (defn insert-post-impressions!
   "Given a list of posts and a bundle id, inserts impression event reconds 
   for each given post. Inserts event categories for each post."
   [ds posts bundle-id]
-  (let [bundle (bundles/bundle ds {:id bundle-id})
-        events (mapv (fn [{:keys [id feed-id content-type-id creator-id]}]
-                       {:timestamp (util/get-utc-timestamp-string)
-                        :event "impression"
-                        :feed-id feed-id
-                        :post-id id
-                        :content-type-id content-type-id
-                        :creator-id creator-id
-                        :bundle-id bundle-id
-                        :distributor-id (:user-id bundle)}) posts)
-        events' (when (seq posts) (insert-event! ds {:data events
-                                                     :ret :*}))]
-    (when (seq events') (insert-post-event-categories! ds events' posts))))
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          events (mapv (fn [{:keys [id feed-id content-type-id creator-id]}]
+                         {:timestamp (util/get-utc-timestamp-string)
+                          :event "impression"
+                          :feed-id feed-id
+                          :post-id id
+                          :content-type-id content-type-id
+                          :creator-id creator-id
+                          :bundle-id bundle-id
+                          :distributor-id (:user-id bundle)}) posts)
+          events' (when (seq posts) (insert-event! ds {:data events
+                                                       :ret :*}))]
+      (when (seq events') (insert-post-event-categories! ds events' posts)))))
 
 (defn insert-feed-click!
   "Given a feed and a bundle id, inserts a click event record 
   for the given feed"
   [ds {:keys [id content-type-id user-id] :as feed} bundle-id]
-  (let [bundle (bundles/bundle ds {:id bundle-id})
-        event {:timestamp (util/get-utc-timestamp-string)
-               :event "click"
-               :feed-id id
-               :content-type-id content-type-id
-               :creator-id user-id
-               :bundle-id bundle-id
-               :distributor-id (:user-id bundle)}
-        event' (insert-event! ds {:data event
-                                  :ret :*})]
-    (insert-feed-event-categories! ds event' feed)))
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          event {:timestamp (util/get-utc-timestamp-string)
+                 :event "click"
+                 :feed-id id
+                 :content-type-id content-type-id
+                 :creator-id user-id
+                 :bundle-id bundle-id
+                 :distributor-id (:user-id bundle)}
+          event' (insert-event! ds {:data event
+                                    :ret :*})]
+      (insert-feed-event-categories! ds event' feed))))
 
 (defn insert-post-click!
   "Given a post and a bundle id, inserts a click event record 
   for the given post"
   [ds {:keys [id feed-id content-type-id creator-id] :as post} bundle-id]
-  (let [bundle (bundles/bundle ds {:id bundle-id})
-        event {:timestamp (util/get-utc-timestamp-string)
-               :event "click"
-               :feed-id feed-id
-               :post-id id
-               :content-type-id content-type-id
-               :creator-id creator-id
-               :bundle-id bundle-id
-               :distributor-id (:user-id bundle)}
-        event' (insert-event! ds {:data event
-                                  :ret :*})]
-    (insert-post-event-categories! ds event' post)))
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          event {:timestamp (util/get-utc-timestamp-string)
+                 :event "click"
+                 :feed-id feed-id
+                 :post-id id
+                 :content-type-id content-type-id
+                 :creator-id creator-id
+                 :bundle-id bundle-id
+                 :distributor-id (:user-id bundle)}
+          event' (insert-event! ds {:data event
+                                    :ret :*})]
+      (insert-post-event-categories! ds event' post))))
 
 (defn insert-post-view!
   "Given a post and a bundle id, inserts a view event record 
   for the given post"
   [ds {:keys [id feed-id content-type-id creator-id] :as post} bundle-id]
-  (let [bundle (bundles/bundle ds {:id bundle-id})
-        event {:timestamp (util/get-utc-timestamp-string)
-               :event "view"
-               :feed-id feed-id
-               :post-id id
-               :content-type-id content-type-id
-               :creator-id creator-id
-               :bundle-id bundle-id
-               :distributor-id (:user-id bundle)}
-        event' (insert-event! ds {:data event
-                                  :ret :*})]
-    (insert-post-event-categories! ds event' post)))
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          event {:timestamp (util/get-utc-timestamp-string)
+                 :event "view"
+                 :feed-id feed-id
+                 :post-id id
+                 :content-type-id content-type-id
+                 :creator-id creator-id
+                 :bundle-id bundle-id
+                 :distributor-id (:user-id bundle)}
+          event' (insert-event! ds {:data event
+                                    :ret :*})]
+      (insert-post-event-categories! ds event' post))))
 
 (comment
   (require '[source.db.util :as db.util])
