@@ -91,7 +91,7 @@
     (merge parameters (reduce assoc-param {} (partition 2 opts)))))
 
 (defn- sometimes-entry [[k _ s]] [k {:optional true} [:maybe s]])
-(defn- maybe-keys [schema]
+(defn maybe-keys [schema]
   (mu/transform-entries
    schema
    #(mapv sometimes-entry %)))

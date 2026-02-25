@@ -94,12 +94,13 @@
   [:map
    [:id :int]
    [:title :string]
-   [:display-picture :string]
-   [:url :string]
+   (api/sometimes :display-picture :string)
+   (api/sometimes :description :string)
+   (api/sometimes :url :string)
    [:rss-url :string]
    [:created-at :string]
-   [:updated-at :string]
-   [:ts-and-cs :int]
+   (api/sometimes :updated-at :string)
+   (api/sometimes :ts-and-cs :int)
    [:state FeedStatus]])
 
 (def Feed
@@ -109,6 +110,17 @@
       (mu/assoc :cadence Cadence)
       (mu/assoc :baseline Baseline)
       (mu/assoc :provider Provider)))
+
+(def FeedWithIDs
+  (-> FeedRecord
+      (mu/assoc :user-id :int)
+      (mu/assoc :content-type-id :int)
+      (mu/assoc :cadence-id :int)
+      (mu/assoc :baseline-id :int)
+      (mu/assoc :provider-id :int)))
+
+(def FeedsWithIDs
+  [:vector FeedWithIDs])
 
 (defn paginated [data-schema]
   [:map
