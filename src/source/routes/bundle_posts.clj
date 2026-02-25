@@ -34,14 +34,15 @@
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [{:keys [limit start type latest seed]} (walk/keywordize-keys query-params)
-        {:keys [data] :as posts} (->> {:bundle-id bundle-id
-                                       :limit limit
-                                       :start start
-                                       :type type
-                                       :latest latest
-                                       :seed seed
-                                       :category-ids (:category-ids body)}
-                                      (bundles/get-outgoing-posts ds))]
+        {:keys [data] :as posts} (bundles/get-outgoing-posts
+                                  ds
+                                  {:bundle-id bundle-id
+                                   :limit limit
+                                   :start start
+                                   :type type
+                                   :latest latest
+                                   :seed seed
+                                   :category-ids (:category-ids body)})]
     (try
       (analytics/insert-post-impressions! ds data bundle-id)
       (catch Exception e (println (.getMessage e))))
