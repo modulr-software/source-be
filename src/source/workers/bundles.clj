@@ -73,7 +73,9 @@
                               (sort-by #(get order-map (first %)))
                               (mapv last)))
 
-        valid-start? (and (some? start) (>= start 0) (< start (count shuffled-posts)))
+        total-size (count shuffled-posts)
+
+        valid-start? (and (some? start) (>= start 0) (< start total-size))
         started-posts (if valid-start?
                         (subvec shuffled-posts start)
                         shuffled-posts)
@@ -81,8 +83,15 @@
         valid-limit? (and (some? limit) (> (count started-posts) limit))
         limited-posts (if valid-limit?
                         (subvec started-posts 0 limit)
-                        started-posts)]
-    limited-posts))
+                        started-posts)
+
+        next-index (+ start limit)]
+
+    {:pagination {:page-size (count limited-posts)
+                  :total-size total-size
+                  :current-index start
+                  :next-index (when (< next-index total-size) next-index)}
+     :data limited-posts}))
 
 (comment
 

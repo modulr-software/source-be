@@ -1,5 +1,6 @@
 (ns source.workers.schemas
-  (:require [malli.util :as mu]))
+  (:require [malli.util :as mu]
+            [source.routes.openapi :as api]))
 
 (def Business
   [:map
@@ -109,6 +110,15 @@
       (mu/assoc :baseline Baseline)
       (mu/assoc :provider Provider)))
 
+(defn paginated [data-schema]
+  [:map
+   [:paginated [:map
+                [:page-size :int]
+                [:total-size :int]
+                [:current-index :int]
+                (api/sometimes :next-index :int)]]
+   [:data data-schema]])
+
 (def IncomingPostRecord
   [:map
    [:id :int]
@@ -141,6 +151,26 @@
    [:season :int]
    [:episode :int]
    [:posted-at :string]])
+
+(def Post
+  [:map
+   [:id :int]
+   [:post-id :string]
+   [:feed-id :int]
+   [:creator-id :int]
+   [:content-type-id :int]
+   [:title :string]
+   [:thumbnail (api/maybe :string)]
+   [:info (api/maybe :string)]
+   [:url (api/maybe :string)]
+   [:stream-url (api/maybe :string)]
+   [:season (api/maybe :int)]
+   [:episode (api/maybe :int)]
+   (api/sometimes :redacted :int)
+   [:posted-at (api/maybe :string)]])
+
+(def Posts
+  [:vector Post])
 
 (def JobStatus [:enum ["running" "stopped"]])
 
