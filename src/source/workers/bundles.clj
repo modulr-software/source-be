@@ -13,7 +13,13 @@
            (hsql/from [:categories :c])
            (hsql/join [:feed-categories :fc] [:= :c.id :fc.category-id])
            (hsql/join [(:tname (db.util/tname :outgoing-posts bundle-id)) :p] [:= :fc.feed-id :p.feed-id])
-           (hsql/where (when content-type-id [:= :p.content-type-id content-type-id])))
+           (hsql/group-by :c.id :c.name :c.display-picture)
+           (hsql/where (when content-type-id [:= :p.content-type-id content-type-id]))
+           (hsql/having (when (nil? content-type-id)
+                          [:=
+                           [:count [:distinct :p.content-type-id]]
+                           (-> (hsql/select [[:count :id]])
+                               (hsql/from :content-types))])))
        (hon/execute! ds)))
 
 (defn get-outgoing-feeds
