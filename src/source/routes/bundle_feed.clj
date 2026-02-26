@@ -11,7 +11,7 @@
    :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
                 :path [:map [:id {:title "id"
                                   :description "Feed ID"} :int]]}
-   :responses (-> (api/success schemas/FeedWithIDs)
+   :responses (-> (api/success schemas/Feed)
                   (api/not-found))}
 
   [{:keys [ds bundle-id path-params] :as _request}]

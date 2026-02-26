@@ -19,7 +19,7 @@
                         [:nonfiltered {:optional true
                                        :description "Marking this field as true will disable all filters"} :boolean]]
                 :body [:map [:category-ids [:vector :int]]]}
-   :responses (-> (api/success schemas/FeedsWithIDs)
+   :responses (-> (api/success schemas/Feeds)
                   (api/not-found))}
 
   [{:keys [ds bundle-id query-params body] :as _request}]

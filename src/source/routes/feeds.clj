@@ -6,12 +6,11 @@
             [source.util :as util]
             [source.jobs.core :as jobs]
             [source.routes.openapi :as api]
-            [source.workers.schemas :as schemas]
-            [malli.util :as mu]))
+            [source.workers.schemas :as schemas]))
 
 (defn get
   {:summary "get all feeds"
-   :responses (api/success schemas/FeedsWithIDs)}
+   :responses (api/success schemas/Feeds)}
 
   [{:keys [ds user] :as _request}]
   (-> (hon/find ds {:tname :feeds
@@ -20,14 +19,9 @@
 
 (defn post
   {:summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
-   :parameters {:body (-> schemas/FeedWithIDs
-                          (mu/dissoc :id)
-                          (mu/dissoc :title)
-                          (mu/dissoc :user-id)
-                          (mu/dissoc :created-at)
-                          (mu/dissoc :updated-at)
-                          (mu/dissoc :state))}
-   :responses (api/success schemas/FeedWithIDs)}
+   :parameters {:body (-> schemas/Feed
+                          (api/missoc :id :title :user-id :created-at :updated-at :state))}
+   :responses (api/success schemas/Feed)}
 
   [{:keys [js ds user body] :as _request}]
   (let [exists (hon/exists? ds {:tname :feeds

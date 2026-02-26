@@ -4,14 +4,13 @@
             [source.workers.feeds :as feeds]
             [source.jobs.handlers :as handlers]
             [source.routes.openapi :as api]
-            [source.workers.schemas :as schemas]
-            [malli.util :as mu]))
+            [source.workers.schemas :as schemas]))
 
 (defn get
   {:summary "get feed by id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]}
-   :responses (api/success schemas/FeedWithIDs)}
+   :responses (api/success schemas/Feed)}
 
   [{:keys [ds path-params] :as _request}]
   (-> (hon/find-one ds {:tname :feeds
@@ -22,14 +21,8 @@
   {:summary "update feed by id"
    :parameters {:path [:map [:id {:title "id"
                                   :description "feed id"} :int]]
-                :body (-> (api/maybe-keys schemas/FeedWithIDs)
-                          (mu/dissoc :id)
-                          (mu/dissoc :user-id)
-                          (mu/dissoc :provider-id)
-                          (mu/dissoc :created-at)
-                          (mu/dissoc :updated-at)
-                          (mu/dissoc :state)
-                          (mu/dissoc :rss-url))}
+                :body (-> (api/maybe-keys schemas/Feed)
+                          (api/missoc :id :user-id :provider-id :created-at :updated-at :state :rss-url))}
    :responses  {200 {:body [:map [:message :string]]}
                 401 {:body [:map [:message :string]]}
                 403 {:body [:map [:message :string]]}}}

@@ -105,30 +105,22 @@
 
 (def Feed
   (-> FeedRecord
-      (mu/assoc :user User)
-      (mu/assoc :content-type ContentType)
-      (mu/assoc :cadence Cadence)
-      (mu/assoc :baseline Baseline)
-      (mu/assoc :provider Provider)))
-
-(def FeedWithIDs
-  (-> FeedRecord
       (mu/assoc :user-id :int)
       (mu/assoc :content-type-id :int)
       (mu/assoc :cadence-id :int)
       (mu/assoc :baseline-id :int)
       (mu/assoc :provider-id :int)))
 
-(def FeedsWithIDs
-  [:vector FeedWithIDs])
+(def Feeds
+  [:vector Feed])
 
 (defn paginated [data-schema]
   [:map
    [:pagination [:map
-                [:page-size :int]
-                [:total-size :int]
-                [:current-index :int]
-                (api/sometimes :next-index :int)]]
+                 [:page-size :int]
+                 [:total-size :int]
+                 [:current-index :int]
+                 (api/sometimes :next-index :int)]]
    [:data data-schema]])
 
 (def IncomingPostRecord

@@ -96,6 +96,12 @@
    schema
    #(mapv sometimes-entry %)))
 
+(defn missoc
+  "Executes mu/dissoc with multiple keys"
+  [schema & ks]
+  (reduce (fn [acc k]
+            (mu/dissoc acc k)) schema ks))
+
 ;; MALLI SCHEMAS
 
 (defn optional [key type]
@@ -106,6 +112,15 @@
 
 (defn sometimes [key type]
   (optional key (maybe type)))
+
+(defn paginated [data-schema]
+  [:map
+   [:pagination [:map
+                 [:page-size :int]
+                 [:total-size :int]
+                 [:current-index :int]
+                 (sometimes :next-index :int)]]
+   [:data data-schema]])
 
 (def RegisterParams
   [:map

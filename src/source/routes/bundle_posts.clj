@@ -31,8 +31,8 @@
                           :description "Filters by most recently uploaded posts, not determined by analytics"}
                          [:enum "true" "false"]]
                         [:seed {:optional true} [:maybe :string]]]}
-   :responses (api/success (schemas/paginated [:vector (-> schemas/Post
-                                                           (mu/assoc :feed-title :string))]))}
+   :responses (api/success (api/paginated [:vector (-> schemas/Post
+                                                       (mu/assoc :feed-title :string))]))}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [{:keys [limit start type latest seed]} (walk/keywordize-keys query-params)
