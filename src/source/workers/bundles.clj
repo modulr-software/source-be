@@ -45,8 +45,9 @@
   [ds {:keys [bundle-id limit start type latest category-ids seed]}]
   (let [filtered-posts (hon/execute!
                         ds
-                        (-> (hsql/select-distinct :p.*)
+                        (-> (hsql/select-distinct :p.* [:f.title :feed-title])
                             (hsql/from [(:tname (db.util/tname :outgoing-posts bundle-id)) :p])
+                            (hsql/join [:feeds :f] [:= :p.feed-id :f.id])
                             (hsql/join [:feed-categories :fc] [:= :p.feed-id :fc.feed-id])
                             (hsql/join [:categories :c] [:= :fc.category-id :c.id])
                             (hsql/where
@@ -85,12 +86,12 @@
                         (subvec started-posts 0 limit)
                         started-posts)
 
-        next-index (+ start limit)]
+        next-index (when (and start limit) (+ start limit))]
 
     {:pagination {:page-size (count limited-posts)
                   :total-size total-size
                   :current-index start
-                  :next-index (when (< next-index total-size) next-index)}
+                  :next-index (when (and next-index (< next-index total-size)) next-index)}
      :data limited-posts}))
 
 (comment
