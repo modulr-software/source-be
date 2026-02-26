@@ -37,6 +37,7 @@
                   {:tname :feeds
                    :data (merge feed-metadata {:title (get-in extracted [:feed :title])
                                                :display-picture display-picture
+                                               :description (get-in extracted [:feed :description])
                                                :user-id user-id
                                                :created-at datetime
                                                :state "pending"})
