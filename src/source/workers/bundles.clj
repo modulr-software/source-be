@@ -51,7 +51,7 @@
                             (hsql/join [:feed-categories :fc] [:= :p.feed-id :fc.feed-id])
                             (hsql/join [:categories :c] [:= :fc.category-id :c.id])
                             (hsql/where
-                             (when type [:= :content-type-id type])
+                             (when type [:= :p.content-type-id type])
                              [:not-in :p.id (-> (hsql/select :post-id)
                                                 (hsql/from :filtered-posts)
                                                 (hsql/where [:= :bundle-id bundle-id]))]
