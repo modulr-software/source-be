@@ -45,8 +45,9 @@
   [ds {:keys [bundle-id limit start type latest category-ids seed]}]
   (let [filtered-posts (hon/execute!
                         ds
-                        (-> (hsql/select-distinct :p.*)
+                        (-> (hsql/select-distinct :p.* [:f.title :feed-title])
                             (hsql/from [(:tname (db.util/tname :outgoing-posts bundle-id)) :p])
+                            (hsql/join [:feeds :f] [:= :p.feed-id :f.id])
                             (hsql/join [:feed-categories :fc] [:= :p.feed-id :fc.feed-id])
                             (hsql/join [:categories :c] [:= :fc.category-id :c.id])
                             (hsql/where
