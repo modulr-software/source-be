@@ -61,6 +61,7 @@
           (hon/update! ds {:tname :feeds
                            :where [:= :id feed-id]
                            :data {:title (get-in extracted [:feed :title])
+                                  :description (get-in extracted [:feed :description])
                                   :display-picture (if (and (:display-picture existing-feed)
                                                             (seq (:display-picture existing-feed)))
                                                      (:display-picture existing-feed)
