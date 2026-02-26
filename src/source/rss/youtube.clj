@@ -1,7 +1,8 @@
 (ns source.rss.youtube
   (:require [clojure.string :as s]
             [source.rss.squash :as squash]
-            [clojure.xml :as xml]))
+            [clojure.xml :as xml]
+            [net.cgrand.enlive-html :as html]))
 
 (defn find-channel-id
   "a rudimentary first implementation, we should probably consider using
@@ -22,6 +23,20 @@
    (str "https://www.youtube.com/feeds/videos.xml?channel_id=")
    (xml/parse)
    (squash/squash)))
+
+(defn channel-image [channel-url]
+  (->> (-> channel-url
+           (java.net.URL.)
+           (html/html-resource)
+           (second)
+           (get-in [:content])
+           (first)
+           (get-in [:content]))
+       (filter (fn [{:keys [tag attrs]}]
+                 (and (= tag :link) (= (:rel attrs) "image_src"))))
+       (first)
+       (:attrs)
+       (:href)))
 
 (comment
   (find-channel-id "https://www.youtube.com/@CodingWithLewis"))
