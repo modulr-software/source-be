@@ -4,7 +4,8 @@
             [source.services.analytics.interface :as analytics]
             [source.workers.bundles :as bundles]
             [source.routes.openapi :as api]
-            [source.workers.schemas :as schemas]))
+            [source.workers.schemas :as schemas]
+            [malli.util :as mu]))
 
 (defn post
   {:summary "Get a list of posts in the uuid-authorized bundle, determined by analytics.
@@ -30,7 +31,8 @@
                           :description "Filters by most recently uploaded posts, not determined by analytics"}
                          [:enum "true" "false"]]
                         [:seed {:optional true} [:maybe :string]]]}
-   :responses (api/success (schemas/paginated schemas/Posts))}
+   :responses (api/success (schemas/paginated [:vector (-> schemas/Post
+                                                           (mu/assoc :feed-title :string))]))}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [{:keys [limit start type latest seed]} (walk/keywordize-keys query-params)
