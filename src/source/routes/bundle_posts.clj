@@ -35,8 +35,8 @@
                           :description "Truncates text in posts to a maximum of 100 characters. Defaults to true."}
                          [:enum "true" "false"]]
                         [:seed {:optional true} [:maybe :string]]]}
-   :responses (api/success (schemas/paginated [:vector (-> schemas/Post
-                                                           (mu/assoc :feed-title :string))]))}
+   :responses (api/success (api/paginated [:vector (-> schemas/Post
+                                                       (mu/assoc :feed-title :string))]))}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
   (let [{:keys [limit start type latest seed truncate]} (walk/keywordize-keys query-params)
