@@ -176,6 +176,31 @@
 (def Posts
   [:vector Post])
 
+(def QueryUUID
+  [:uuid {:description "Bundle UUID"} :string])
+
+(def QueryStart
+  [:start
+   {:optional true
+    :description "Used for pagination. Specifies the starting point for the returned items, incremented by the limit."}
+   :int])
+
+(def QueryLimit
+  [:limit
+   {:optional true
+    :description "Used for pagination. Specifies a number of items to be returned."}
+   :int])
+
+(def QueryContentType
+  [:type {:optional true
+          :description "Filters by content type ID"} :int])
+
+(def QueryLatest
+  [:latest
+   {:optional true
+    :description "Filters by most recently published"}
+   [:enum "true" "false"]])
+
 (def JobStatus [:enum ["running" "stopped"]])
 
 (def Job

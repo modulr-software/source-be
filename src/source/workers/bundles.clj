@@ -40,12 +40,29 @@
                                           filtered-query))]
     filtered-feeds))
 
+(defn- select-outgoing-post [truncate]
+  (hsql/select-distinct
+   :p.id
+   :p.post-id
+   :p.feed-id
+   :p.creator-id
+   :p.content-type-id
+   :p.title
+   :p.thumbnail
+   (if (= truncate "false") :p.info [[:left :p.info 100] :info])
+   :p.url
+   :p.stream-url
+   :p.season
+   :p.episode
+   :p.posted-at
+   [:f.title :feed-title]))
+
 (defn get-outgoing-posts
   "Get outgoing posts based on short heuristics and update analytics impressions"
-  [ds {:keys [bundle-id limit start type latest category-ids seed]}]
+  [ds {:keys [bundle-id limit start type latest category-ids seed truncate]}]
   (let [filtered-posts (hon/execute!
                         ds
-                        (-> (hsql/select-distinct :p.* [:f.title :feed-title])
+                        (-> (select-outgoing-post truncate)
                             (hsql/from [(:tname (db.util/tname :outgoing-posts bundle-id)) :p])
                             (hsql/join [:feeds :f] [:= :p.feed-id :f.id])
                             (hsql/join [:feed-categories :fc] [:= :p.feed-id :fc.feed-id])
