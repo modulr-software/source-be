@@ -2,7 +2,8 @@
   (:require [clojure.string :as s]
             [source.rss.squash :as squash]
             [clojure.xml :as xml]
-            [net.cgrand.enlive-html :as html]))
+            [org.httpkit.client :as http]
+            [hickory.core :as h]))
 
 (defn find-channel-id
   "a rudimentary first implementation, we should probably consider using
@@ -25,18 +26,21 @@
    (squash/squash)))
 
 (defn channel-image [channel-url]
-  (->> (-> channel-url
-           (java.net.URL.)
-           (html/html-resource)
-           (second)
-           (get-in [:content])
-           (first)
-           (get-in [:content]))
-       (filter (fn [{:keys [tag attrs]}]
-                 (and (= tag :link) (= (:rel attrs) "image_src"))))
+  (->> @(http/request {:url channel-url})
+       (:body)
+       (h/parse)
+       (h/as-hickory)
+       (:content)
+       (second)
+       (:content)
+       (first)
+       (:content)
+       (filterv (fn [{:keys [type attrs]}]
+                  (and (= type :element) (= (:rel attrs) "image_src"))))
        (first)
        (:attrs)
        (:href)))
 
 (comment
-  (find-channel-id "https://www.youtube.com/@CodingWithLewis"))
+  (find-channel-id "https://www.youtube.com/@Veritasium")
+  (channel-image "https://www.youtube.com/@Veritasium"))
