@@ -12,7 +12,7 @@
   (let [{:keys [provider-id rss-url content-type-id]} feed-metadata
         datetime (utils/get-utc-timestamp-string)
         youtube? (= provider-id 1)
-        rss-url (if (and youtube? (not (string/includes? rss-url "feeds")))
+        rss-url (if (and youtube? (not (string/includes? rss-url "/feeds/videos.xml?channel_id=")))
                   (->> (yt/find-channel-id rss-url)
                        (str "https://www.youtube.com/feeds/videos.xml?channel_id="))
                   rss-url)
