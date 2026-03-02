@@ -56,9 +56,11 @@
         (-> request
             (assoc :bundle-id id)
             (handler))
-        (->
-         (res/response {:message "The bundle you are looking for does not exist."})
-         (res/status 404))))))
+        (do
+          (println "Bundle authorization attempt failed with uuid:" bundle-uuid)
+          (->
+           (res/response {:message "The bundle you are looking for does not exist."})
+           (res/status 404)))))))
 
 (comment
   (let [authed-request {:headers {"Authorization"
