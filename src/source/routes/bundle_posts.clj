@@ -5,7 +5,8 @@
             [source.workers.bundles :as bundles]
             [source.routes.openapi :as api]
             [source.workers.schemas :as schemas]
-            [malli.util :as mu]))
+            [malli.util :as mu]
+            [source.logger :as logger]))
 
 (def QueryTruncatePosts
   [:truncate
@@ -49,5 +50,5 @@
                                    :category-ids (:category-ids body)})]
     (try
       (analytics/insert-post-impressions! ds data bundle-id)
-      (catch Exception e (println (.getMessage e))))
+      (catch Exception e (logger/log-error (str "Failed to insert post impressions on bundle posts: " (.getMessage e)))))
     (res/response posts)))

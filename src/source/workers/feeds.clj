@@ -4,7 +4,8 @@
             [congest.jobs :as congest]
             [source.db.honey :as hon]
             [source.rss.youtube :as yt]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [source.logger :as logger]))
 
 (defn create-feed!
   "Creates feed with incoming posts pulled from RSS feed and starts associated job"
@@ -53,7 +54,7 @@
                    :ret :1})
 
         _ (when (or (nil? display-picture) (= display-picture ""))
-            (println "Failed to pull display picture for feed [" (:id new-feed) (:title new-feed) "] provider-id" provider-id))
+            (logger/log-error (str "Failed to pull display picture for feed [ " (:id new-feed) " " (:title new-feed) "] provider-id " provider-id)))
 
         extended-posts (mapv (fn [post]
                                (merge post

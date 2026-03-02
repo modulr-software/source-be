@@ -4,7 +4,8 @@
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
             [source.routes.interface :as routes]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.logger :as logger]))
 
 (defonce ^:private *components (atom nil))
 
@@ -32,7 +33,7 @@
   (try
     (when (deps-on? deps)
       (swap! *components assoc name (init-fn @*components)))
-    (catch Exception e (println (str "Failed to initialise " name ":") e))))
+    (catch Exception e (logger/log (str "Failed to initialise " name ": " e)))))
 
 (defn initialise-components! [components]
   (run! initialise! components))
@@ -43,7 +44,7 @@
 (defn start-server []
   (cond (not (some? (:server @*components)))
         (do
-          (println "Starting server on port 3000...")
+          (logger/log "Starting server on port 3000...")
           (initialise-components! [{:name :ds
                                     :init-fn (fn [_deps] (db/ds :master))
                                     :deps []}
@@ -54,10 +55,10 @@
                                     :deps [:ds :js]
                                     :init-fn initialise-server!}]))
         :else
-        (println "Server already running!")))
+        (logger/log "Server already running!")))
 
 (defn stop-server []
-  (println "Stopping server...")
+  (logger/log "Stopping server...")
   (when (some? (:js @*components))
     (congest/kill! (:js @*components)))
   (when (some? (:server @*components))

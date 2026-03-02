@@ -3,7 +3,8 @@
             [source.db.util :as db.util]
             [ring.util.response :as res]
             [source.services.bundles :as bundles]
-            [source.db.honey :as db]))
+            [source.db.honey :as db]
+            [source.logger :as logger]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -57,7 +58,7 @@
             (assoc :bundle-id id)
             (handler))
         (do
-          (println "Bundle authorization attempt failed with uuid:" bundle-uuid)
+          (logger/log-warning (str "Bundle authorization attempt failed with uuid: " bundle-uuid))
           (->
            (res/response {:message "The bundle you are looking for does not exist."})
            (res/status 404)))))))

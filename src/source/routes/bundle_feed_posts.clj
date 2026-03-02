@@ -1,7 +1,8 @@
 (ns source.routes.bundle-feed-posts
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
-            [source.services.analytics.interface :as analytics]))
+            [source.services.analytics.interface :as analytics]
+            [source.logger :as logger]))
 
 (defn get
   {:summary "Get all posts present within a given RSS feed by feed id, within the uuid-authorized bundle.
@@ -35,5 +36,5 @@
                             :ret :*})]
     (try
       (analytics/insert-post-impressions! ds posts bundle-id)
-      (catch Exception e (println (.getMessage e))))
+      (catch Exception e (logger/log-error (str "Failed to insert post impressions for bundle feed posts: " (.getMessage e)))))
     (res/response posts)))

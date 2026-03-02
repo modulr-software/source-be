@@ -6,7 +6,8 @@
             [honey.sql.helpers :as hsql]
             [source.routes.openapi :as api]
             [source.workers.schemas :as schemas]
-            [malli.util :as mu]))
+            [malli.util :as mu]
+            [source.logger :as logger]))
 
 (defn get
   {:summary "Get a single post by post id in the uuid-authorized bundle.
@@ -28,5 +29,5 @@
                            {:ret :1})]
     (try
       (analytics/insert-post-click! ds post bundle-id)
-      (catch Exception e (println (.getMessage e))))
+      (catch Exception e (logger/log-error (str "Failed to insert post click on bundle post: " (.getMessage e)))))
     (res/response post)))

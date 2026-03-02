@@ -1,7 +1,8 @@
 (ns source.admins
   (:require [source.crypt-fs :as crypt]
             [source.config :as conf]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [source.logger :as logger]))
 
 (defn encrypt! []
   (crypt/write-file-crypt! (conf/read-value :admins-encrypted-path)
@@ -16,5 +17,5 @@
         (crypt/read-file-crypt (conf/read-value :supersecretkey))
         (json/read-json))
     (catch Exception e
-      (println (str "Couldn't read the admins file: " (.getMessage e)))
+      (logger/log-error (str "Couldn't read the admins file: " (.getMessage e)))
       [])))

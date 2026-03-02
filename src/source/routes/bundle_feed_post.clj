@@ -3,7 +3,8 @@
             [source.db.honey :as hon]
             [source.services.analytics.interface :as analytics]
             [source.db.util :as db.util]
-            [honey.sql.helpers :as hsql]))
+            [honey.sql.helpers :as hsql]
+            [source.logger :as logger]))
 
 (defn get
   {:summary "Get a single post by post id belonging to an RSS feed in the associated uuid-authorized bundle. 
@@ -35,5 +36,5 @@
                                   (hsql/where [:= :id (:post-id path-params)])))]
     (try
       (analytics/insert-post-click! ds post bundle-id)
-      (catch Exception e (println (.getMessage e))))
+      (catch Exception e (logger/log-error (str "Failed to insert post click on bundle feed post: " (.getMessage e)))))
     (res/response post)))

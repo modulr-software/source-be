@@ -7,7 +7,8 @@
             [source.db.util :as db.util]
             [clojure.set :as set]
             [clojure.string :as string]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.logger :as logger]))
 
 (defmulti handler
   (fn [opts]
@@ -31,7 +32,7 @@
     (try
       (when (users/removed? ds (:creator-id args))
         (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
-              _ (println "feed" feed-id "job started")
+              _ (logger/log (str "feed " feed-id " job started."))
               selection-schemas (->> [:= :provider-id provider-id]
                                      (assoc {} :where)
                                      (xml/selection-schemas ds))
@@ -84,9 +85,9 @@
                (hon/insert! ds {:tname :incoming-posts
                                 :data post})))
            extended-posts)
-          (println "feed" feed-id "job finished")))
+          (logger/log (str "feed " feed-id " job finished."))))
 
-      (catch Exception e (println "feed job failed: " e) :fail))))
+      (catch Exception e (logger/log-error (str "feed job failed: " e)) :fail))))
 
 (defn update-bundle-job-id
   "returns the job id of an update-bundle job with the given bundle id"
@@ -115,7 +116,7 @@
 (defmethod handler :update-bundle [_]
   (fn [{:keys [args ds]}]
     (let [{:keys [bundle-id categories]} args
-          _ (println "starting bundle" bundle-id "job")
+          _ (logger/log (str "starting bundle " bundle-id " job."))
           incoming-posts (services/incoming-posts-with-feeds ds {:where [:= :feeds.state "live"]})
           posts-categories (incoming-posts/categories-by-posts ds {:where [:= :state "live"]})
           heuristics (mapv
@@ -125,7 +126,7 @@
       (try
         (services/upsert-post-heuristics! ds {:bundle-id bundle-id
                                               :data heuristics})
-        (catch Exception e (println "bundle" bundle-id "upserting post heuristics failed: " (.getMessage e))))
+        (catch Exception e (logger/log-error (str "bundle " bundle-id " upserting post heuristics failed: " (.getMessage e)))))
 
       ; pull highest scored posts by long heuristics into outgoing posts
             ; top 1000 post-heuristics records ordered by long heuristic in descending order
@@ -171,7 +172,7 @@
                              :possible-cause "If no posts made it into the bundle, it's possible post heuristics failed or there's no incoming posts"
                              :next-steps "Check for errors thrown in this job, ensure all tables for this bundle exist"}))))
 
-        (println "bundle" bundle-id "job done")))))
+        (logger/log (str "bundle " bundle-id " job done."))))))
 
 (defn user-deletion-job-id
   "returns the job id of a user deletion job with the given user id"
@@ -183,4 +184,4 @@
     (try
       (let [{:keys [user-type user-id]} args]
         (users/hard-delete-user! ds (keyword user-type) user-id))
-      (catch Exception e (println "Failed to delete user-id" (:user-id args) ":" e) :fail))))
+      (catch Exception e (logger/log-error (str "Failed to delete user-id " (:user-id args) ":" e)) :fail))))

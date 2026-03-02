@@ -12,7 +12,8 @@
             [ring.middleware.cookies :as cookies]
             [clojure.walk :as walk]
             [source.util :as util]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [source.logger :as logger]))
 
 (defn wrap-ds [handler ds]
   (fn [request]
@@ -43,7 +44,7 @@
     (try
       (handler req)
       (catch Exception e
-        (println "Unhandled Exception on endpoint URI " (:uri req) ": " e)
+        (logger/log-error (str "Unhandled Exception on endpoint URI " (:uri req) ": " e))
         (-> (res/response {:message "Internal Server Error"})
             (res/status 500))))))
 
@@ -75,7 +76,7 @@
                        (attach-validations request))]
       (if (seq errors)
         (do
-          (println "Schema validation failed on endpoint URI" (:uri request) ":" (string/join "\n" errors))
+          (logger/log-warning (str "Schema validation failed on endpoint URI " (:uri request) ": " (string/join "\n" errors)))
           (-> (res/response {:message (string/join "\n" errors)})
               (res/status 400)))
         (handler request)))))
