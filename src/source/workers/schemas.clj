@@ -217,7 +217,7 @@
    [:initial-delay :int]
    [:auto-start :int]
    [:stop-after-fail :int]
-   [:kill-after :int]
+   (api/sometimes :kill-after :int)
    [:num-calls :int]
    [:interval :int]
    [:recurring :int]
@@ -227,6 +227,9 @@
 (def JobWithMetadata
   (-> Job
       (mu/assoc :job-metadata JobMetadata)))
+
+(def JobsWithMetadata
+  [:vector JobWithMetadata])
 
 (def Bundle
   [:map
