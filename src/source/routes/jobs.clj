@@ -5,7 +5,8 @@
             [ring.util.response :as res]
             [source.routes.openapi :as api]
             [source.workers.schemas :as schemas]
-            [source.util :as util]))
+            [source.util :as util]
+            [malli.util :as mu]))
 
 (defn get
   {:summary "get list of raw job metadata"
@@ -22,16 +23,14 @@
 (defn post
   {:summary "Register a new job with metadata"
    :params (api/params :body [:map
-                              [:metadata [:map
-                                          [:id :string]
-                                          [:initial-delay :int]
-                                          [:auto-start :boolean]
-                                          [:stop-after-fail :boolean]
-                                          [:interval :int]
-                                          [:recurring? :boolean]
-                                          [:args [:map-of :keyword :any]]
-                                          [:handler :keyword]
-                                          [:sleep :boolean]]]])
+                              [:metadata
+                               (-> schemas/JobMetadata
+                                   (api/missoc :recurring :num-calls)
+                                   (mu/assoc :auto-start :boolean)
+                                   (mu/assoc :stop-after-fail :boolean)
+                                   (mu/assoc :recurring? :boolean)
+                                   (mu/assoc :sleep :boolean)
+                                   (mu/assoc :handler :string))]])
    :responses (api/success (api/response-schema))}
   [{:keys [js ds body] :as _req}]
   (let [{:keys [metadata]} body

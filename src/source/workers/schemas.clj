@@ -214,14 +214,15 @@
 
 (def JobMetadata
   [:map
+   [:id :string]
    [:initial-delay :int]
-   [:auto-start :int]
    [:stop-after-fail :int]
+   (api/sometimes :auto-start :int)
    (api/sometimes :kill-after :int)
    [:num-calls :int]
    [:interval :int]
    [:recurring :int]
-   [:created-at :string]
+   (api/sometimes :created-at :string)
    [:sleep :int]])
 
 (def JobWithMetadata
