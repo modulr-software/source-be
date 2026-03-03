@@ -1,7 +1,6 @@
 (ns source.routes.register
   (:require [source.services.interface :as services]
             [ring.util.response :as res]
-            [source.util :as util]
             [source.db.honey :as hon]))
 
 (defn post

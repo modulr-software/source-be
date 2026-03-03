@@ -5,7 +5,9 @@
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
             [congest.jobs :as congest]
-            [source.workers.users :as users]))
+            [source.workers.users :as users]
+            [source.email.gmail :as gmail]
+            [source.email.templates :as templates]))
 
 (defn get
   {:summary "get logged in user by access token"
@@ -60,7 +62,6 @@
     ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
-          js
           {:id job-id
            :initial-delay (* 1000 60 60 24 30)
            :auto-start true
@@ -86,3 +87,13 @@
     (users/cancel-soft-user-deletion! ds id)
     (congest/deregister! js job-id)
     (res/response {:message "successfully cancelled user deletion"})))
+
+(defn resend-email
+  {:summary "Resend verification email"}
+  [{:keys [ds user]}]
+  (let [{:keys [email email-hash]} (hon/find-one ds {:tname :users
+                                                     :where [:= :id (:id user)]})]
+    (gmail/send-email {:to email
+                       :subject "Source - Verify your email"
+                       :body (templates/email-verification email-hash)
+                       :type :text/html})))

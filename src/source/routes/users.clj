@@ -1,6 +1,7 @@
 (ns source.routes.users
   (:require [ring.util.response :as res]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.routes.openapi :as api]))
 
 (defn get
   {:summary "get all users"
@@ -24,6 +25,15 @@
   [{:keys [ds] :as _request}]
   (res/response {:users (hon/find ds {:tname :users
                                       :ret :*})}))
+
+(defn verify-email
+  {:summary "verify user email with email hash"
+   :parameters (api/params :path [:map [:id :int]])
+   :responses (api/success (api/response-schema))}
+  [{:keys [ds path-params]}]
+  (hon/update! ds {:tname :users
+                   :where [:= :id (:id path-params)]
+                   :data {:email-verified true}}))
 
 (comment
   (require '[source.db.interface :as db])

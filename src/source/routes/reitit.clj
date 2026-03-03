@@ -91,6 +91,8 @@
       ["/:id" (-> (get user/get)
                   (patch user/patch))]]
 
+     ["/email/verify/:hash" (get user/verify-email)]
+
      ["/me" {:middleware [[mw/apply-auth]]
              :tags #{"me"}
              :swagger {:security [{"auth" []}]}
@@ -99,6 +101,7 @@
       ["" (-> (get me/get)
               (post me/post)
               (delete me/delete-user))]
+      ["/email/resend" (get me/resend-email)]
       ["/deletion/cancel" (get me/cancel-deletion)]
       ["/business" (-> (get me-business/get)
                        (post me-business/post))]
@@ -232,6 +235,7 @@
                 :swagger {:security [{"auth" []}]}
                 :openapi {:security [{:bearerAuth []}]}}
 
+      ["/users/:id/verify" (get users/verify-email)]
       ["/business/types" (-> (post business-types/post)
                              (patch business-types/patch)
                              (delete business-types/delete))]

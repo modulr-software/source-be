@@ -22,6 +22,7 @@
    [:admins-path {:optional true} :string]
    [:admins-encrypted-path :string]
    [:cors-origin :string]
+   [:base-url :string]
    [:env :string]
    [:database [:map
                [:url :string]
