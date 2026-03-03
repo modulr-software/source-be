@@ -1,9 +1,14 @@
 (ns source.routes.job-deregister
   (:require [congest.jobs :as jobs]
             [ring.util.response :as res]
-            [source.services.interface :as services]))
+            [source.services.interface :as services]
+            [source.routes.openapi :as api]))
 
-(defn get [{:keys [js ds path-params] :as _req}]
+(defn get
+  {:summary "Deregister a job by id"
+   :params (api/params :path [:map [:id :int]])
+   :responses (api/success (api/response-schema))}
+  [{:keys [js ds path-params] :as _req}]
   (let [job (services/job ds path-params)]
     (jobs/deregister! js (:job-id job))
     (res/response {:message "successfully deregistered job"})))
