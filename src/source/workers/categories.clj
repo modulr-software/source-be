@@ -24,7 +24,9 @@
       (run!
        #(hon/delete! ds (-> (db.util/tname :bundle-categories %)
                             (hsql/where [:= :category-id category-id])))
-       bundle-ids))))
+       bundle-ids)
+      (hon/delete! ds {:tname :categories
+                       :where [:= :id category-id]}))))
 
 (comment
   (used-categories (db.util/conn))
