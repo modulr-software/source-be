@@ -6,7 +6,8 @@
 
 (defn get
   {:summary "stop a job by id"
-   :params (api/params :path [:map [:id :int]])}
+   :params (api/params :path [:map [:id :int]])
+   :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params]}]
   (let [job (services/job ds path-params)]
     (jobs/stop! js (:job-id job) false)

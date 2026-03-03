@@ -6,7 +6,8 @@
 
 (defn get
   {:summary "start a job by id"
-   :params (api/params :path [:map [:id :int]])}
+   :params (api/params :path [:map [:id :int]])
+   :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params]}]
   (let [job (services/job ds path-params)]
     (jobs/start! js ds (:job-id job))

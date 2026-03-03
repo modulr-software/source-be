@@ -6,7 +6,8 @@
 
 (defn get
   {:summary "Deregister a job by id"
-   :params (api/params :path [:map [:id :int]])}
+   :params (api/params :path [:map [:id :int]])
+   :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params] :as _req}]
   (let [job (services/job ds path-params)]
     (jobs/deregister! js (:job-id job))
