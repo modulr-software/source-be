@@ -88,7 +88,7 @@
    [:min :int]
    [:max :int]])
 
-(def FeedStatus [:enum ["live" "not live" "pending"]])
+(def FeedStatus [:enum "live" "not live" "pending"])
 
 (def FeedRecord
   [:map
