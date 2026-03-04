@@ -10,6 +10,7 @@ primary_region = 'fra'
 
 [env]
   CORS_ORIGIN = 'https://source-staging.fly.dev'
+  BASE_URL = 'https://source-be-staging.fly.dev'
   DATABASE_DIR = '/data'
   EMAIL_USERNAME = 'merveillevaneck@gmail.com'
   ENV = 'prod'
