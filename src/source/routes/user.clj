@@ -70,8 +70,8 @@
 (defn verify-email
   {:summary "verify user email with email hash"
    :parameters (api/params :path [:map [:hash :string]])
-   :responses {302 {:body [:map [:message :string]]}
-               403 {:body [:map [:message :string]]}}}
+   :responses {302 (api/response-schema)
+               403 (api/response-schema)}}
   [{:keys [ds path-params]}]
   (let [email-hash (:hash path-params)
         user (hon/find-one ds {:tname :users
