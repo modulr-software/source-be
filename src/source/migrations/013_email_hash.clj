@@ -5,6 +5,9 @@
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
+    (hon/update! ds-master {:tname :users
+                            :where [:= :type "admin"]
+                            :data {:email-verified 1}})
     (hon/execute!
      ds-master
      (-> (hsql/alter-table :users)

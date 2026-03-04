@@ -7,7 +7,7 @@
 
 (defn login [ds {:keys [user] :as _login}]
   (merge
-   {:user (dissoc user :password)}
+   {:user (dissoc user :password :email-hash)}
    (auth/create-session (select-keys user [:id :type]))))
 
 (defn register [ds {:keys [email password] :as user}]
@@ -18,12 +18,12 @@
                                     :email-hash (pw/hash-password email)))})
   (gmail/send-email {:to email
                      :subject "Source - Verify your email"
-                     :body (templates/email-verification (pw/hash-password email))
+                     :body (templates/email-verification {:email-hash (pw/hash-password email)})
                      :type :text/html})
   (let [user (hon/find-one ds {:tname :users
                                :where [:= :email email]})]
     (merge
-     {:user (dissoc user :password)}
+     {:user (dissoc user :password :email-hash)}
      (auth/create-session (select-keys user [:id :type])))))
 
 (comment

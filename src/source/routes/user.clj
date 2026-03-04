@@ -80,7 +80,7 @@
       (do
         (hon/update! ds {:tname :users
                          :where [:= :id (:id user)]
-                         :data {:email-verified true
+                         :data {:email-verified 1
                                 :email-hash ""}})
         (-> (conf/read-value :cors-origin)
             (str "/dashboard/onboarding")

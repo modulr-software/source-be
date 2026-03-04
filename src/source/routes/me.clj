@@ -7,7 +7,8 @@
             [congest.jobs :as congest]
             [source.workers.users :as users]
             [source.email.gmail :as gmail]
-            [source.email.templates :as templates]))
+            [source.email.templates :as templates]
+            [source.routes.openapi :as api]))
 
 (defn get
   {:summary "get logged in user by access token"
@@ -28,7 +29,7 @@
   [{:keys [ds user] :as _request}]
   (let [user (hon/find-one ds {:tname :users
                                :where [:= :id (:id user)]})]
-    (->> (dissoc user :password)
+    (->> (dissoc user :password :email-hash)
          (res/response))))
 
 (defn post
@@ -89,11 +90,13 @@
     (res/response {:message "successfully cancelled user deletion"})))
 
 (defn resend-email
-  {:summary "Resend verification email"}
+  {:summary "Resend verification email"
+   :responses (api/success (api/response-schema))}
   [{:keys [ds user]}]
   (let [{:keys [email email-hash]} (hon/find-one ds {:tname :users
                                                      :where [:= :id (:id user)]})]
     (gmail/send-email {:to email
                        :subject "Source - Verify your email"
-                       :body (templates/email-verification email-hash)
-                       :type :text/html})))
+                       :body (templates/email-verification {:email-hash email-hash})
+                       :type :text/html})
+    (res/response {:message "successfully resent email-verification email"})))
