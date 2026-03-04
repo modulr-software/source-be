@@ -236,6 +236,9 @@
                 :openapi {:security [{:bearerAuth []}]}}
 
       ["/users/:id/verify" (get users/verify-email)]
+      ["/categories" (post categories/add-category)]
+      ["/categories/:id" (-> (post categories/update-category)
+                             (delete categories/delete-category))]
       ["/business/types" (-> (post business-types/post)
                              (patch business-types/patch)
                              (delete business-types/delete))]
