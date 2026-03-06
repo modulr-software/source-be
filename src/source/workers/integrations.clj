@@ -28,21 +28,26 @@
                                                          :content-types content-types}))
 
 (defn hard-delete-bundle! [ds js job-id bundle-id]
-  (hon/delete! ds {:tname :filtered-feeds
-                   :where [:= :bundle-id bundle-id]})
-  (hon/delete! ds {:tname :filtered-posts
-                   :where [:= :bundle-id bundle-id]})
-  (hon/delete! ds {:tname :bundle-content-types
-                   :where [:= :bundle-id bundle-id]})
-  (hon/delete! ds {:tname :events
-                   :where [:= :bundle-id bundle-id]})
-  (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
-                                           :bundle-categories
-                                           :post-heuristics]
-                                          bundle-id))
-  (hon/delete! ds {:tname :bundles
-                   :where [:= :id bundle-id]})
-  (congest/deregister! js job-id))
+  (let [event-ids (mapv :id (hon/find ds {:tname :events
+                                          :where [:= :bundle-id bundle-id]}))]
+    (hon/delete! ds {:tname :filtered-feeds
+                     :where [:= :bundle-id bundle-id]})
+    (hon/delete! ds {:tname :filtered-posts
+                     :where [:= :bundle-id bundle-id]})
+    (hon/delete! ds {:tname :bundle-content-types
+                     :where [:= :bundle-id bundle-id]})
+    (when (seq event-ids)
+      (hon/delete! ds {:tname :event-categories
+                       :where [:in :event-id event-ids]}))
+    (hon/delete! ds {:tname :events
+                     :where [:= :bundle-id bundle-id]})
+    (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
+                                             :bundle-categories
+                                             :post-heuristics]
+                                            bundle-id))
+    (hon/delete! ds {:tname :bundles
+                     :where [:= :id bundle-id]})
+    (congest/deregister! js job-id)))
 
 (defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
   (if filtered
