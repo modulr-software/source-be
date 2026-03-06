@@ -88,7 +88,7 @@
    [:min :int]
    [:max :int]])
 
-(def FeedStatus [:enum ["live" "not live" "pending"]])
+(def FeedStatus [:enum "live" "not live" "pending"])
 
 (def FeedRecord
   [:map
@@ -214,19 +214,23 @@
 
 (def JobMetadata
   [:map
+   [:id :string]
    [:initial-delay :int]
-   [:auto-start :int]
    [:stop-after-fail :int]
-   [:kill-after :int]
+   (api/sometimes :auto-start :int)
+   (api/sometimes :kill-after :int)
    [:num-calls :int]
    [:interval :int]
    [:recurring :int]
-   [:created-at :string]
+   (api/sometimes :created-at :string)
    [:sleep :int]])
 
 (def JobWithMetadata
   (-> Job
       (mu/assoc :job-metadata JobMetadata)))
+
+(def JobsWithMetadata
+  [:vector JobWithMetadata])
 
 (def Bundle
   [:map
