@@ -48,8 +48,12 @@
                                        :args args
                                        :handler handler))
                     metadata (assoc m
-                                    :initial-delay (+ initial-delay (* 1000 5 i))
-                                    :interval (+ interval (* 1000 5 i)))]
+                                    :initial-delay (if (some? initial-delay)
+                                                     (+ initial-delay (* 1000 5 i))
+                                                     0)
+                                    :interval (if (some? interval)
+                                                (+ interval (* 1000 5 i))
+                                                0))]
                 (prepare-congest-metadata ds metadata))))
           jobs
           (-> jobs count inc range))))
