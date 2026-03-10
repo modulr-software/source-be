@@ -5,22 +5,15 @@
             [source.util :as util]
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [source.routes.openapi :as api]
+            [source.workers.schemas :as schemas]
+            [source.db.honey :as hon]
+            [malli.util :as mu]))
 
 (defn get
   {:summary "Get metadata of all integrations on the user account"
-   :responses {200 {:body [:vector
-                           [:map
-                            [:id :int]
-                            [:name :string]
-                            [:uuid :string]
-                            [:user-id :int]
-                            [:video :int]
-                            [:podcast :int]
-                            [:blog :int]
-                            [:hash [:maybe :string]]
-                            [:content-type-id :int]
-                            [:ts-and-cs [:maybe :int]]]]}
+   :responses {200 {:body schemas/Bundles}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
@@ -30,28 +23,13 @@
 (defn post
   {:summary "Creates an integration and the associated bundle in which content is stored"
    :description "When an integration is created, a job is scheduled to periodically run post selection every 24 hours. During post selection, the bundle is filled with relevant content according to desired categories, content types and analytics."
-   :parameters {:body [:map
-                       [:name :string]
-                       [:ts-and-cs {:optional true} :int]
-                       [:content-types [:vector
-                                        [:map
-                                         [:id :int]
-                                         [:name :string]]]]
-                       [:categories [:vector
-                                     [:map
-                                      [:id :int]
-                                      [:name :string]]]]]}
-   :responses {201 {:body [:map
-                           [:id :int]
+   :parameters {:body (-> [:map
                            [:name :string]
-                           [:uuid :string]
-                           [:user-id :int]
-                           [:video :int]
-                           [:podcast :int]
-                           [:blog :int]
-                           [:hash {:optional true} [:maybe :string]]
-                           [:content-type-id :int]
-                           [:ts-and-cs {:optional true} :int]]}
+                           [:ts-and-cs {:optional true} :int]
+                           [:integration-type-id :int]]
+                          (mu/assoc :content-types [:vector schemas/ConstantSchema])
+                          (mu/assoc :categories [:vector schemas/ConstantSchema]))}
+   :responses {201 {:body schemas/Bundle}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
@@ -78,3 +56,9 @@
            :sleep false})
          (congest/register! js))
     (res/response new-bundle)))
+
+(defn get-integration-types
+  {:summary "get all integration types"
+   :responses (api/success schemas/IntegrationTypes)}
+  [{:keys [ds]}]
+  (res/response (hon/find ds {:tname :integration-types})))

@@ -6,27 +6,17 @@
             [congest.jobs :as congest]
             [source.jobs.core :as jobs]
             [source.util :as util]
-            [source.jobs.handlers :as handlers]))
+            [source.jobs.handlers :as handlers]
+            [source.workers.schemas :as schemas]
+            [malli.util :as mu]
+            [source.routes.openapi :as api]))
 
 (defn get
   {:summary "Get metadata of integration by ID"
    :parameters {:path [:map [:id {:title "id"
                                   :description "Integration ID"} :int]]}
-   :responses {200 {:body [:map
-                           [:id :int]
-                           [:name :string]
-                           [:uuid :string]
-                           [:user-id :int]
-                           [:video :int]
-                           [:podcast :int]
-                           [:blog :int]
-                           [:hash [:maybe :string]]
-                           [:content-type-id :int]
-                           [:ts-and-cs [:maybe :int]]
-                           [:content-types [:vector
-                                            [:map
-                                             [:id :int]
-                                             [:name :string]]]]]}
+   :responses {200 {:body (-> schemas/Bundle
+                              (mu/assoc :content-types schemas/ContentTypes))}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
@@ -40,16 +30,11 @@
    :description "When the integration is updated, post selection is rerun based on the newly set desired categories and content types."
    :parameters {:path [:map [:id {:title "id"
                                   :description "Integration ID"} :int]]
-                :body [:map
-                       [:name :string]
-                       [:content-types [:vector
-                                        [:map
-                                         [:id :int]
-                                         [:name :string]]]]
-                       [:categories [:vector
-                                     [:map
-                                      [:id :int]
-                                      [:name :string]]]]]}
+                :body (-> [:map
+                           [:name :string]
+                           [:integration-type-id :int]]
+                          (mu/assoc :content-types [:vector schemas/ConstantSchema])
+                          (mu/assoc :categories [:vector schemas/ConstantSchema]))}
    :responses {200 {:body [:map [:message :string]]}
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
@@ -86,8 +71,8 @@
    :description "Deletes the integration, bundle and kills the associated post selection job. This action cannot be undone."
    :parameters {:path [:map [:id {:title "id"
                                   :description "Integration ID"} :int]]}
-   :responses {200 {:body [:map [:message :string]]}
-               403 {:body [:map [:message :string]]}}}
+   :responses {200 {:body (api/response-schema)}
+               403 {:body (api/response-schema)}}}
 
   [{:keys [ds js user path-params] :as _request}]
   (let [bundle-id (:id path-params)

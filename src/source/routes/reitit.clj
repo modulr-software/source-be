@@ -187,6 +187,9 @@
       ["/:id/filter/posts/:post-id" (-> (get integration-filter-post/get)
                                         (post integration-filter-post/post))]]
 
+     ["/integration/types" {:tags #{"integrations"}}
+      ["" (get integrations/get-integration-types)]]
+
      ["/feeds" {:middleware [[mw/apply-auth]]
                 :tags #{"feeds"}}
 
@@ -228,7 +231,8 @@
       ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
       ["/posts" (post bundle-posts/post)]
       ["/posts/:id" (get bundle-post/get)]]
-     ["/bundle/exists" (get bundle/exists)]
+     ["/bundle/exists" {:tags #{"bundles"}}
+      ["" (get bundle/exists)]]
 
      ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]
                 :tags #{"admin"}
