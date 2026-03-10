@@ -7,13 +7,25 @@
             [source.db.tables :as tables]
             [source.db.honey :as hon]
             [congest.jobs :as congest]
+            [taoensso.telemere :as t]
             [pg.core :as pg]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (pg/with-transaction [ds ds]
     (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
                                                  :bundle-metadata bundle-metadata})]
-      (migrate/migrate-bundle (:id new-bundle) ["up"])
+
+      (try
+        (migrate/migrate-bundle (:id new-bundle) ["up"])
+        (catch Exception e
+          (throw
+           (t/error!
+            ::create-bundle
+            (ex-info (str "Migration for new bundle with id " (:id new-bundle) " failed. This bundle belongs to the user with id " user-id)
+                     {:panic? "Yes, if this isn't working, it's likely no one will be able to create new integrations"
+                      :possible-cause "Something could be wrong in one of the bundle migrations"
+                      :next-steps "Go see what's going on in bundle migrations ASAP, you may be able to see the problem in the raw error message"
+                      :raw-error (.getMessage e)})))))
 
       (bundle-categories/insert-bundle-categories! ds {:bundle-id (:id new-bundle)
                                                        :categories categories})
@@ -32,21 +44,26 @@
 
 (defn hard-delete-bundle! [ds js job-id bundle-id]
   (pg/with-transaction [ds ds]
-    (hon/delete! ds {:tname :filtered-feeds
-                     :where [:= :bundle-id bundle-id]})
-    (hon/delete! ds {:tname :filtered-posts
-                     :where [:= :bundle-id bundle-id]})
-    (hon/delete! ds {:tname :bundle-content-types
-                     :where [:= :bundle-id bundle-id]})
-    (hon/delete! ds {:tname :events
-                     :where [:= :bundle-id bundle-id]})
-    (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
-                                             :bundle-categories
-                                             :post-heuristics]
-                                            bundle-id))
-    (hon/delete! ds {:tname :bundles
-                     :where [:= :id bundle-id]})
-    (congest/deregister! js job-id)))
+    (let [event-ids (mapv :id (hon/find ds {:tname :events
+                                            :where [:= :bundle-id bundle-id]}))]
+      (hon/delete! ds {:tname :filtered-feeds
+                       :where [:= :bundle-id bundle-id]})
+      (hon/delete! ds {:tname :filtered-posts
+                       :where [:= :bundle-id bundle-id]})
+      (hon/delete! ds {:tname :bundle-content-types
+                       :where [:= :bundle-id bundle-id]})
+      (when (seq event-ids)
+        (hon/delete! ds {:tname :event-categories
+                         :where [:in :event-id event-ids]}))
+      (hon/delete! ds {:tname :events
+                       :where [:= :bundle-id bundle-id]})
+      (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
+                                               :bundle-categories
+                                               :post-heuristics]
+                                              bundle-id))
+      (hon/delete! ds {:tname :bundles
+                       :where [:= :id bundle-id]})
+      (congest/deregister! js job-id))))
 
 (defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
   (pg/with-transaction [ds ds]

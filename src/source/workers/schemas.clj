@@ -88,7 +88,7 @@
    [:min :int]
    [:max :int]])
 
-(def FeedStatus [:enum ["live" "not live" "pending"]])
+(def FeedStatus [:enum "live" "not live" "pending"])
 
 (def FeedRecord
   [:map
@@ -214,30 +214,46 @@
 
 (def JobMetadata
   [:map
+   [:id :string]
    [:initial-delay :int]
-   [:auto-start :int]
    [:stop-after-fail :int]
-   [:kill-after :int]
+   (api/sometimes :auto-start :int)
+   (api/sometimes :kill-after :int)
    [:num-calls :int]
    [:interval :int]
    [:recurring :int]
-   [:created-at :string]
+   (api/sometimes :created-at :string)
    [:sleep :int]])
 
 (def JobWithMetadata
   (-> Job
       (mu/assoc :job-metadata JobMetadata)))
 
+(def JobsWithMetadata
+  [:vector JobWithMetadata])
+
+(def IntegrationType
+  ConstantSchema)
+
+(def IntegrationTypes
+  [:vector IntegrationType])
+
 (def Bundle
   [:map
    [:id :int]
    [:name :string]
    [:uuid :string]
+   [:user-id :int]
    [:video :int]
    [:podcast :int]
    [:blog :int]
-   [:hash :string]
-   [:ts-and-cs :int]])
+   (api/sometimes :hash :string)
+   [:content-type-id :int]
+   (api/sometimes :integration-type-id :int)
+   [:ts-and-cs {:optional true} :int]])
+
+(def Bundles
+  [:vector Bundle])
 
 (def BundleWithUser
   (-> Bundle

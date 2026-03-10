@@ -1,7 +1,8 @@
 (ns source.routes.user
   (:require [ring.util.response :as res]
-            [source.util :as util]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.routes.openapi :as api]
+            [source.config :as conf]))
 
 (defn get
   {:summary "get user by id"
@@ -65,6 +66,27 @@
                    :where [:= :id (:id path-params)]
                    :data body})
   (res/response {:message "successfully updated user"}))
+
+(defn verify-email
+  {:summary "verify user email with email hash"
+   :parameters (api/params :path [:map [:hash :string]])
+   :responses {302 {:body (api/response-schema)}
+               403 {:body (api/response-schema)}}}
+  [{:keys [ds path-params]}]
+  (let [email-hash (:hash path-params)
+        user (hon/find-one ds {:tname :users
+                               :where [:= :email-hash email-hash]})]
+    (if (some? user)
+      (do
+        (hon/update! ds {:tname :users
+                         :where [:= :id (:id user)]
+                         :data {:email-verified 1
+                                :email-hash ""}})
+        (-> (conf/read-value :cors-origin)
+            (str "/dashboard/onboarding")
+            (res/redirect)))
+      (-> (res/response {:message "unauthorized"})
+          (res/status 403)))))
 
 (comment
   (require '[source.db.interface :as db])

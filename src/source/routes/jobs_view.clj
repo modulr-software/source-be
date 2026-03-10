@@ -1,7 +1,10 @@
 (ns source.routes.jobs-view
   (:require [ring.util.response :as res]
             [congest.jobs :as congest]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [source.routes.openapi :as api]
+            [source.workers.schemas :as schemas]
+            [malli.util :as mu]))
 
 (defn stringify-unknowns [x]
   (walk/postwalk
@@ -16,7 +19,17 @@
        v
        (str v))) x))
 
-(defn get [{:keys [js]}]
+(defn get
+  {:summary "gets a list of all jobs"
+   :responses (api/success [:vector
+                            (-> schemas/JobMetadata
+                                (api/missoc :created-at :recurring)
+                                (mu/assoc :args [:map-of :string :any])
+                                (mu/assoc :auto-start :boolean)
+                                (mu/assoc :handler-name :string)
+                                (mu/assoc :recurring? :boolean)
+                                (mu/assoc :sleep :boolean))])}
+  [{:keys [js]}]
   (let [raw-jobs (congest/view js)
-        formatted (stringify-unknowns raw-jobs)]
+        formatted (mapv (fn [[_ v]] v) (stringify-unknowns raw-jobs))]
     (res/response formatted)))

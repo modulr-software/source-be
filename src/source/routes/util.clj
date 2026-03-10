@@ -6,7 +6,8 @@
             [reitit.coercion.malli :as coercion]
             [source.middleware.interface :as mw]
             [malli.util :as mu]
-            [source.routes.openapi :as api]))
+            [source.routes.openapi :as api]
+            [taoensso.telemere :as t]))
 
 (defn- extract-openapi-meta [handler]
   (-> (util/metadata handler)
@@ -44,8 +45,13 @@
     ([handler] (route {} method handler))
     ([route-map handler]
      (when (not (map? route-map))
-       (throw (ex-info "Invalid argument for resolve-route-map: route-map must be a map"
-                       {:panic? "not really"})))
+       (throw
+        (t/error!
+         ::route-map-resolution
+         (ex-info "Invalid argument for resolve-route-map: route-map must be a map"
+                  {:panic? "not really, but you should never get this in prod"
+                   :possible-cause "something is wrong in one of the endpoints' swagger docs, we're expecting a map here"
+                   :next-steps (str "check the swagger docs for something looking like this: " route-map)}))))
      (route route-map method handler))))
 
 (defn get [& opts]

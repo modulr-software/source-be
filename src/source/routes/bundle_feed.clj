@@ -3,7 +3,8 @@
             [source.db.honey :as hon]
             [source.services.analytics.interface :as analytics]
             [source.routes.openapi :as api]
-            [source.workers.schemas :as schemas]))
+            [source.workers.schemas :as schemas]
+            [taoensso.telemere :as t]))
 
 (defn get
   {:summary "Get a single RSS feed by id from RSS feeds within the uuid-authorized bundle. 
@@ -19,5 +20,6 @@
                                :where [:= :id (:id path-params)]})]
     (try
       (analytics/insert-feed-click! ds feed bundle-id)
-      (catch Exception e (println (.getMessage e))))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "Failed to insert feed click for bundle feed: " (.getMessage e))})))
     (res/response feed)))
