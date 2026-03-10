@@ -5,7 +5,7 @@
             [source.services.analytics.interface :as analytics]
             [source.routes.openapi :as api]
             [source.workers.schemas :as schemas]
-            [source.logger :as logger]))
+            [taoensso.telemere :as t]))
 
 (defn post
   {:summary "Get all RSS feeds present in the bundle authorised by uuid.
@@ -33,7 +33,8 @@
                    (bundles/get-outgoing-feeds ds))]
     (try
       (analytics/insert-feed-impressions! ds feeds bundle-id)
-      (catch Exception e (logger/log-error (str "Failed to insert feed impressions for bundle feeds: " (.getMessage e)))))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "Failed to insert feed impressions for bundle feeds: " (.getMessage e))})))
     (res/response feeds)))
 
 (comment

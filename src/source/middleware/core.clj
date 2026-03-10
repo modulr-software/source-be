@@ -13,7 +13,7 @@
             [clojure.walk :as walk]
             [source.util :as util]
             [clojure.string :as string]
-            [source.logger :as logger]))
+            [taoensso.telemere :as t]))
 
 (defn wrap-ds [handler ds]
   (fn [request]
@@ -44,7 +44,8 @@
     (try
       (handler req)
       (catch Exception e
-        (logger/log-error (str "Unhandled Exception on endpoint URI " (:uri req) ": " e))
+        (t/log! {:level :error
+                 :msg (str "Unhandled Exception on endpoint URI " (:uri req) ": " e)})
         (-> (res/response {:message "Internal Server Error"})
             (res/status 500))))))
 
@@ -76,7 +77,8 @@
                        (attach-validations request))]
       (if (seq errors)
         (do
-          (logger/log-warning (str "Schema validation failed on endpoint URI " (:uri request) ": " (string/join "\n" errors)))
+          (t/log! {:level :warn
+                   :msg (str "Schema validation failed on endpoint URI " (:uri request) ": " (string/join "\n" errors))})
           (-> (res/response {:message (string/join "\n" errors)})
               (res/status 400)))
         (handler request)))))

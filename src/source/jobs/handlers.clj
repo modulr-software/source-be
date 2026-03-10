@@ -8,7 +8,7 @@
             [clojure.set :as set]
             [clojure.string :as string]
             [source.db.honey :as hon]
-            [source.logger :as logger]))
+            [taoensso.telemere :as t]))
 
 (defmulti handler
   (fn [opts]
@@ -32,7 +32,7 @@
     (try
       (when (users/removed? ds (:creator-id args))
         (let [{:keys [feed-id creator-id content-type-id provider-id url]} args
-              _ (logger/log (str "feed " feed-id " job started."))
+              _ (t/log! (str "feed " feed-id " job started."))
               selection-schemas (->> [:= :provider-id provider-id]
                                      (assoc {} :where)
                                      (xml/selection-schemas ds))
@@ -43,11 +43,14 @@
               extracted (try
                           (xml/extract-data ds latest-ss url)
                           (catch Exception e
-                            (throw (ex-info (str "Data extraction for feed job failed: feed-id " feed-id " creator-id " creator-id)
-                                            {:panic? "Yes, if data extraction fails here it will likely fail for others."
-                                             :possible-cause "Could possibly be an incorrect selection schema or output schema"
-                                             :next-steps (str "Check selection-schema-id " latest-ss " and feed-id " feed-id ". Test extraction manually.")
-                                             :raw-error (.getMessage e)}))))
+                            (throw
+                             (t/error!
+                              ::data-extraction
+                              (ex-info (str "Data extraction for feed job failed: feed-id " feed-id " creator-id " creator-id)
+                                       {:panic? "Yes, if data extraction fails here it will likely fail for others."
+                                        :possible-cause "Could possibly be an incorrect selection schema or output schema"
+                                        :next-steps (str "Check selection-schema-id " latest-ss " and feed-id " feed-id ". Test extraction manually.")
+                                        :raw-error (.getMessage e)})))))
 
               extracted-posts (get-in extracted [:feed :posts])
               extracted-display (get-in extracted [:feed :display-picture])
@@ -85,9 +88,10 @@
                (hon/insert! ds {:tname :incoming-posts
                                 :data post})))
            extended-posts)
-          (logger/log (str "feed " feed-id " job finished."))))
+          (t/log! (str "feed " feed-id " job finished."))))
 
-      (catch Exception e (logger/log-error (str "feed job failed: " e)) :fail))))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "feed job failed: " e)}) :fail))))
 
 (defn update-bundle-job-id
   "returns the job id of an update-bundle job with the given bundle id"
@@ -116,7 +120,7 @@
 (defmethod handler :update-bundle [_]
   (fn [{:keys [args ds]}]
     (let [{:keys [bundle-id categories]} args
-          _ (logger/log (str "starting bundle " bundle-id " job."))
+          _ (t/log! (str "starting bundle " bundle-id " job."))
           incoming-posts (services/incoming-posts-with-feeds ds {:where [:= :feeds.state "live"]})
           posts-categories (incoming-posts/categories-by-posts ds {:where [:= :state "live"]})
           heuristics (mapv
@@ -126,7 +130,8 @@
       (try
         (services/upsert-post-heuristics! ds {:bundle-id bundle-id
                                               :data heuristics})
-        (catch Exception e (logger/log-error (str "bundle " bundle-id " upserting post heuristics failed: " (.getMessage e)))))
+        (catch Exception e (t/log! {:level :error
+                                    :msg (str "bundle " bundle-id " upserting post heuristics failed: " (.getMessage e))})))
 
       ; pull highest scored posts by long heuristics into outgoing posts
             ; top 1000 post-heuristics records ordered by long heuristic in descending order
@@ -159,20 +164,23 @@
           (hon/insert! ds (-> (db.util/tname :outgoing-posts bundle-id)
                               (assoc :data outgoing-posts)))
           (when (< (count outgoing-posts) 10)
-            (throw (ex-info (str
-                             "bundle job for bundle-id "
-                             bundle-id
-                             " pulled "
-                             (count outgoing-posts)
-                             ". Active creator id count: "
-                             (count active-creator-ids)
-                             ". Incoming posts pulled: "
-                             (count posts-in))
-                            {:panic? "Yes, the embed for this bundle will now be useless"
-                             :possible-cause "If no posts made it into the bundle, it's possible post heuristics failed or there's no incoming posts"
-                             :next-steps "Check for errors thrown in this job, ensure all tables for this bundle exist"}))))
+            (throw
+             (t/error!
+              ::update-bundle-job
+              (ex-info (str
+                        "bundle job for bundle-id "
+                        bundle-id
+                        " pulled "
+                        (count outgoing-posts)
+                        ". Active creator id count: "
+                        (count active-creator-ids)
+                        ". Incoming posts pulled: "
+                        (count posts-in))
+                       {:panic? "Yes, the embed for this bundle will now be useless"
+                        :possible-cause "If no posts made it into the bundle, it's possible post heuristics failed or there's no incoming posts"
+                        :next-steps "Check for errors thrown in this job, ensure all tables for this bundle exist"})))))
 
-        (logger/log (str "bundle " bundle-id " job done."))))))
+        (t/log! (str "bundle " bundle-id " job done."))))))
 
 (defn user-deletion-job-id
   "returns the job id of a user deletion job with the given user id"
@@ -184,4 +192,5 @@
     (try
       (let [{:keys [user-type user-id]} args]
         (users/hard-delete-user! ds (keyword user-type) user-id))
-      (catch Exception e (logger/log-error (str "Failed to delete user-id " (:user-id args) ":" e)) :fail))))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "Failed to delete user-id " (:user-id args) ":" e)}) :fail))))

@@ -6,7 +6,8 @@
             [source.services.bundle-content-types :as bundle-content-types]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
-            [congest.jobs :as congest]))
+            [congest.jobs :as congest]
+            [taoensso.telemere :as t]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
@@ -15,11 +16,14 @@
     (try
       (migrate/migrate-bundle (:id new-bundle) ["up"])
       (catch Exception e
-        (throw (ex-info (str "Migration for new bundle with id " (:id new-bundle) " failed. This bundle belongs to the user with id " user-id)
-                        {:panic? "Yes, if this isn't working, it's likely no one will be able to create new integrations"
-                         :possible-cause "Something could be wrong in one of the bundle migrations"
-                         :next-steps "Go see what's going on in bundle migrations ASAP, you may be able to see the problem in the raw error message"
-                         :raw-error (.getMessage e)}))))
+        (throw
+         (t/error!
+          ::create-bundle
+          (ex-info (str "Migration for new bundle with id " (:id new-bundle) " failed. This bundle belongs to the user with id " user-id)
+                   {:panic? "Yes, if this isn't working, it's likely no one will be able to create new integrations"
+                    :possible-cause "Something could be wrong in one of the bundle migrations"
+                    :next-steps "Go see what's going on in bundle migrations ASAP, you may be able to see the problem in the raw error message"
+                    :raw-error (.getMessage e)})))))
 
     (bundle-categories/insert-bundle-categories! ds {:bundle-id (:id new-bundle)
                                                      :categories categories})

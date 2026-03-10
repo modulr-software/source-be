@@ -4,7 +4,7 @@
             [source.services.analytics.interface :as analytics]
             [source.db.util :as db.util]
             [honey.sql.helpers :as hsql]
-            [source.logger :as logger]))
+            [taoensso.telemere :as t]))
 
 (defn get
   {:summary "Get a single post by post id belonging to an RSS feed in the associated uuid-authorized bundle. 
@@ -36,5 +36,6 @@
                                   (hsql/where [:= :id (:post-id path-params)])))]
     (try
       (analytics/insert-post-click! ds post bundle-id)
-      (catch Exception e (logger/log-error (str "Failed to insert post click on bundle feed post: " (.getMessage e)))))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "Failed to insert post click on bundle feed post: " (.getMessage e))})))
     (res/response post)))

@@ -2,7 +2,7 @@
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
             [source.services.analytics.interface :as analytics]
-            [source.logger :as logger]))
+            [taoensso.telemere :as t]))
 
 (defn get
   {:summary "Get all posts present within a given RSS feed by feed id, within the uuid-authorized bundle.
@@ -36,5 +36,6 @@
                             :ret :*})]
     (try
       (analytics/insert-post-impressions! ds posts bundle-id)
-      (catch Exception e (logger/log-error (str "Failed to insert post impressions for bundle feed posts: " (.getMessage e)))))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "Failed to insert post impressions for bundle feed posts: " (.getMessage e))})))
     (res/response posts)))

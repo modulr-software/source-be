@@ -2,7 +2,7 @@
   (:require [source.crypt-fs :as crypt]
             [source.config :as conf]
             [clojure.data.json :as json]
-            [source.logger :as logger]))
+            [taoensso.telemere :as t]))
 
 (defn encrypt! []
   (crypt/write-file-crypt! (conf/read-value :admins-encrypted-path)
@@ -17,5 +17,6 @@
         (crypt/read-file-crypt (conf/read-value :supersecretkey))
         (json/read-json))
     (catch Exception e
-      (logger/log-error (str "Couldn't read the admins file: " (.getMessage e)))
+      (t/log! {:level :error
+               :msg (str "Couldn't read the admins file: " (.getMessage e))})
       [])))
