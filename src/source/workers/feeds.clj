@@ -4,7 +4,8 @@
             [congest.jobs :as congest]
             [source.db.honey :as hon]
             [source.rss.youtube :as yt]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [taoensso.telemere :as t]))
 
 (defn create-feed!
   "Creates feed with incoming posts pulled from RSS feed and starts associated job"
@@ -24,8 +25,20 @@
                        (reduce (fn [acc {:keys [id]}]
                                  (conj acc id)) [])
                        (apply max -1))
-        extracted (when-not (= latest-ss -1)
-                    (xml/extract-data ds latest-ss rss-url))
+        extracted (try
+                    (when-not (= latest-ss -1)
+                      (xml/extract-data ds latest-ss rss-url))
+                    (catch Exception e
+                      (throw
+                       (t/error!
+                        ::data-extraction
+                        (ex-info (str "Data extraction failed for feed creation - RSS feed url: " rss-url " creator-id " user-id)
+                                 {:panic? "Not a huge deal, possibly just user error - but panic if it's not user error"
+                                  :possible-cause "RSS feed url might be incorrect or provider is unsupported"
+                                  :next-steps (str
+                                               "Check if the RSS feed url is correct. If it is, test data extraction in the admin panel with provider-id "
+                                               provider-id)
+                                  :raw-error (.getMessage e)})))))
         extracted-posts (get-in extracted [:feed :posts])
 
         display-picture (if youtube?
@@ -42,6 +55,11 @@
                                                :created-at datetime
                                                :state "pending"})
                    :ret :1})
+
+        _ (when (or (nil? display-picture) (= display-picture ""))
+            (t/log! {:level :error
+                     :msg (str "Failed to pull display picture for feed [ " (:id new-feed) " " (:title new-feed) "] provider-id " provider-id)}))
+
         extended-posts (mapv (fn [post]
                                (merge post
                                       {:feed-id (:id new-feed)

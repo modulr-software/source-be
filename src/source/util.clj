@@ -3,7 +3,6 @@
             [buddy.core.nonce :as nonce]
             [clojure.main :refer [demunge]]
             [malli.core :as m]
-            [malli.error :as me]
             [malli.transform :as mt]
             [clojure.string :as string])
   (:import (java.math BigInteger)
