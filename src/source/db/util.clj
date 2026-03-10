@@ -37,7 +37,7 @@
         (assoc data-map :tname))))
 
 (defn tnames [tnames id]
-  (mapv #(tname % id) tnames))
+  (mapv #(:tname (tname % id)) tnames))
 
 (comment
   (def q "SELECT * FROM events")

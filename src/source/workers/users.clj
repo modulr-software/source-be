@@ -36,12 +36,12 @@
 (defn soft-delete-user! [ds user-id]
   (hon/update! ds {:tname :users
                    :where [:= :id user-id]
-                   :data {:removed true}}))
+                   :data {:removed 1}}))
 
 (defn cancel-soft-user-deletion! [ds user-id]
   (hon/update! ds {:tname :users
                    :where [:= :id user-id]
-                   :data {:removed false}}))
+                   :data {:removed 0}}))
 
 (defn removed? [ds user-id]
   (let [removed? (-> (hon/find ds {:tname :users
