@@ -19,7 +19,6 @@
                     (->> (yt/find-channel-id rss-url)
                          (str "https://www.youtube.com/feeds/videos.xml?channel_id="))
                     rss-url)
-
           selection-schemas (->> [:= :provider-id provider-id]
                                  (assoc {} :where)
                                  (xml/selection-schemas ds))
