@@ -1,6 +1,7 @@
 (ns source.services.bundle-content-types
   (:require [source.db.interface :as db]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [pg.core :as pg]))
 
 ;;NEW
 (defn insert-bundle-content-types! [ds {:keys [bundle-id content-types]}]
@@ -33,9 +34,10 @@
 
 ;;NEW
 (defn update-bundle-content-types! [ds {:keys [bundle-id content-types]}]
-  (let [content-types (mapv (fn [{:keys [id]}]
-                              {:bundle-id bundle-id
-                               :content-type-id id}) content-types)]
-    (delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
-    (hon/insert! ds {:tname :bundle-content-types
-                     :data content-types})))
+  (pg/with-transaction [ds ds]
+    (let [content-types (mapv (fn [{:keys [id]}]
+                                {:bundle-id bundle-id
+                                 :content-type-id id}) content-types)]
+      (delete-bundle-content-types! ds {:where [:= :bundle-id bundle-id]})
+      (hon/insert! ds {:tname :bundle-content-types
+                       :data content-types}))))
