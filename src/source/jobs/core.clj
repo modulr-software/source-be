@@ -3,11 +3,12 @@
             [clojure.data.json :as json]
             [source.services.interface :as services]
             [source.jobs.oplog :as oplog]
-            [source.jobs.handlers :as handlers]))
+            [source.jobs.handlers :as handlers]
+            [source.db.honey :as hon]))
 
 (defn prepare-congest-metadata
   "given raw job metadata, returns extended metadata necessary for use with congest"
-  [ds metadata]
+  [ds js metadata]
   (let [i->b (fn [i] (if (integer? i)
                        (if (= i 1) true false)
                        i))
@@ -21,7 +22,8 @@
                :handler-name (:handler metadata)
                :handler (handlers/handler metadata)
                :logger oplog/operation-logger
-               :ds ds)
+               :ds ds
+               :js js)
         (dissoc :recurring))))
 
 (defn start!
@@ -33,11 +35,11 @@
                             :args args
                             :handler handler))]
     (congest/deregister! js job-id)
-    (congest/register! js (prepare-congest-metadata ds metadata))))
+    (congest/register! js (prepare-congest-metadata ds js metadata))))
 
 (defn interrupted-jobs
-  "Get congest-ready metadata of all jobs marked as running"
-  [ds]
+  "Get vec of congest-ready metadata of all jobs marked as running"
+  [ds js]
   (let [jobs (services/jobs ds)]
     (mapv (fn [{:keys [job-id job-metadata-id args handler status]} i]
             (when (= status "running")
@@ -49,12 +51,12 @@
                                        :handler handler))
                     metadata (assoc m
                                     :initial-delay (if (some? initial-delay)
-                                                     (+ initial-delay (* 1000 5 i))
+                                                     (+' initial-delay (*' 1000 5 i))
                                                      0)
                                     :interval (if (some? interval)
-                                                (+ interval (* 1000 5 i))
+                                                (+' interval (*' 1000 5 i))
                                                 0))]
-                (prepare-congest-metadata ds metadata))))
+                (prepare-congest-metadata ds js metadata))))
           jobs
           (-> jobs count inc range))))
 
@@ -81,10 +83,10 @@
   (services/delete-job-metadata! ds {})
 
   (def js (congest/create-job-service []))
-  (congest/register! js (prepare-congest-metadata ds testjob))
-  (congest/deregister! js "test")
+  (congest/register! js (prepare-congest-metadata ds js testjob))
+  (congest/deregister! js "delete_creator_31")
   (congest/stop! js "test" false)
   (start! js ds "test")
-  (interrupted-jobs ds)
+  (interrupted-jobs ds js)
 
   ())
