@@ -1,6 +1,7 @@
 (ns source.services.user-sectors
   (:require [source.db.interface :as db]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [pg.core :as pg]))
 
 (defn insert-user-sector! [ds {:keys [_data _ret] :as opts}]
   (->> {:tname :user-sectors}
@@ -28,8 +29,9 @@
 
 ;;NEW
 (defn update-user-sectors! [ds {:keys [user-id sectors]}]
-  (let [update-data (reduce (fn [acc {:keys [id]}]
-                              (conj acc {:user-id user-id
-                                         :sector-id id})) [] sectors)]
-    (delete-user-sector! ds {:where [:= :user-id user-id]})
-    (insert-user-sector! ds {:data update-data})))
+  (pg/with-transaction [ds ds]
+    (let [update-data (reduce (fn [acc {:keys [id]}]
+                                (conj acc {:user-id user-id
+                                           :sector-id id})) [] sectors)]
+      (delete-user-sector! ds {:where [:= :user-id user-id]})
+      (insert-user-sector! ds {:data update-data}))))
