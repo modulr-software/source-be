@@ -7,76 +7,82 @@
             [source.db.tables :as tables]
             [source.db.honey :as hon]
             [congest.jobs :as congest]
-            [taoensso.telemere :as t]))
+            [taoensso.telemere :as t]
+            [pg.core :as pg]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
-  (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
-                                               :bundle-metadata bundle-metadata})]
+  (pg/with-transaction [ds ds]
+    (let [new-bundle (bundles/create-bundle! ds {:user-id user-id
+                                                 :bundle-metadata bundle-metadata})]
 
-    (try
-      (migrate/migrate-bundle (:id new-bundle) ["up"])
-      (catch Exception e
-        (throw
-         (t/error!
-          ::create-bundle
-          (ex-info (str "Migration for new bundle with id " (:id new-bundle) " failed. This bundle belongs to the user with id " user-id)
-                   {:panic? "Yes, if this isn't working, it's likely no one will be able to create new integrations"
-                    :possible-cause "Something could be wrong in one of the bundle migrations"
-                    :next-steps "Go see what's going on in bundle migrations ASAP, you may be able to see the problem in the raw error message"
-                    :raw-error (.getMessage e)})))))
+      (try
+        (migrate/migrate-bundle (:id new-bundle) ["up"])
+        (catch Exception e
+          (throw
+           (t/error!
+            ::create-bundle
+            (ex-info (str "Migration for new bundle with id " (:id new-bundle) " failed. This bundle belongs to the user with id " user-id)
+                     {:panic? "Yes, if this isn't working, it's likely no one will be able to create new integrations"
+                      :possible-cause "Something could be wrong in one of the bundle migrations"
+                      :next-steps "Go see what's going on in bundle migrations ASAP, you may be able to see the problem in the raw error message"
+                      :raw-error (.getMessage e)})))))
 
-    (bundle-categories/insert-bundle-categories! ds {:bundle-id (:id new-bundle)
-                                                     :categories categories})
-    (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
-                                                           :content-types content-types})
-    new-bundle))
+      (bundle-categories/insert-bundle-categories! ds {:bundle-id (:id new-bundle)
+                                                       :categories categories})
+      (bundle-content-types/insert-bundle-content-types! ds {:bundle-id (:id new-bundle)
+                                                             :content-types content-types})
+      new-bundle)))
 
 (defn update-integration! [ds {:keys [bundle-id bundle-metadata categories content-types]}]
-  (bundles/update-bundle! ds {:id bundle-id
-                              :data bundle-metadata})
-  (bundle-categories/update-bundle-categories! ds {:bundle-id bundle-id
-                                                   :categories categories})
-  (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
-                                                         :content-types content-types}))
+  (pg/with-transaction [ds ds]
+    (bundles/update-bundle! ds {:id bundle-id
+                                :data bundle-metadata})
+    (bundle-categories/update-bundle-categories! ds {:bundle-id bundle-id
+                                                     :categories categories})
+    (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
+                                                           :content-types content-types})))
 
 (defn hard-delete-bundle! [ds js job-id bundle-id]
-  (let [event-ids (mapv :id (hon/find ds {:tname :events
-                                          :where [:= :bundle-id bundle-id]}))]
-    (hon/delete! ds {:tname :filtered-feeds
-                     :where [:= :bundle-id bundle-id]})
-    (hon/delete! ds {:tname :filtered-posts
-                     :where [:= :bundle-id bundle-id]})
-    (hon/delete! ds {:tname :bundle-content-types
-                     :where [:= :bundle-id bundle-id]})
-    (when (seq event-ids)
-      (hon/delete! ds {:tname :event-categories
-                       :where [:in :event-id event-ids]}))
-    (hon/delete! ds {:tname :events
-                     :where [:= :bundle-id bundle-id]})
-    (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
-                                             :bundle-categories
-                                             :post-heuristics]
-                                            bundle-id))
-    (hon/delete! ds {:tname :bundles
-                     :where [:= :id bundle-id]})
-    (congest/deregister! js job-id)))
+  (pg/with-transaction [ds ds]
+    (let [event-ids (mapv :id (hon/find ds {:tname :events
+                                            :where [:= :bundle-id bundle-id]}))]
+      (hon/delete! ds {:tname :filtered-feeds
+                       :where [:= :bundle-id bundle-id]})
+      (hon/delete! ds {:tname :filtered-posts
+                       :where [:= :bundle-id bundle-id]})
+      (hon/delete! ds {:tname :bundle-content-types
+                       :where [:= :bundle-id bundle-id]})
+      (when (seq event-ids)
+        (hon/delete! ds {:tname :event-categories
+                         :where [:in :event-id event-ids]}))
+      (hon/delete! ds {:tname :events
+                       :where [:= :bundle-id bundle-id]})
+      (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
+                                               :bundle-categories
+                                               :post-heuristics]
+                                              bundle-id))
+      (hon/delete! ds {:tname :bundles
+                       :where [:= :id bundle-id]})
+      (congest/deregister! js job-id))))
 
 (defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
-  (if filtered
-    (hon/insert! ds {:tname :filtered-feeds
-                     :data {:feed-id feed-id
-                            :bundle-id bundle-id}})
-    (hon/delete! ds {:tname :filtered-feeds
-                     :where [:and
-                             [:= :feed-id feed-id]
-                             [:= :bundle-id bundle-id]]})))
+  (pg/with-transaction [ds ds]
+    (if filtered
+      (hon/insert! ds {:tname :filtered-feeds
+                       :data {:feed-id feed-id
+                              :bundle-id bundle-id}})
+      (hon/delete! ds {:tname :filtered-feeds
+                       :where [:and
+                               [:= :feed-id feed-id]
+                               [:= :bundle-id bundle-id]]}))))
 
 (defn update-filtered-posts! [ds {:keys [filtered bundle-id post-id]}]
-  (if filtered
-    (hon/insert! ds {:tname :filtered-posts
-                     :data {:post-id post-id
-                            :bundle-id bundle-id}})
-    (hon/delete! ds {:tname :filtered-posts
-                     :where [:and
-                             [:= :post-id post-id]
-                             [:= :bundle-id bundle-id]]})))
+  (pg/with-transaction [ds ds]
+    (if filtered
+      (hon/insert! ds {:tname :filtered-posts
+                       :data {:post-id post-id
+                              :bundle-id bundle-id}})
+      (hon/delete! ds {:tname :filtered-posts
+                       :where [:and
+                               [:= :post-id post-id]
+                               [:= :bundle-id bundle-id]]}))))
