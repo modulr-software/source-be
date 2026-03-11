@@ -51,6 +51,7 @@
     (congest/deregister! js job-id)
     (->> (jobs/prepare-congest-metadata
           ds
+          js
           {:id job-id
            :initial-delay (* 1000 60 60 24)
            :auto-start true

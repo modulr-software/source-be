@@ -63,11 +63,12 @@
     ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
+          js
           {:id job-id
-           :initial-delay (* 1000 60 60 24 30)
+           :initial-delay (* 1000 60 60 24 24)
            :auto-start true
            :stop-after-fail false,
-           :interval (* 1000 60 60 24 30)
+           :interval (* 1000 60 60 24 24)
            :recurring? false
            :kill-after 1
            :args {:user-type type

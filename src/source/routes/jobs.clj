@@ -35,5 +35,5 @@
   [{:keys [js ds body] :as _req}]
   (let [{:keys [metadata]} body
         metadata (assoc metadata :created-at (util/get-utc-timestamp-string))]
-    (congest/register! js (jobs/prepare-congest-metadata ds metadata))
+    (congest/register! js (jobs/prepare-congest-metadata ds js metadata))
     (res/response {:message "successfully registered job"})))
