@@ -17,15 +17,21 @@
       (util/auth-token)
       (util/verify-jwt)))
 
-(defn wrap-auth [handler]
+(defn wrap-auth
+  "Returns unauthenticated if the user JWT validation failed, or if a soft-deleted user tries to call a non-GET endpoint"
+  [handler]
   (fn [request]
-    (if-let [user (validate-request request)]
-      (-> request
-          (assoc :user user)
-          (handler))
-      (->
-       (res/response {:message "Unauthorized"})
-       (res/status 401)))))
+    (let [ds (db.util/conn :master)
+          {:keys [id] :as user} (validate-request request)
+          {:keys [removed]} (db/find-one ds {:tname :users
+                                             :where [:= :id id]})]
+      (if (and user (if (= (:request-method request) :get) true (= removed 0)))
+        (-> request
+            (assoc :user user)
+            (handler))
+        (->
+         (res/response {:message "Unauthorized"})
+         (res/status 401))))))
 
 (defn wrap-auth-user-type
   "returns an unauthorized response if the user's type is not the required user type (creator | distributor | admin)"
