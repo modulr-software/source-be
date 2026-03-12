@@ -3,12 +3,11 @@
             [clojure.data.json :as json]
             [source.services.interface :as services]
             [source.jobs.oplog :as oplog]
-            [source.jobs.handlers :as handlers]
-            [source.db.honey :as hon]))
+            [source.jobs.handlers :as handlers]))
 
 (defn prepare-congest-metadata
   "given raw job metadata, returns extended metadata necessary for use with congest"
-  [ds js metadata]
+  [ds metadata]
   (let [i->b (fn [i] (if (integer? i)
                        (if (= i 1) true false)
                        i))
@@ -22,8 +21,7 @@
                :handler-name (:handler metadata)
                :handler (handlers/handler metadata)
                :logger oplog/operation-logger
-               :ds ds
-               :js js)
+               :ds ds)
         (dissoc :recurring))))
 
 (defn start!
@@ -35,11 +33,11 @@
                             :args args
                             :handler handler))]
     (congest/deregister! js job-id)
-    (congest/register! js (prepare-congest-metadata ds js metadata))))
+    (congest/register! js (prepare-congest-metadata ds metadata))))
 
 (defn interrupted-jobs
   "Get vec of congest-ready metadata of all jobs marked as running"
-  [ds js]
+  [ds]
   (let [jobs (services/jobs ds)]
     (mapv (fn [{:keys [job-id job-metadata-id args handler status]} i]
             (when (= status "running")
@@ -56,7 +54,7 @@
                                     :interval (if (some? interval)
                                                 (+' interval (*' 1000 5 i))
                                                 0))]
-                (prepare-congest-metadata ds js metadata))))
+                (prepare-congest-metadata ds metadata))))
           jobs
           (-> jobs count inc range))))
 
@@ -83,10 +81,10 @@
   (services/delete-job-metadata! ds {})
 
   (def js (congest/create-job-service []))
-  (congest/register! js (prepare-congest-metadata ds js testjob))
+  (congest/register! js (prepare-congest-metadata ds testjob))
   (congest/deregister! js "delete_creator_31")
   (congest/stop! js "test" false)
   (start! js ds "test")
-  (interrupted-jobs ds js)
+  (interrupted-jobs ds)
 
   ())

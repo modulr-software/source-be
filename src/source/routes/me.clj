@@ -58,12 +58,11 @@
   [{:keys [ds js user] :as _request}]
   (let [{:keys [id type]} user
         job-id (handlers/user-deletion-job-id type id)]
-    (users/soft-delete-user! ds id)
+    (users/soft-delete-user! ds js id)
 
     ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
-          js
           {:id job-id
            :initial-delay (* 1000 60 60 24 24)
            :auto-start true

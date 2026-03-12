@@ -43,7 +43,6 @@
     ;TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
-          js
           {:id (handlers/update-bundle-job-id (:id new-bundle))
            :initial-delay 0
            :auto-start true

@@ -51,7 +51,6 @@
     (congest/deregister! js job-id)
     (->> (jobs/prepare-congest-metadata
           ds
-          js
           {:id job-id
            :initial-delay (* 1000 60 60 24)
            :auto-start true
@@ -83,7 +82,8 @@
         job-id (handlers/update-bundle-job-id bundle-id)]
     (if (some? bundle)
       (do
-        (integrations/hard-delete-bundle! ds js job-id bundle-id)
+        (integrations/hard-delete-bundle! ds bundle-id)
+        (integrations/deregister-bundle-job! js job-id)
         (res/response {:message "successfully deleted integration"}))
       (-> (res/response {:message "unauthorized"})
           (res/status 403)))))

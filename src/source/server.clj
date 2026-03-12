@@ -16,11 +16,8 @@
    {:port 3000}))
 
 (defn initialise-job-service! [{:keys [ds] :as _deps}]
-  (let [js (congest/create-job-service [])]
-    (run!
-     #(congest/register! js %)
-     (jobs/interrupted-jobs ds js))
-    js))
+  (->> (jobs/interrupted-jobs ds)
+       (congest/create-job-service)))
 
 (defn component-on? [component]
   (if (some? (get @*components component))

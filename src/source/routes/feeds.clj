@@ -41,7 +41,6 @@
             ;TODO: service needed
             (->> (jobs/prepare-congest-metadata
                   ds
-                  js
                   {:id (str email "-" (:id new-feed))
                    :initial-delay (* 1000 60 60 24)
                    :auto-start true

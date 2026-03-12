@@ -6,9 +6,9 @@
             [source.services.bundle-content-types :as bundle-content-types]
             [source.db.tables :as tables]
             [source.db.honey :as hon]
-            [congest.jobs :as congest]
             [taoensso.telemere :as t]
-            [pg.core :as pg]))
+            [pg.core :as pg]
+            [congest.jobs :as congest]))
 
 (defn create-integration! [ds {:keys [user-id bundle-metadata categories content-types]}]
   (pg/with-transaction [ds ds]
@@ -42,7 +42,7 @@
     (bundle-content-types/update-bundle-content-types! ds {:bundle-id bundle-id
                                                            :content-types content-types})))
 
-(defn hard-delete-bundle! [ds js job-id bundle-id]
+(defn hard-delete-bundle! [ds bundle-id]
   (pg/with-transaction [ds ds]
     (let [event-ids (mapv :id (hon/find ds {:tname :events
                                             :where [:= :bundle-id bundle-id]}))]
@@ -62,8 +62,10 @@
                                                :post-heuristics]
                                               bundle-id))
       (hon/delete! ds {:tname :bundles
-                       :where [:= :id bundle-id]})
-      (congest/deregister! js job-id))))
+                       :where [:= :id bundle-id]}))))
+
+(defn deregister-bundle-job! [js job-id]
+  (congest/deregister! js job-id))
 
 (defn update-filtered-feeds! [ds {:keys [filtered bundle-id feed-id]}]
   (pg/with-transaction [ds ds]

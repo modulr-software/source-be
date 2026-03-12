@@ -188,9 +188,9 @@
   (str "delete_" user-type "_" user-id))
 
 (defmethod handler :delete-user [_]
-  (fn [{:keys [args ds js]}]
+  (fn [{:keys [args ds]}]
     (try
       (let [{:keys [user-type user-id]} args]
-        (users/hard-delete-user! ds js (keyword user-type) user-id))
+        (users/hard-delete-user! ds (keyword user-type) user-id))
       (catch Exception e (t/log! {:level :error
                                   :msg (str "Failed to delete user-id " (:user-id args) ":" e)}) :fail))))

@@ -51,7 +51,8 @@
         job-id (handlers/update-feed-posts-job-id email id)]
     (if (some? feed)
       (do
-        (feeds/hard-delete-feed! ds js job-id id)
+        (feeds/hard-delete-feed! ds id)
+        (feeds/deregister-feed-job! js job-id)
         (res/response {:message "successfully deleted feed"}))
       (-> (res/response {:message "unauthorized"})
           (res/status 403)))))
