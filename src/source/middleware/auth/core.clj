@@ -20,15 +20,18 @@
 (defn wrap-auth
   "Returns unauthenticated if the user JWT validation failed, or if a soft-deleted user tries to call a non-GET endpoint"
   [handler]
-  (fn [request]
-    (let [ds (db.util/conn :master)
-          {:keys [id] :as user} (validate-request request)
+  (fn [{:keys [ds] :as request}]
+    (let [{:keys [id] :as user} (validate-request request)
           {:keys [removed]} (db/find-one ds {:tname :users
                                              :where [:= :id id]})]
-      (if (and user (if (= (:request-method request) :get) true (= removed 0)))
-        (-> request
-            (assoc :user user)
-            (handler))
+      (if user
+        (if (or (= (:request-method request) :get) (= removed 0))
+          (-> request
+              (assoc :user user)
+              (handler))
+          (->
+           (res/response {:message "The account of the user attempting to use this endpoint has been archived."})
+           (res/status 403)))
         (->
          (res/response {:message "Unauthorized"})
          (res/status 401))))))
