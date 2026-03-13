@@ -1,12 +1,12 @@
 (ns source.workers.feeds
   (:require [source.util :as utils]
             [source.workers.xml-schemas :as xml]
-            [congest.jobs :as congest]
             [source.db.honey :as hon]
             [source.rss.youtube :as yt]
             [clojure.string :as string]
             [taoensso.telemere :as t]
-            [pg.core :as pg]))
+            [pg.core :as pg]
+            [congest.jobs :as congest]))
 
 (defn create-feed!
   "Creates feed with incoming posts pulled from RSS feed and starts associated job"
@@ -79,7 +79,7 @@
                    :data feed-metadata
                    :ret :1}))
 
-(defn hard-delete-feed! [ds js job-id feed-id]
+(defn hard-delete-feed! [ds feed-id]
   (pg/with-transaction [ds ds]
     (let [post-ids (mapv :id (hon/find ds {:tname :incoming-posts
                                            :where [:= :feed-id feed-id]}))
@@ -99,8 +99,10 @@
       (hon/delete! ds {:tname :events
                        :where [:= :feed-id feed-id]})
       (hon/delete! ds {:tname :feeds
-                       :where [:= :id feed-id]})
-      (congest/deregister! js job-id))))
+                       :where [:= :id feed-id]}))))
+
+(defn deregister-feed-job! [js job-id]
+  (congest/deregister! js job-id))
 
 (defn update-feed-categories! [ds {:keys [feed-id categories]}]
   (let [update-data (mapv (fn [{:keys [id]}]

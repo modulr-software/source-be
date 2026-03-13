@@ -36,7 +36,7 @@
     (congest/register! js (prepare-congest-metadata ds metadata))))
 
 (defn interrupted-jobs
-  "Get congest-ready metadata of all jobs marked as running"
+  "Get vec of congest-ready metadata of all jobs marked as running"
   [ds]
   (let [jobs (services/jobs ds)]
     (mapv (fn [{:keys [job-id job-metadata-id args handler status]} i]
@@ -49,10 +49,10 @@
                                        :handler handler))
                     metadata (assoc m
                                     :initial-delay (if (some? initial-delay)
-                                                     (+ initial-delay (* 1000 5 i))
+                                                     (+' initial-delay (*' 1000 5 i))
                                                      0)
                                     :interval (if (some? interval)
-                                                (+ interval (* 1000 5 i))
+                                                (+' interval (*' 1000 5 i))
                                                 0))]
                 (prepare-congest-metadata ds metadata))))
           jobs
@@ -82,7 +82,7 @@
 
   (def js (congest/create-job-service []))
   (congest/register! js (prepare-congest-metadata ds testjob))
-  (congest/deregister! js "test")
+  (congest/deregister! js "delete_creator_31")
   (congest/stop! js "test" false)
   (start! js ds "test")
   (interrupted-jobs ds)
