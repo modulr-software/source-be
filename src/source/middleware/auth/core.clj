@@ -51,7 +51,7 @@
         (and (= user-type (name required-type)) (= user-type expected-type)) (handler request)
         :else (->
                (res/response {:message "Unauthorized"})
-               (res/status 403))))))
+               (res/status 401))))))
 
 (defn wrap-bundle-id
   "validates the bundle uuid in the query parameters of the request for 
