@@ -17,15 +17,24 @@
       (util/auth-token)
       (util/verify-jwt)))
 
-(defn wrap-auth [handler]
-  (fn [request]
-    (if-let [user (validate-request request)]
-      (-> request
-          (assoc :user user)
-          (handler))
-      (->
-       (res/response {:message "Unauthorized"})
-       (res/status 401)))))
+(defn wrap-auth
+  "Returns unauthenticated if the user JWT validation failed, or if a soft-deleted user tries to call a non-GET endpoint"
+  [handler]
+  (fn [{:keys [ds] :as request}]
+    (let [{:keys [id] :as user} (validate-request request)
+          {:keys [removed]} (db/find-one ds {:tname :users
+                                             :where [:= :id id]})]
+      (if user
+        (if (or (= (:request-method request) :get) (= removed 0))
+          (-> request
+              (assoc :user user)
+              (handler))
+          (->
+           (res/response {:message "The account of the user attempting to use this endpoint has been archived."})
+           (res/status 403)))
+        (->
+         (res/response {:message "Unauthorized"})
+         (res/status 401))))))
 
 (defn wrap-auth-user-type
   "returns an unauthorized response if the user's type is not the required user type (creator | distributor | admin)"
@@ -42,7 +51,7 @@
         (and (= user-type (name required-type)) (= user-type expected-type)) (handler request)
         :else (->
                (res/response {:message "Unauthorized"})
-               (res/status 403))))))
+               (res/status 401))))))
 
 (defn wrap-bundle-id
   "validates the bundle uuid in the query parameters of the request for 

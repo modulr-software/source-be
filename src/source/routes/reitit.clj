@@ -108,11 +108,7 @@
       ["/sectors" (-> (get me-sectors/get)
                       (post me-sectors/post))]]
 
-     ["/mail" {:middleware [[mw/apply-auth]]
-               :tags #{"mail"}
-               :swagger {:security [{"auth" []}]}
-               :openapi {:security [{:bearerAuth []}]}}
-
+     ["/mail" {:tags #{"mail"}}
       ["/report" (post report/post)]]
 
      ["/businesses" {:middleware [[mw/apply-auth {:required-type :admin}]]
