@@ -1,8 +1,7 @@
 (ns source.middleware.auth.util
   (:require [buddy.sign.jwt :as jwt]
             [source.config :as conf]
-            [clojure.string :as str]
-            [taoensso.telemere :as t]))
+            [clojure.string :as str]))
 
 (defn auth-header [request]
   (or (get-in request [:headers "Authorization"])
