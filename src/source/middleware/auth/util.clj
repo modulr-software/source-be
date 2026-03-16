@@ -25,7 +25,5 @@
 (defn verify-jwt [token]
   (try
     (jwt/decrypt token (conf/read-value :supersecretkey))
-    (catch Exception e
-      (t/log! {:level :warn
-               :msg (str "JWT Verification failed: " (.getMessage e))})
+    (catch Exception _
       false)))
