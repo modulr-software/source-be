@@ -5,7 +5,8 @@
             [source.jobs.core :as jobs]
             [source.routes.interface :as routes]
             [source.util :as util]
-            [taoensso.telemere :as t]))
+            [taoensso.telemere :as t]
+            [source.config :as conf]))
 
 (defonce ^:private *components (atom nil))
 
@@ -13,7 +14,7 @@
   (http/run-server
    (routes/create-app {:ds ds
                        :js js})
-   {:port 3000}))
+   {:port (conf/read-value :port)}))
 
 (defn initialise-job-service! [{:keys [ds] :as _deps}]
   (->> (jobs/interrupted-jobs ds)
@@ -45,7 +46,7 @@
 (defn start-server []
   (cond (not (some? (:server @*components)))
         (do
-          (t/log! "Starting server on port 3000...")
+          (t/log! (str "Starting server on port " (conf/read-value :port) "..."))
           (initialise-components! [{:name :ds
                                     :init-fn (fn [_deps] (db/ds :master))
                                     :deps []}
