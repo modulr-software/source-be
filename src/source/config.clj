@@ -23,6 +23,7 @@
    [:admins-encrypted-path :string]
    [:cors-origin :string]
    [:base-url :string]
+   [:port :int]
    [:env :string]
    [:database [:map
                [:url :string]

@@ -3,6 +3,7 @@
  :admins-encrypted-path "resources/admins_encrypted.json"
  :cors-origin #or [#env CORS_ORIGIN "http://localhost:8080"]
  :base-url #or [#env BASE_URL "https://localhost:3000"]
+ :port #or [#env PORT 3000]
  :env #or [#env ENV "dev"]
  :database {:url #or [#env DATABASE_URL "postgres://localhost"]
             :type "postgresql"}
