@@ -4,7 +4,7 @@ This is the backend for the Source platform. You can find documentation on setup
 
 ## Dependencies
 
-- >= openjdk version 11.
+- >= openjdk version 16.
 
 ## Development setup
 
@@ -66,7 +66,7 @@ written per namespace and cover all important functions.
 ## Production Setup
 
 - Pull the project from GitHub and navigate to its directory.
-- Ensure you have Java installed, minimum openjdk version 11.
+- Ensure you have Java installed, minimum openjdk version 16.
 - Create a .env file containing the following required information:
 
 ```.env
