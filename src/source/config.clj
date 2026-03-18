@@ -30,8 +30,14 @@
                [:type :string]]]
    [:oauth2 [:map-of keyword? oauth2-provider-schema]]])
 
+(defn- get-env-config []
+  (let [{:keys [env] :as config} (aero/read-config (io/resource "config.edn"))]
+    (if (= env "dev")
+      config
+      (aero/read-config (io/resource (str env "_config.edn"))))))
+
 (defn- load-config []
-  (let [config (aero/read-config (io/resource "config.edn"))
+  (let [config (get-env-config)
         decoded (m/decode schema config mt/string-transformer)]
     (when-not (m/validate schema decoded)
       (println (->> decoded
@@ -52,4 +58,3 @@
   (read-value :cors-origin)
   (read-value :admins-path)
   (load-config))
-
