@@ -96,3 +96,5 @@ within your `.env` file.
 
 - Run `./build.sh` to the compile the project.
 - Run `./start.sh` to start the server. The server will use the config according to the specified environment in `.env` and will run migrations before starting.
+
+The logs will be displayed when the server is run. If you are running the server via a systemd service, you can find them by running `journalctl -u {servicename}.service`.
