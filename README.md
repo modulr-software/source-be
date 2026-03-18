@@ -65,7 +65,7 @@ written per namespace and cover all important functions.
 
 ## Production Setup
 
-- Pull the project from GitHub.
+- Pull the project from GitHub and navigate to its directory.
 - Ensure you have Java installed, minimum openjdk version 11.
 - Create a .env file containing the following required information:
 
