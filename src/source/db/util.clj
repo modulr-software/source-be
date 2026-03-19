@@ -39,8 +39,22 @@
 (defn tnames [tnames id]
   (mapv #(:tname (tname % id)) tnames))
 
+(defn conn-env [env]
+  {:connection-uri (str (conf/read-value :database env) "/master")})
+
+(defmacro with-env [args & body]
+  `(let [~(first args) (conn-env ~(last args))]
+     ~(cons 'do body)))
+
 (comment
   (def q "SELECT * FROM events")
+
+  (macroexpand '(with-env [ds :staging] (println ds)))
+
+  (with-env [ds :staging]
+    (time (pg/with-conn [conn ds]
+            (pg/query conn q)))
+    #_(hon/find ds {:tname :users}))
 
   (time (pg/with-conn [conn {:connection-uri "postgresql://postgres:postgres@localhost:5432/master?ssl=false"}]
           (pg/query conn q)))
