@@ -83,13 +83,13 @@ ENV [string, "dev" | "staging" | "prod"] # This should match your config file, e
 JAVA_CMD [string, path pointing to your Java executable]
 ```
 
-- If there isn't already a `config.edn` file for your target environment in the `resources/` directory, create a config file using the given `resources/config.edn`
+- If there isn't already a `config.edn` file for your target environment in the `resources/` directory, create a config file using the given `resources/dev_config.edn`
 as a template as shown below:
 ```bash
 cp resources/config.edn resources/{env_name}_config.edn
 ```
 where `{env_name}` is the value of the `ENV` variable set in your `.env`.
-You can configure everything for your machine inside your config.edn file, alternatively, you can configure everything marked with `#env` from `config.edn` 
+You can configure everything for your machine inside your config.edn file, alternatively, you can configure everything marked with `#env` from `{env_name}_config.edn` 
 within your `.env` file.
 
 - If everything before this point is set up correctly, you are ready to begin the next steps.
