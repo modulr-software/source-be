@@ -39,10 +39,15 @@
 (defn tnames [tnames id]
   (mapv #(:tname (tname % id)) tnames))
 
-(defn conn-env [env]
+(defn conn-env 
+  "Creates a connection to the master database for the given environment. There must be a connection string in config for the given environment."
+  [env]
   {:connection-uri (str (conf/read-value :database env) "/master")})
 
-(defmacro with-env [args & body]
+(defmacro with-env 
+  "This macro creates a let binding structure associating a custom binding with a database connection based with the given environment as a keyword.
+  e.g. (with-env [ds :staging] (hon/find ds {:tname :users}))"
+  [args & body]
   `(let [~(first args) (conn-env ~(last args))]
      ~(cons 'do body)))
 

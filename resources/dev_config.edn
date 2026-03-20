@@ -7,7 +7,6 @@
  :env #or [#env ENV "dev"]
  :database {:url #or [#env DATABASE_URL "postgres://localhost"]
             :type "postgresql"
-            :dev #or [#env DEV_DATABASE_URL "postgres://localhost:5432"]
             :staging #or [#env STAGING_DATABASE_URL "postgres://username:password@localhost:16380"]
             :prod #or [#env PROD_DATABASE_URL "postgres://username:password@localhost:16380"]}
  :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
