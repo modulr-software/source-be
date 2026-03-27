@@ -27,7 +27,7 @@
                 :body [:map
                        [:name :string]
                        [:domain {:optional true} [:maybe :string]]
-                       [:content-type-id :int]
+                       [:content-type-id {:optional true} [:maybe :int]]
                        [:instructions {:optional true} [:maybe :string]]
                        [:placeholder-url {:optional true} [:maybe :string]]]}
    :responses {200 {:body [:map [:message :string]]}}}
