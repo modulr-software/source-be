@@ -6,12 +6,14 @@
   (let [ds-master (:db-master context)
         sectors (->> (hon/find ds-master {:tname :categories})
                      (mapv #(dissoc % :display-picture)))]
+    (hon/delete! ds-master {:tname :user-sectors})
     (hon/delete! ds-master {:tname :sectors})
     (hon/insert! ds-master {:tname :sectors
                             :data sectors})))
 
 (defn run-down! [context]
   (let [ds-master (:db-master context)]
+    (hon/delete! ds-master {:tname :user-sectors})
     (hon/delete! ds-master {:tname :sectors})
     (hon/insert! ds-master {:tname :sectors
                             :data [{:name "renewable energy"}
