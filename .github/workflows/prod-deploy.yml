@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            cd /home/keagan/source-be
+            cd /home/deploy/source-be
             git checkout main
             git pull
             ./build.sh
