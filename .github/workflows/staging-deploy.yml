@@ -1,0 +1,25 @@
+name: Staging Deploy
+on:
+  push:
+    branches:
+      - dev
+jobs:
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          authKey: ${{ secrets.TS_AUTH_KEY }}
+          tags: tag:ci
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no merv@mervstation.tail4f070.ts.net
+          cd /home/merv/Developer/source-be
+          git pull
+          sudo /bin/systemctl restart source-be
