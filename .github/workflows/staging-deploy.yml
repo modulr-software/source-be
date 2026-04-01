@@ -24,6 +24,7 @@ jobs:
         with:
           host: mervstation.tail4f070.ts.net
           username: merv
+          password: tailscale
           script: |
             cd /home/merv/Developer/source-be
             git pull
