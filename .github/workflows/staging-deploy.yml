@@ -20,12 +20,9 @@ jobs:
           ping: mervstation.tail4f070.ts.net
 
       - name: Execute remote SSH commands
-        uses: appleboy/ssh-action@v1
-        with:
-          host: mervstation.tail4f070.ts.net
-          username: merv
-          password: tailscale
-          script: |
+        run: |
+          ssh -o StrictHostKeyChecking=no merv@mervstation.tail4f070.ts.net '
             cd /home/merv/Developer/source-be
             git pull
             sudo /bin/systemctl restart source-be
+          '
