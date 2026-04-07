@@ -5,10 +5,6 @@
 
 (defn run-up! [context]
   (let [ds-master (:db-master context)]
-    (run!
-     #(categories/delete-category! ds-master (:id %))
-     (hon/find ds-master {:tname :categories}))
-
     (hon/insert! ds-master {:tname :categories
                             :data [{:name "Regenerative finance and investment"}
                                    {:name "Regenerative business"}
@@ -43,10 +39,32 @@
   (let [ds-master (:db-master context)]
     (run!
      #(categories/delete-category! ds-master (:id %))
-     (hon/find ds-master {:tname :categories}))
-
-    (hon/insert! ds-master {:tname :categories
-                            :data [{:name "programming"}
-                                   {:name "game development"}
-                                   {:name "languages"}
-                                   {:name "technology"}]})))
+     (hon/find ds-master {:tname :categories
+                          :where [:in :name ["Regenerative finance and investment"
+                                             "Regenerative business"
+                                             "Sustainable fashion and textiles"
+                                             "Regenerative agriculture and food"
+                                             "Energy and clean technology"
+                                             "Circularity and waste"
+                                             "Built environment"
+                                             "Transport and mobility"
+                                             "Travel and regenerative tourism"
+                                             "Technology and AI for good"
+                                             "Wellbeing and mental health"
+                                             "Social justice and equity"
+                                             "Indigenous wisdom and land rights"
+                                             "Leadership and inner development"
+                                             "Policy and systems change"
+                                             "Water and freshwater systems"
+                                             "Biodiversity and conservation"
+                                             "Ocean and marine"
+                                             "Bioregionalism and local economies"
+                                             "Community and culture"
+                                             "Arts and artivism"
+                                             "Education and climate literacy"
+                                             "Media and communications"
+                                             "Nonprofits and philanthropy"
+                                             "Consumer goods and conscious living"
+                                             "Spirituality and consciousness"
+                                             "Gender and women's leadership"
+                                             "Health and planetary health"]]}))))
