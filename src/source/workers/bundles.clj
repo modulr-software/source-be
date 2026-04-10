@@ -49,7 +49,7 @@
    :p.content-type-id
    :p.title
    :p.thumbnail
-   (if (= truncate "false") :p.info [[:left :p.info 100] :info])
+   (if (= truncate "false") :p.info [[:|| [:left :p.info 100] "..."] :info])
    :p.url
    :p.stream-url
    :p.season
