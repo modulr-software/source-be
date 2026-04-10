@@ -24,5 +24,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no merv@mervstation.tail4f070.ts.net '
             cd /home/merv/Developer/source-be
             git pull
+            ./build.sh
             sudo /bin/systemctl restart source-be
           '
