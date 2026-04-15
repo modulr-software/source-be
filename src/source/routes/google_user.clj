@@ -5,7 +5,8 @@
             [source.db.honey :as hon]
             [source.password :as pw]
             [source.email.templates :as templates]
-            [source.email.gmail :as gmail]))
+            [source.email.gmail :as gmail]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "completes the google oauth2 flow and returns the authenticated user"
@@ -42,6 +43,7 @@
       (do
         (hon/insert! ds {:tname :users
                          :data {:email email
+                                :email-hash (pw/hash-password email)
                                 :type user-type}})
         (let [new-user (hon/find-one ds {:tname :users
                                          :where [:= :email email]})
