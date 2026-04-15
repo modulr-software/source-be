@@ -2,7 +2,10 @@
   (:require [source.oauth2.google.interface :as google]
             [source.middleware.auth.core :as auth]
             [ring.util.response :as res]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.password :as pw]
+            [source.email.templates :as templates]
+            [source.email.gmail :as gmail]))
 
 (defn get
   {:summary "completes the google oauth2 flow and returns the authenticated user"
@@ -44,4 +47,8 @@
                                          :where [:= :email email]})
               payload (dissoc new-user :password)
               session (auth/create-session payload)]
+          (gmail/send-email {:to email
+                             :subject "Source - Verify your email"
+                             :body (templates/email-verification {:email-hash (pw/hash-password email)})
+                             :type :text/html})
           (res/response (merge {:user payload} session)))))))
