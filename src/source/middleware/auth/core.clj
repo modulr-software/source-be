@@ -2,9 +2,9 @@
   (:require [source.middleware.auth.util :as util]
             [source.db.util :as db.util]
             [ring.util.response :as res]
-            [source.services.users :as users]
             [source.services.bundles :as bundles]
-            [source.db.honey :as db]))
+            [source.db.honey :as db]
+            [taoensso.telemere :as t]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -17,31 +17,41 @@
       (util/auth-token)
       (util/verify-jwt)))
 
-(defn wrap-auth [handler]
-  (fn [request]
-    (if-let [user (validate-request request)]
-      (-> request
-          (assoc :user user)
-          (handler))
-      (->
-       (res/response {:message "Unauthorized"})
-       (res/status 401)))))
+(defn wrap-auth
+  "Returns unauthenticated if the user JWT validation failed, or if a soft-deleted user tries to call a non-GET endpoint"
+  [handler]
+  (fn [{:keys [ds] :as request}]
+    (let [{:keys [id] :as user} (validate-request request)
+          {:keys [removed]} (db/find-one ds {:tname :users
+                                             :where [:= :id id]})]
+      (if user
+        (if (or (= (:request-method request) :get) (= removed 0))
+          (-> request
+              (assoc :user user)
+              (handler))
+          (->
+           (res/response {:message "The account of the user attempting to use this endpoint has been archived."})
+           (res/status 403)))
+        (->
+         (res/response {:message "Unauthorized"})
+         (res/status 401))))))
 
 (defn wrap-auth-user-type
-  "returns an unauthorized response if the user's type is not the required user type (provider | distributor | admin)"
+  "returns an unauthorized response if the user's type is not the required user type (creator | distributor | admin)"
   [handler & {:keys [required-type]}]
   (fn [request]
     (let [ds (db.util/conn :master)
           user-type (get-in request [:user :type])
-          expected-type (->> {:id (get-in request [:user :id])}
-                             (users/user ds)
+          expected-type (->> {:tname :users
+                              :where [:= :id (get-in request [:user :id])]}
+                             (db/find-one ds)
                              (:type))]
       (cond
         (not (some? required-type)) (handler request)
-        (and (= user-type (name :admin)) (= user-type expected-type)) (handler request)
+        (and (= user-type (name required-type)) (= user-type expected-type)) (handler request)
         :else (->
                (res/response {:message "Unauthorized"})
-               (res/status 403))))))
+               (res/status 401))))))
 
 (defn wrap-bundle-id
   "validates the bundle uuid in the query parameters of the request for 
@@ -49,15 +59,19 @@
   [handler]
   (fn [request]
     (let [ds (db.util/conn :master)
-          bundle-uuid (get-in request [:query-params "uuid"])]
-
-      (if (db/exists? ds {:tname :bundles
-                          :where [:= :uuid bundle-uuid]})
-        (handler request)
-
-        (->
-         (res/response {:message "Unauthorized"})
-         (res/status 403))))))
+          bundle-uuid (get-in request [:query-params :uuid])
+          {:keys [id]} (db/find-one ds {:tname :bundles
+                                        :where [:= :uuid bundle-uuid]})]
+      (if (some? id)
+        (-> request
+            (assoc :bundle-id id)
+            (handler))
+        (do
+          (t/log! {:level :warn
+                   :msg (str "Bundle authorization attempt failed with uuid: " bundle-uuid)})
+          (->
+           (res/response {:message "The bundle you are looking for does not exist."})
+           (res/status 404)))))))
 
 (comment
   (let [authed-request {:headers {"Authorization"
@@ -88,19 +102,21 @@
     (println "Test passed"))
 
   (require '[source.util :as utils])
-  (let [garbage-request {:query-params {"uuid" "garbage"}}
+  (let [garbage-request {:query-params {:uuid "garbage"}}
+        ds (db.util/conn)
         uuid (utils/uuid)
-        bundle-request {:query-params {"uuid" uuid}}
+        bundle-request {:query-params {:uuid uuid}}
         test-handler (-> (fn [request]
                            request)
                          (wrap-bundle-id))]
-
-    (bundles/insert-bundle! (db.util/conn :master) {:data {:uuid uuid
+    (bundles/insert-bundle! (db.util/conn :master) {:data {:name (str "test-bundle-" uuid)
+                                                           :uuid uuid
+                                                           :content-type-id 1
                                                            :video 0
                                                            :podcast 0
                                                            :blog 0}})
     (assert (=
-             403
+             404
              (-> garbage-request
                  (test-handler)
                  (:status))))
@@ -110,6 +126,10 @@
              (-> bundle-request
                  (test-handler)
                  (:bundle-id))))
-    (println "tests passed"))
-  ())
+    (println "tests passed")
+    (db/delete! ds
+                {:tname :bundles
+                 :where [:like :name "test-bundle-%"]
+                 :ret :*}))
 
+  ())

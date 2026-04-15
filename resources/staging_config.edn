@@ -1,0 +1,20 @@
+{:supersecretkey #env SUPER_SECRET_KEY
+ :admins-path "resources/admins.json"
+ :admins-encrypted-path "resources/admins_encrypted.json"
+ :cors-origin #or [#env CORS_ORIGIN "https://mervstation.tail4f070.ts.net"]
+ :base-url #or [#env BASE_URL "https://mervstation.tail4f070.ts.net/sourcebe"]
+ :port #or [#env PORT 3998]
+ :env #or [#env ENV "staging"]
+ :database {:url #or [#env DATABASE_URL "postgres://localhost"]
+            :type "postgresql"}
+ :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
+         :username #env EMAIL_USERNAME
+         :password #env EMAIL_PASSWORD}
+ :oauth2 {:google {:authorization-uri   "https://accounts.google.com/o/oauth2/auth"
+                   :access-token-uri    "https://oauth2.googleapis.com/token"
+                   :redirect-uri        #or [#env GOOGLE_REDIRECT_URI "https://mervstation.tail4f070.ts.net/sourcebe/oauth2/google/callback"]
+                   :client-id           #env GOOGLE_CLIENT_ID
+                   :client-secret       #env GOOGLE_CLIENT_SECRET
+                   :access-query-param  :access_token
+                   :scope               ["https://www.googleapis.com/auth/userinfo.email"]
+                   :grant-type          "authorization_code"}}}

@@ -1,43 +1,39 @@
 (ns source.db.honey
-  (:require [honey.sql :as sql]
-            [honey.sql.helpers :as hsql]
-            [source.db.util :as db.util]
-            [camel-snake-kebab.core :as csk]
+  (:require [camel-snake-kebab.core :as csk]
             [camel-snake-kebab.extras :as cske]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [honey.sql.helpers :as hsql]
+            [pg.core :as pg]
+            [pg.honey :as pgh]))
 
 (defn execute!
   "computes a prepared statement for an sql map and executes select one
   or select all. returns results as unqualified lower maps by default."
-  [ds sqlmap & {:keys [ret exec-opts]}]
+  [ds sqlmap & {:keys [ret]}]
   (assert (and (some? ds) (some? sqlmap) (or (some? ret) (nil? ret))))
-  (let [ps (sql/format sqlmap)
-        exec-opts' (merge
-                    {:builder-fn rs/as-unqualified-lower-maps}
-                    exec-opts)
-        result (cske/transform-keys
+  (let [result (cske/transform-keys
                 csk/->kebab-case-keyword
-                (jdbc/execute! ds ps exec-opts'))]
+                (pg/with-conn [conn ds]
+                  (pgh/execute conn sqlmap)))]
     (cond
       (= ret :1) (first result)
-      (= ret :*) result
-      :else nil)))
+      :else result)))
 
 (defn find
   "does find one or find all for a given table name and where clause. The where
   clause follows the same data DSL as honeysql. Automatically transforms kebab
   case keys into snake case for sql. e.g. :provider-id becomes \"provider_id\"
   when honey sql prepares the statement in execute!"
-  [ds {:keys [tname where ret]}]
+  [ds {:keys [tname where order-by limit ret]}]
   (execute! ds
             (-> (hsql/select :*)
                 (hsql/from (csk/->snake_case_keyword tname))
+                (merge (if (some? order-by) {:order-by order-by} {}))
+                (merge (if (some? limit) (hsql/limit limit) {}))
                 (hsql/where
                  (or (cske/transform-keys
                       csk/->snake_case_keyword where)
                      [])))
-            :ret ret))
+            :ret (or ret :*)))
 
 (defn find-one [ds opts]
   (->> {:ret :1}
@@ -56,7 +52,7 @@
               (-> (hsql/insert-into (csk/->snake_case_keyword tname))
                   (hsql/values vals)
                   (hsql/returning :*))
-              :ret ret)))
+              :ret (or ret nil))))
 
 (defn delete!
   "deletes a record or set of records that match a predicate where clause. the where
@@ -95,24 +91,22 @@
 
 (comment
   (hsql/where :or [:= :id 1] [:= :id 2])
-
-  (def ds (db.util/conn :master))
-
-  (find ds {:tname :users
-            :ret :1})
+  (def ds {})
 
   (insert! ds {:tname :sectors
                :values {:name "something"}
                :ret :*})
 
   (delete! ds
-           {:tname :sectors
-            :where [:> :id 3]
+           {:tname :feeds
+            :where [:= :id 6]
             :ret :*})
 
   (update! ds
-           {:tname :sectors
-            :where [:= :id 7]
-            :values {:name "something else"}})
+           {:tname :users
+            :where [:= :id 3]
+            :values {:type "creator"}})
+
+  (find ds {:tname :bundles})
 
   ())

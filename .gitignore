@@ -8,6 +8,7 @@ source-users
 dev/dev.clj
 .nrepl-port
 target/
+resources/admins_encrypted.json
 
 .db
 admins.json

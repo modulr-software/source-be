@@ -1,0 +1,22 @@
+{:supersecretkey #env SUPER_SECRET_KEY
+ :admins-path "resources/admins.json"
+ :admins-encrypted-path "resources/admins_encrypted.json"
+ :cors-origin #or [#env CORS_ORIGIN "http://localhost:3001"]
+ :base-url #or [#env BASE_URL "https://localhost:3000"]
+ :port #or [#env PORT 3000]
+ :env #or [#env ENV "dev"]
+ :database {:url #or [#env DATABASE_URL "postgres://localhost"]
+            :type "postgresql"
+            :staging #or [#env STAGING_DATABASE_URL "postgres://username:password@localhost:16380"]
+            :prod #or [#env PROD_DATABASE_URL "postgres://username:password@localhost:16380"]}
+ :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
+         :username #env EMAIL_USERNAME
+         :password #env EMAIL_PASSWORD}
+ :oauth2 {:google {:authorization-uri   "https://accounts.google.com/o/oauth2/auth"
+                   :access-token-uri    "https://oauth2.googleapis.com/token"
+                   :redirect-uri        #or [#env GOOGLE_REDIRECT_URI "http://localhost:3000/oauth2/google/callback"]
+                   :client-id           #env GOOGLE_CLIENT_ID
+                   :client-secret       #env GOOGLE_CLIENT_SECRET
+                   :access-query-param  :access_token
+                   :scope               ["https://www.googleapis.com/auth/userinfo.email"]
+                   :grant-type          "authorization_code"}}}

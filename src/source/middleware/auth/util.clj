@@ -1,7 +1,8 @@
 (ns source.middleware.auth.util
   (:require [buddy.sign.jwt :as jwt]
             [source.config :as conf]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [taoensso.telemere :as t]))
 
 (defn auth-header [request]
   (or (get-in request [:headers "Authorization"])
@@ -25,6 +26,6 @@
   (try
     (jwt/decrypt token (conf/read-value :supersecretkey))
     (catch Exception e
-      (println (.getMessage e))
+      (t/log! {:level :warn
+               :msg (str "JWT Verification failed: " (.getMessage e))})
       false)))
-
