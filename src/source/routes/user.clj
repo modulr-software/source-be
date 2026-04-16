@@ -90,8 +90,9 @@
         (-> (conf/read-value :cors-origin)
             (str "/dashboard/onboarding")
             (res/redirect)))
-      (-> (res/response {:message "unauthorized"})
-          (res/status 403)))))
+      (-> (conf/read-value :cors-origin)
+          (str "/dashboard/onboarding")
+          (res/redirect)))))
 
 (comment
   (require '[source.db.interface :as db])
