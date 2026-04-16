@@ -74,14 +74,19 @@
                403 {:body (api/response-schema)}}}
   [{:keys [ds path-params]}]
   (let [email-hash (:hash path-params)
+        _ (prn "email hash from path params" email-hash)
         user (hon/find-one ds {:tname :users
-                               :where [:= :email-hash email-hash]})]
+                               :where [:= :email-hash email-hash]})
+        _ (prn "found user by email hash" user)]
     (if (some? user)
       (do
+        (prn "a user exists, updating user details")
         (hon/update! ds {:tname :users
                          :where [:= :id (:id user)]
                          :data {:email-verified 1
                                 :email-hash ""}})
+        (prn "user has been updated")
+        (prn "running redirect")
         (-> (conf/read-value :cors-origin)
             (str "/dashboard/onboarding")
             (res/redirect)))
