@@ -14,6 +14,7 @@
 
   [{:keys [ds user] :as _request}]
   (-> (hon/find ds {:tname :feeds
+                    :order-by :created-at
                     :where [:= :user-id (:id user)]})
       (res/response)))
 
