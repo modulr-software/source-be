@@ -148,4 +148,5 @@
   (let [user (users/user-by-password-hash ds (:hash path-params))]
     (if (some? user)
       (res/response {:message "successfully verified password hash"})
-      (res/response {:message "unauthorized"}))))
+      (-> (res/response {:message "unauthorized"})
+          (res/status 401)))))
