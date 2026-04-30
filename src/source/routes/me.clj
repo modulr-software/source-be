@@ -106,9 +106,9 @@
   {:summary "Request an email to authenticate a password reset"
    :parameters (api/params :body [:map [:email :string]])
    :responses (api/success (api/response-schema))}
-  [{:keys [ds path-params] :as _req}]
+  [{:keys [ds body] :as _req}]
   (let [{:keys [id email]} (hon/find-one ds {:tname :users
-                                             :where [:= :id (:email path-params)]})
+                                             :where [:= :email (:email body)]})
         password-hash (util/uuid)]
     (hon/update! ds {:tname :users
                      :where [:= :id id]
