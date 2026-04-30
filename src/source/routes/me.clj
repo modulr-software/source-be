@@ -115,7 +115,7 @@
                      :data {:password-hash password-hash}})
     (gmail/send-email {:to email
                        :subject "Source - Reset your password"
-                       :body (templates/password-reset-link {:password-hash password-hash})
+                       :body (templates/password-reset-email {:password-hash password-hash})
                        :type :text/html})
     (res/response {:message "password reset email has been sent successfully"})))
 
@@ -125,7 +125,7 @@
                            :body api/PasswordResetParams)
    :responses (merge
                (api/success (api/response-schema))
-               (api/unauthenticated nil))}
+               (api/unauthenticated))}
   [{:keys [ds path-params body]}]
   (let [{:keys [password confirm-password]} body
         user (users/user-by-password-hash ds (:hash path-params))]
@@ -144,7 +144,7 @@
    :parameters (api/params :path [:map [:hash {:description "Password Reset Hash"} :string]])
    :responses (merge
                (api/success (api/response-schema))
-               (api/unauthenticated nil))}
+               (api/unauthenticated))}
   [{:keys [ds path-params] :as _req}]
   (let [user (users/user-by-password-hash ds (:hash path-params))]
     (if (some? user)

@@ -69,6 +69,7 @@
              400 (error data-schema))))
 
 (defn unauthenticated
+  ([] (unauthenticated nil))
   ([schema] (unauthenticated {} schema))
   ([responses schema]
    (response (if (map? responses) responses {})

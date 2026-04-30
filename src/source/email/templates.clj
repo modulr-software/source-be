@@ -179,7 +179,7 @@
             "This is an automated message. Please do not reply directly to this email."]]
           (footer)]]]]])))
 
-(defn password-reset-link
+(defn password-reset-email
   "Returns the completed HTML for a password reset link email"
   [{:keys [password-hash]}]
   (h/html5
