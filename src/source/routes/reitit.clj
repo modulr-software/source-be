@@ -102,11 +102,15 @@
               (post me/post)
               (delete me/delete-user))]
       ["/email/resend" (get me/resend-email)]
+      ["/password/reset" (get me/password-reset-auth)]
       ["/deletion/cancel" (get me/cancel-deletion)]
       ["/business" (-> (get me-business/get)
                        (post me-business/post))]
       ["/sectors" (-> (get me-sectors/get)
                       (post me-sectors/post))]]
+
+     ["/password/reset/:hash" (post me/reset-password)]
+     ["/password/reset/:hash/verify" (get me/verify-password-reset-hash)]
 
      ["/mail" {:tags #{"mail"}}
       ["/report" (post report/post)]]

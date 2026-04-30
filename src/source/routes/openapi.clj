@@ -134,6 +134,11 @@
    [:email :string]
    [:password :string]])
 
+(def PasswordResetParams
+  [:map
+   [:password :string]
+   [:confirm-password :string]])
+
 (def InsertVocab
   [:map
    [:xhosa :string]

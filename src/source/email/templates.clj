@@ -29,7 +29,7 @@
   [:tr
    [:td {:class "footer"
          :style "background-color: #0F172A; padding: 20px; text-align: center; color: white; font-size: 14px;"}
-    "Copyright © 2025 | Wearesource"]])
+    "Copyright © 2026 | Wearesource"]])
 
 (defn feed-rejection
   "Returns the completed HTML for a feed rejection email"
@@ -178,3 +178,40 @@
                  :style "padding: 40px; text-align: left; font-size: 11px; line-height: 1.6;"}
             "This is an automated message. Please do not reply directly to this email."]]
           (footer)]]]]])))
+
+(defn password-reset-link
+  "Returns the completed HTML for a password reset link email"
+  [{:keys [password-hash]}]
+  (h/html5
+   {:lang "en"}
+   (head-metadata)
+   [:body {:style "font-family: 'Switzer', sans-serif"}
+    [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
+     [:tr
+      [:td {:align "center" :style "padding: 20px;"}
+       [:table {:class "content"
+                :width "600"
+                :border "0"
+                :cellspacing "0"
+                :cellpadding "0"
+                :style "border-collapse: collapse; border: 1px solid #cccccc;"}
+        (header)
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          "Welcome to Source!"
+          [:br] [:br]
+          "We received a request to reset your password. Please click the button below to set a new password for your account."]]
+        (button {:text "Reset Password"
+                 :redirect (str (conf/read-value :cors-origin) "/password/" password-hash)})
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          "If you did not make this request, you can safely ignore this email."]]
+        [:tr
+         [:td {:class "body"
+               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+          "Regards,"
+          [:br]
+          "The Source Team"]]
+        (footer)]]]]]))
