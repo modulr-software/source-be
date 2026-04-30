@@ -3,7 +3,8 @@
             [camel-snake-kebab.extras :as cske]
             [honey.sql.helpers :as hsql]
             [pg.core :as pg]
-            [pg.honey :as pgh]))
+            [pg.honey :as pgh]
+            [source.db.util :as db.util]))
 
 (defn execute!
   "computes a prepared statement for an sql map and executes select one
@@ -91,15 +92,15 @@
 
 (comment
   (hsql/where :or [:= :id 1] [:= :id 2])
-  (def ds {})
+  (def ds (db.util/conn))
 
   (insert! ds {:tname :sectors
                :values {:name "something"}
                :ret :*})
 
   (delete! ds
-           {:tname :feeds
-            :where [:= :id 6]
+           {:tname :users
+            :where [:= :id 20]
             :ret :*})
 
   (update! ds
@@ -107,6 +108,7 @@
             :where [:= :id 3]
             :values {:type "creator"}})
 
-  (find ds {:tname :bundles})
+  (find ds {:tname :users
+            :where [:= :email "keaganncollins@gmail.com"]})
 
   ())

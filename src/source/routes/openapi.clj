@@ -69,6 +69,7 @@
              400 (error data-schema))))
 
 (defn unauthenticated
+  ([] (unauthenticated nil))
   ([schema] (unauthenticated {} schema))
   ([responses schema]
    (response (if (map? responses) responses {})
@@ -133,6 +134,11 @@
   [:map
    [:email :string]
    [:password :string]])
+
+(def PasswordResetParams
+  [:map
+   [:password :string]
+   [:confirm-password :string]])
 
 (def InsertVocab
   [:map
