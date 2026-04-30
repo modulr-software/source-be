@@ -33,8 +33,7 @@
   [{:keys [ds path-params]}]
   (hon/update! ds {:tname :users
                    :where [:= :id (:id path-params)]
-                   :data {:email-verified 1
-                          :email-hash ""}})
+                   :data {:email-verified 1}})
   (res/response {:message "successfully verified user"}))
 
 (comment

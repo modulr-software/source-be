@@ -68,3 +68,7 @@
                                    :where [:= :id user-id]})
                      (:removed))]
     (when (or (nil? removed?) (= removed? 0)) true)))
+
+(defn user-by-password-hash [ds password-hash]
+  (hon/find-one ds {:tname :users
+                    :where [:= :password-hash password-hash]}))

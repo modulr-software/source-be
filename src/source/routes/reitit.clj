@@ -108,6 +108,10 @@
       ["/sectors" (-> (get me-sectors/get)
                       (post me-sectors/post))]]
 
+     ["/password/reset" (post me/password-reset-auth)]
+     ["/password/reset/:hash" (post me/reset-password)]
+     ["/password/reset/:hash/verify" (get me/verify-password-reset-hash)]
+
      ["/mail" {:tags #{"mail"}}
       ["/report" (post report/post)]]
 
