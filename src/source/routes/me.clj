@@ -104,13 +104,14 @@
 
 (defn password-reset-auth
   {:summary "Request an email to authenticate a password reset"
+   :parameters (api/params :body [:map [:email :string]])
    :responses (api/success (api/response-schema))}
-  [{:keys [ds user] :as _req}]
-  (let [{:keys [email]} (hon/find-one ds {:tname :users
-                                          :where [:= :id (:id user)]})
+  [{:keys [ds path-params] :as _req}]
+  (let [{:keys [id email]} (hon/find-one ds {:tname :users
+                                             :where [:= :id (:email path-params)]})
         password-hash (util/uuid)]
     (hon/update! ds {:tname :users
-                     :where [:= :id (:id user)]
+                     :where [:= :id id]
                      :data {:password-hash password-hash}})
     (gmail/send-email {:to email
                        :subject "Source - Reset your password"

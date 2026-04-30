@@ -102,7 +102,7 @@
               (post me/post)
               (delete me/delete-user))]
       ["/email/resend" (get me/resend-email)]
-      ["/password/reset" (get me/password-reset-auth)]
+      ["/password/reset" (post me/password-reset-auth)]
       ["/deletion/cancel" (get me/cancel-deletion)]
       ["/business" (-> (get me-business/get)
                        (post me-business/post))]
