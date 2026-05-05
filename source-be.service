@@ -1,0 +1,12 @@
+[Unit]
+Description=Source Back End Server Startup Service
+After=postgresql.service
+
+[Service]
+Type=simple
+ExecStart=/home/deploy/source-be-deploy/start.sh
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
