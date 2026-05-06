@@ -12,3 +12,5 @@ resources/admins_encrypted.json
 
 .db
 admins.json
+admins_encrypted.json
+prod.env

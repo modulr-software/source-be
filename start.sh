@@ -1,8 +1,9 @@
 #!/bin/bash
+
+cd /home/deploy/source-be-deploy
 export $(grep '.*' .env | xargs)
 
-echo "Running migrations before startup..."
-clojure -M:migrate
+./migrate.sh up
 
-echo "Starting server..."
-$JAVA_CMD -jar target/source-be-standalone.jar
+echo "Starting backend server..."
+/home/deploy/.jenv/shims/java -jar source-be-standalone.jar
