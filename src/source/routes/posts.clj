@@ -27,6 +27,7 @@
 
   [{:keys [ds path-params] :as _request}]
   (-> (hon/find ds {:tname :incoming-posts
+                    :order-by [[:posted-at :desc]]
                     :where [:= :feed-id (:id path-params)]
                     :ret :*})
       (res/response)))
