@@ -10,6 +10,7 @@ chmod +x migrate.sh
 sshpass -e ssh deploy@api.wearesource.earth "
 	cd /home/deploy/source-be-deploy
 	chmod +x start.sh
+	chmod +x migrate.sh
 
 	sudo mv source-be.service /etc/systemd/system
 	sudo systemctl daemon-reload

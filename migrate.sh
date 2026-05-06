@@ -2,4 +2,5 @@
 
 export $(grep '.*' .env | xargs)
 
+echo "Running migrations..."
 clojure -M:migrate "$@"

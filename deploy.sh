@@ -10,8 +10,8 @@ clojure -T:build uber
 
 echo "Creating archive..."
 mkdir source-be-deploy
-cp start.sh source-be.service target/source-be-standalone.jar source-be-deploy
-cp -r resources source-be-deploy
+cp start.sh migrate.sh source-be.service deps.edn target/source-be-standalone.jar source-be-deploy
+cp -r resources src source-be-deploy
 cp prod.env source-be-deploy/.env
 tar -czvf source-be-deploy.tar.gz ./source-be-deploy
 
