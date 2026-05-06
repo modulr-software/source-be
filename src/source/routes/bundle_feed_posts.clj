@@ -32,6 +32,7 @@
 
   [{:keys [ds bundle-id path-params] :as _request}]
   (let [posts (hon/find ds {:tname :incoming-posts
+                            :order-by [[:posted-at :desc]]
                             :where [:= :feed-id (:id path-params)]
                             :ret :*})]
     (try
