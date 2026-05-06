@@ -10,4 +10,4 @@ jobs:
     #concurrency: deploy-group    # optional: ensure only one action runs at a time
     steps:
       - name: Execute deploy script
-        run: cd ~/Developer/source-be-deploy && ./deploy.sh
+        run: cd /home/merv/Developer/source-be-deploy && ./deploy.sh
