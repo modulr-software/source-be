@@ -199,7 +199,7 @@
         [:tr
          [:td {:class "body"
                :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-          "Welcome to Source!"
+          "Hello!"
           [:br] [:br]
           "We received a request to reset your password. Please click the button below to set a new password for your account."]]
         (button {:text "Reset Password"
