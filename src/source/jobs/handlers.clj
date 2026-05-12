@@ -20,7 +20,7 @@
 
 (defmethod handler :test [_]
   (fn [{:keys [args]}]
-    (println "hello" (:name args) args)))
+    (println "hello" (get args :name) args)))
 
 (defn update-feed-posts-job-id
   "returns the job id of an update-feed-posts job with the given email and feed-id"
