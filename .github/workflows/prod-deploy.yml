@@ -10,4 +10,6 @@ jobs:
     #concurrency: deploy-group    # optional: ensure only one action runs at a time
     steps:
       - name: Execute deploy script
+        env:
+          SSHPASS: ${{ secrets.SSHPASS }}
         run: cd ~/Developer/source-be-deploy && ./deploy.sh
