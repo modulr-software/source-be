@@ -64,11 +64,15 @@
       (handler request)
 
       (and (= (:type user) "distributor")
-           (pg/execute
-            ds
-            "SELECT EXISTS(SELECT 1 FROM bundles WHERE id = $1 AND user_id = $2) AS exists"
-            {:params [(:id path-params)
-                      (:id user)]}))
+           (->
+            (pg/execute
+             ds
+             "SELECT EXISTS(SELECT 1 FROM bundles WHERE id = $1 AND user_id = $2) AS exists"
+             {:params [(Integer/parseInt (:id path-params))
+                       (:id user)]})
+            (first)
+            (:exists)))
+
       (handler request)
 
       :else
