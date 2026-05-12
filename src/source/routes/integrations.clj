@@ -62,3 +62,19 @@
    :responses (api/success schemas/IntegrationTypes)}
   [{:keys [ds]}]
   (res/response (hon/find ds {:tname :integration-types})))
+
+(defn refresh
+  {:summary "Force rerun of bundle job to refresh integration content"
+   :parameters (api/params :path [:map [:id {:description "Integration ID"} :int]])
+   :responses (-> (api/success [:map [:message :string]])
+                  (api/unauthorized nil))}
+  [{:keys [ds js user path-params]}]
+  (let [{:keys [user-id]} (hon/find-one ds {:tname :bundles
+                                            :where [:= :id (:id path-params)]})
+        job-id (handlers/update-bundle-job-id (:id path-params))]
+    (if (or (= user-id (:id user)) (= (:type user) "admin"))
+      (do
+        (congest/stop! js job-id false)
+        (jobs/start! js ds job-id)
+        (res/response {:message "Successfully restarted bundle job."}))
+      (res/response {:message "unauthorized"}))))

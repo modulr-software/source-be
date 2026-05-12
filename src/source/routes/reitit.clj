@@ -178,6 +178,7 @@
       ["/:id" (-> (get integration/get)
                   (post integration/post)
                   (delete integration/delete))]
+      ["/:id/refresh" (get integrations/refresh)]
       ["/:id/categories" (-> (get integration-categories/get)
                              (post integration-categories/post))]
       ["/:id/filter/feeds" (get integration-filter-feeds/get)]
