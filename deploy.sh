@@ -1,11 +1,12 @@
 #!/bin/bash
 
-cd ~/Developer/source-be-deploy
+cd /home/merv/Developer/source-be-deploy
 
 echo "Pulling changes..."
 git pull
 
 echo "Starting compilation..."
+export $(grep '.*' .env | xargs)
 clojure -T:build uber
 
 echo "Creating archive..."
@@ -16,7 +17,7 @@ cp prod.env source-be-deploy/.env
 tar -czvf source-be-deploy.tar.gz ./source-be-deploy
 
 echo "Copying archive..."
-sshpass -e scp -r ~/Developer/source-be-deploy/source-be-deploy.tar.gz deploy@api.wearesource.earth:/home/deploy
+sshpass -e scp -r /home/merv/Developer/source-be-deploy/source-be-deploy.tar.gz deploy@api.wearesource.earth:/home/deploy
 echo "Done!"
 
 echo "Setting up prod server..."
