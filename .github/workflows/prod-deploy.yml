@@ -12,4 +12,4 @@ jobs:
       - name: Execute deploy script
         env:
           SSHPASS: ${{ secrets.SSHPASS }}
-        run: cd ~/Developer/source-be-deploy && ./deploy.sh
+        run: cd /home/merv/Developer/source-be-deploy && ./deploy.sh
