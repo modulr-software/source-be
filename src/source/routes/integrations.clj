@@ -69,19 +69,14 @@
    :parameters (api/params :path [:map [:id {:description "Integration ID"} :int]])
    :responses (-> (api/success [:map [:message :string]])
                   (api/unauthorized nil))}
-  [{:keys [ds user path-params]}]
+  [{:keys [ds path-params]}]
   (let [bundle-id (:id path-params)
-        {:keys [user-id]} (hon/find-one ds {:tname :bundles
-                                            :where [:= :id bundle-id]})
         categories (->> (-> {:where [:= :bundle-id bundle-id]}
                             (db.util/tname :bundle-categories bundle-id))
                         (hon/find ds)
                         (mapv #(assoc {} :id (:category-id %))))]
-    (if (or (= user-id (:id user)) (= (:type user) "admin"))
-      (do
-        ((handlers/handler {:handler :update-bundle})
-         {:ds ds
-          :args {:bundle-id bundle-id
-                 :categories categories}})
-        (res/response {:message "Successfully restarted bundle job."}))
-      (res/response {:message "unauthorized"}))))
+    ((handlers/handler {:handler :update-bundle})
+     {:ds ds
+      :args {:bundle-id bundle-id
+             :categories categories}})
+    (res/response {:message "Successfully restarted bundle job."})))

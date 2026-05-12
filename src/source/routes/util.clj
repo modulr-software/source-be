@@ -117,3 +117,15 @@
                       :default-values true
                       :options nil})
           :middleware middleware}})
+
+(defn middleware [& middlewares]
+  (let [[route-map mws] (apply parse-route-opts middlewares)
+        middleware (:middleware route-map)
+        mws (-> (or middleware [])
+                (concat mws))]
+    (->> mws
+         (mapv #(if (vector? %) % [%]))
+         (assoc route-map :middleware))))
+
+(defn mw [& middlewares]
+  (apply middleware middlewares))

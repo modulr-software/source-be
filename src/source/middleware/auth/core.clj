@@ -4,7 +4,9 @@
             [ring.util.response :as res]
             [source.services.bundles :as bundles]
             [source.db.honey :as db]
-            [taoensso.telemere :as t]))
+            [taoensso.telemere :as t]
+            [source.db.honey :as hon]
+            [pg.core :as pg]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -52,6 +54,26 @@
         :else (->
                (res/response {:message "Unauthorized"})
                (res/status 401))))))
+
+(defn wrap-integration-auth
+  "returns an unauthorized response if the integration id is not owned by this user and the user is not an admin"
+  [handler]
+  (fn [{:keys [ds user path-params] :as request}]
+    (cond
+      (= (:type user) "admin")
+      (handler request)
+
+      (and (= (:type user) "distributor")
+           (pg/execute
+            ds
+            "SELECT EXISTS(SELECT 1 FROM bundles WHERE id = $1 AND user_id = $2) AS exists"
+            {:params [(:id path-params)
+                      (:id user)]}))
+      (handler request)
+
+      :else
+      (-> (res/response {:message "unauthorized"})
+          (res/status 401)))))
 
 (defn wrap-bundle-id
   "validates the bundle uuid in the query parameters of the request for 
