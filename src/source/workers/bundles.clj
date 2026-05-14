@@ -2,7 +2,8 @@
   (:require [source.db.honey :as hon]
             [honey.sql.helpers :as hsql]
             [source.db.util :as db.util]
-            [source.prandom.core :as prandom])
+            [source.prandom.core :as prandom]
+            [pg.core :as pg])
   (:import [java.time LocalDateTime]
            [java.time.format DateTimeFormatter]))
 
@@ -110,6 +111,16 @@
                   :current-index start
                   :next-index (when (and next-index (< next-index total-size)) next-index)}
      :data limited-posts}))
+
+(defn user-owns-bundle? [ds user-id bundle-id]
+  (->
+   (pg/execute
+    ds
+    "SELECT EXISTS(SELECT 1 FROM bundles WHERE id = $1 AND user_id = $2) AS exists"
+    {:params [bundle-id
+              user-id]})
+   (first)
+   (:exists)))
 
 (comment
 

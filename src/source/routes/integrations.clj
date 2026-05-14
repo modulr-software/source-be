@@ -9,7 +9,8 @@
             [source.routes.openapi :as api]
             [source.workers.schemas :as schemas]
             [source.db.honey :as hon]
-            [malli.util :as mu]))
+            [malli.util :as mu]
+            [source.db.util :as db.util]))
 
 (defn get
   {:summary "Get metadata of all integrations on the user account"
@@ -62,3 +63,20 @@
    :responses (api/success schemas/IntegrationTypes)}
   [{:keys [ds]}]
   (res/response (hon/find ds {:tname :integration-types})))
+
+(defn refresh
+  {:summary "Force rerun of bundle job to refresh integration content"
+   :parameters (api/params :path [:map [:id {:description "Integration ID"} :int]])
+   :responses (-> (api/success [:map [:message :string]])
+                  (api/unauthorized nil))}
+  [{:keys [ds path-params]}]
+  (let [bundle-id (:id path-params)
+        categories (->> (-> {:where [:= :bundle-id bundle-id]}
+                            (db.util/tname :bundle-categories bundle-id))
+                        (hon/find ds)
+                        (mapv #(assoc {} :id (:category-id %))))]
+    ((handlers/handler {:handler :update-bundle})
+     {:ds ds
+      :args {:bundle-id bundle-id
+             :categories categories}})
+    (res/response {:message "Successfully restarted bundle job."})))

@@ -74,7 +74,8 @@
             [source.routes.job-stop :as job-stop]
             [source.routes.report :as report]
             [source.routes.approve-feed :as approve-feed]
-            [source.routes.reject-feed :as reject-feed]))
+            [source.routes.reject-feed :as reject-feed]
+            [source.middleware.auth.core :as auth]))
 
 (defn create-app [{:keys [ds js]}]
   (ring/ring-handler
@@ -178,6 +179,8 @@
       ["/:id" (-> (get integration/get)
                   (post integration/post)
                   (delete integration/delete))]
+      ["/:id/refresh" (-> (get integrations/refresh)
+                          (rutil/mw auth/wrap-integration-auth))]
       ["/:id/categories" (-> (get integration-categories/get)
                              (post integration-categories/post))]
       ["/:id/filter/feeds" (get integration-filter-feeds/get)]
