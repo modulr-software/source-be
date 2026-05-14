@@ -5,8 +5,7 @@
             [source.services.bundles :as bundles]
             [source.db.honey :as db]
             [taoensso.telemere :as t]
-            [source.db.honey :as hon]
-            [pg.core :as pg]))
+            [source.workers.bundles :as bundles-worker]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -64,15 +63,12 @@
       (handler request)
 
       (and (= (:type user) "distributor")
-           (->
-            (pg/execute
-             ds
-             "SELECT EXISTS(SELECT 1 FROM bundles WHERE id = $1 AND user_id = $2) AS exists"
-             {:params [(Integer/parseInt (:id path-params))
-                       (:id user)]})
-            (first)
-            (:exists)))
-
+           (bundles-worker/user-owns-bundle?
+            ds
+            (:id user)
+            (try
+              (Integer/parseInt (:id path-params))
+              (catch Exception _ nil))))
       (handler request)
 
       :else
