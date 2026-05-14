@@ -58,22 +58,22 @@
   "returns an unauthorized response if the integration id is not owned by this user and the user is not an admin"
   [handler]
   (fn [{:keys [ds user path-params] :as request}]
-    (cond
-      (= (:type user) "admin")
-      (handler request)
+    (let [bundle-id (try (Integer/parseInt (:id path-params)) (catch Exception _ nil))]
+      (cond
+        (nil? bundle-id)
+        (-> (res/response {:message "unauthorized"})
+            (res/status 403))
 
-      (and (= (:type user) "distributor")
-           (bundles-worker/user-owns-bundle?
-            ds
-            (:id user)
-            (try
-              (Integer/parseInt (:id path-params))
-              (catch Exception _ nil))))
-      (handler request)
+        (= (:type user) "admin")
+        (handler request)
 
-      :else
-      (-> (res/response {:message "unauthorized"})
-          (res/status 401)))))
+        (and (= (:type user) "distributor")
+             (bundles-worker/user-owns-bundle? ds bundle-id (:id user)))
+        (handler request)
+
+        :else
+        (-> (res/response {:message "unauthorized"})
+            (res/status 403))))))
 
 (defn wrap-bundle-id
   "validates the bundle uuid in the query parameters of the request for 
