@@ -4,7 +4,8 @@
             [ring.util.response :as res]
             [source.services.bundles :as bundles]
             [source.db.honey :as db]
-            [taoensso.telemere :as t]))
+            [taoensso.telemere :as t]
+            [source.workers.bundles :as bundles-worker]))
 
 (defn create-session [user]
   (let [payload {:id (:id user)
@@ -52,6 +53,27 @@
         :else (->
                (res/response {:message "Unauthorized"})
                (res/status 401))))))
+
+(defn wrap-integration-auth
+  "returns an unauthorized response if the integration id is not owned by this user and the user is not an admin"
+  [handler]
+  (fn [{:keys [ds user path-params] :as request}]
+    (let [bundle-id (try (Integer/parseInt (:id path-params)) (catch Exception _ nil))]
+      (cond
+        (nil? bundle-id)
+        (-> (res/response {:message "unauthorized"})
+            (res/status 403))
+
+        (= (:type user) "admin")
+        (handler request)
+
+        (and (= (:type user) "distributor")
+             (bundles-worker/user-owns-bundle? ds bundle-id (:id user)))
+        (handler request)
+
+        :else
+        (-> (res/response {:message "unauthorized"})
+            (res/status 403))))))
 
 (defn wrap-bundle-id
   "validates the bundle uuid in the query parameters of the request for 
