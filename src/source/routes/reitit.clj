@@ -236,8 +236,9 @@
       ["/posts" (post bundle-posts/post)]
       ["/posts/:id" (get bundle-post/get)]
 
-      ["/channels" (-> (post integration-channels/create-channel))]
-      ["/channels/:id" (-> (delete integration-channels/delete-channel))]]
+      ;["/channels" (-> (post integration-channels/create-channel))]
+      ;["/channels/:id" (-> (delete integration-channels/delete-channel))]
+      ]
      ["/bundle/exists" {:tags #{"bundles"}}
       ["" (get bundle/exists)]]
 

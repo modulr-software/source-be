@@ -40,7 +40,7 @@
 
   (res/response {:message "successfully added channel"}))
 
-(defn channel
+#_(defn channel
   {:summary "Get a channel by ID"
    :parameters {:path api/IntegrationIdParam}
    :responses {200 {:body (api/response-schema)}
@@ -50,7 +50,7 @@
   ;; TODO: implement channel retrieval
   (res/response {:message "not implemented"}))
 
-(defn update-channel
+#_(defn update-channel
   {:summary "Update a channel by ID"
    :parameters {:path api/IntegrationIdParam
                 :body api/IntegrationChannelParams}
