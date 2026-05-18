@@ -189,7 +189,7 @@
 
 (def IntegrationChannelParams
   [:map
-   [:name :string]
+   [:platform :string]
    [:channel-id :string]
    (sometimes :thread-id :string)
    [:post-interval :int]])
@@ -197,13 +197,4 @@
 (def IntegrationIdParam
   [:map
    [:id {:title "id" :description "Integration ID"} :int]])
-
-(def IntegrationChannelPathParam
-  [:map
-   [:id {:title "id" :description "Integration ID"} :int]
-   [:channel-id {:title "channel-id" :description "Channel ID"} :int]])
-
-(def IntegrationChannelIdParam
-  [:map
-   [:id {:title "id" :description "Channel ID"} :int]])
 
