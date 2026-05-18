@@ -2,6 +2,7 @@
   (:require [source.services.interface :as services]
             [source.workers.xml-schemas :as xml]
             [source.workers.users :as users]
+            [source.workers.slack :as slack]
             [source.util :as util]
             [source.services.incoming-posts :as incoming-posts]
             [source.db.util :as db.util]
@@ -194,3 +195,16 @@
         (users/hard-delete-user! ds (keyword user-type) user-id))
       (catch Exception e (t/log! {:level :error
                                   :msg (str "Failed to delete user-id " (:user-id args) ":" e)}) :fail))))
+
+(defn integration-channel-job-id [id bundle-id]
+  (str "bundle-" bundle-id "-channel-" id))
+
+(defmethod handler :post-to-integration-channel [_]
+  (fn [{:keys [args ds]}]
+    (try
+      (let [{:keys [channel-id bundle-id platform]} args]
+        (t/log! (str "bundle " bundle-id " posting to platform " platform " with channel id " channel-id ""))
+        (slack/slack-post! ds bundle-id channel-id))
+      (catch Exception e (t/log! {:level :error
+                                  :msg (str "Failed to post to integration channel: " e)}) :fail))))
+

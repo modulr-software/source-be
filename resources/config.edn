@@ -7,6 +7,7 @@
  :env #or [#env ENV "prod"]
  :database {:url #or [#env DATABASE_URL "postgres://localhost"]
             :type "postgresql"}
+ :slack {:token #env SLACK_TOKEN}
  :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
          :username #env EMAIL_USERNAME
          :password #env EMAIL_PASSWORD}

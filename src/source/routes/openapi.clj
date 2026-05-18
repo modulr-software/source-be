@@ -186,3 +186,15 @@
    [:options [:vector :string]]
    [:answers AnswerParams]])
 
+
+(def IntegrationChannelParams
+  [:map
+   [:platform :string]
+   [:channel-id :string]
+   (sometimes :thread-id :string)
+   [:post-interval :int]])
+
+(def IntegrationIdParam
+  [:map
+   [:id {:title "id" :description "Integration ID"} :int]])
+

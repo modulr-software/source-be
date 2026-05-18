@@ -266,6 +266,16 @@
    (tables/table-id)
    [:name :text :not nil]))
 
+(def integration-channels
+  (tables/create-table-sql
+   :integration-channels
+   (tables/table-id)
+   [:name :text :not nil]
+   [:channel-id :text :not nil]
+   [:thread-id :text]
+   [:post-interval :integer :not nil]
+   [:active :integer [:default 1]]))
+
 (comment
   (require '[honey.sql :as sql])
 
