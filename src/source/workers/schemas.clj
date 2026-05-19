@@ -292,3 +292,15 @@
 (def AverageEngagementAnalytics
   [:map
    [:average :float]])
+
+(def IntegrationChannel
+  [:map
+   [:id :int]
+   [:name :string]
+   [:channel-id :string]
+   (api/sometimes :thread-id :string)
+   [:post-interval :int]
+   [:active :int]])
+
+(def IntegrationChannels
+  [:vector IntegrationChannel])
