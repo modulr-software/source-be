@@ -189,7 +189,12 @@
                                         (post integration-filter-feed/post))]
       ["/:id/filter/posts" (get integration-filter-posts/get)]
       ["/:id/filter/posts/:post-id" (-> (get integration-filter-post/get)
-                                        (post integration-filter-post/post))]]
+                                        (post integration-filter-post/post))]
+
+      ["/:id/channels" (-> (get integration-channels/channels)
+                           (post integration-channels/create-channel))]
+      ["/:id/channels/:channel-id" (-> (get integration-channels/channel)
+                                       (delete integration-channels/delete-channel))]]
 
      ["/integration/types" {:tags #{"integrations"}}
       ["" (get integrations/get-integration-types)]]
@@ -234,10 +239,7 @@
       ["/feeds/:id/posts" (get bundle-feed-posts/get)]
       ["/feeds/:id/posts/:post-id" (get bundle-feed-post/get)]
       ["/posts" (post bundle-posts/post)]
-      ["/posts/:id" (get bundle-post/get)]
-
-      ["/channels" (-> (post integration-channels/create-channel))]
-      ["/channels/:id" (-> (delete integration-channels/delete-channel))]]
+      ["/posts/:id" (get bundle-post/get)]]
      ["/bundle/exists" {:tags #{"bundles"}}
       ["" (get bundle/exists)]]
 

@@ -186,7 +186,6 @@
    [:options [:vector :string]]
    [:answers AnswerParams]])
 
-
 (def IntegrationChannelParams
   [:map
    [:platform :string]
@@ -195,6 +194,7 @@
    [:post-interval :int]])
 
 (def IntegrationIdParam
-  [:map
-   [:id {:title "id" :description "Integration ID"} :int]])
+  [:id {:title "id" :description "Integration ID"} :int])
 
+(def IntegrationChannelIdParam
+  [:channel-id {:title "channel-id" :description "Channel ID"} :int])
