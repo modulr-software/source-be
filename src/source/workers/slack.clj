@@ -38,7 +38,6 @@
                   {:bundle-id bundle-id
                    :start 0
                    :limit 1
-                   :type 3
                    :seed (util/uuid)
                    :truncate false})
                  (:data)
@@ -63,18 +62,18 @@
                        (:stream-url post))
                   (= (:content-type-id post) 2)
                   (str section
-                       (clean (:info post)) "\n"
+                       #_(clean (:info post)) "\n"
                        (:stream-url post))
                   (= (:content-type-id post) 3)
                   (str section
-                       (clean (:info post)) "\n"
+                       #_(clean (:info post)) "\n"
                        (or (:url post)
                            (:stream-url post)
                            (:thumbnail post))))
 
         blocks [{:type "section"
                  :text {:type "mrkdwn"
-                        :text (str section (clean (:info post)))}
+                        :text (str section #_(clean (:info post)))}
                  :accessory {:type "image"
                              :image_url (:thumbnail post)
                              :alt_text (:title post)}}
