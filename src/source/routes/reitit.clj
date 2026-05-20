@@ -52,6 +52,7 @@
             [source.routes.integration-filter-feed :as integration-filter-feed]
             [source.routes.integration-filter-posts :as integration-filter-posts]
             [source.routes.integration-filter-post :as integration-filter-post]
+            [source.routes.integration-channels :as integration-channels]
             [source.routes.bundle :as bundle]
             [source.routes.bundle-categories :as bundle-categories]
             [source.routes.bundle-feeds :as bundle-feeds]
@@ -188,7 +189,12 @@
                                         (post integration-filter-feed/post))]
       ["/:id/filter/posts" (get integration-filter-posts/get)]
       ["/:id/filter/posts/:post-id" (-> (get integration-filter-post/get)
-                                        (post integration-filter-post/post))]]
+                                        (post integration-filter-post/post))]
+
+      ["/:id/channels" (-> (get integration-channels/channels)
+                           (post integration-channels/create-channel))]
+      ["/:id/channels/:channel-id" (-> (get integration-channels/channel)
+                                       (delete integration-channels/delete-channel))]]
 
      ["/integration/types" {:tags #{"integrations"}}
       ["" (get integrations/get-integration-types)]]
