@@ -14,18 +14,25 @@
 
 (defn slack-post! [ds bundle-id channel-id]
   (let [post (-> (bundles/get-outgoing-posts
-                   ds
-                   {:bundle-id bundle-id
-                    :start 0
-                    :limit 1
-                    :truncate true})
+                  ds
+                  {:bundle-id bundle-id
+                   :start 0
+                   :limit 1
+                   :truncate true})
                  (:data)
                  (first))
         message (cond
                   (= (:content-type-id post) 1)
-                  (str (:feed-title post) "\n" (:stream-url post))
+                  (str ":clapper: *" (:feed-title post) "*\n"
+                       (:stream-url post))
                   (= (:content-type-id post) 2)
-                  (str (:feed-title post) "\n" (:info post) "\n" (:thumbnail post))
+                  (str ":studio_microphone: *" (:feed-title post) "*\n"
+                       (:info post) "\n"
+                       (:stream-url post))
                   (= (:content-type-id post) 3)
-                  (str (:feed-title post) "\n" (:info post) "\n" (:thumbnail post)))]
+                  (str ":newspaper: *" (:feed-title post) "*\n"
+                       (:info post) "\n"
+                       (or (:url post)
+                           (:stream-url post)
+                           (:thumbnail post))))]
     (send-slack-message! channel-id message)))
