@@ -45,9 +45,6 @@
                  (:data)
                  (first))
 
-        feed (hon/find-one ds {:tname :feeds
-                               :where [:= :id (:feed-id post)]})
-
         verb (cond
                (= (:content-type-id post) 1) "Watch"
                (= (:content-type-id post) 2) "Listen"
@@ -87,7 +84,6 @@
                              :text {:type "plain_text"
                                     :text verb}
                              :url (or (:url post)
-                                      (when (= (:content-type-id post) 3) (:url feed))
                                       (:stream-url post))}]}]]
     (send-slack-message! channel-id message blocks)))
 
