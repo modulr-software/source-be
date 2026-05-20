@@ -5,7 +5,8 @@
             [source.config :as conf]
             [clojure.string :as str]
             [source.util :as util]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [source.db.honey :as hon]))
 
 (defn strip-html [s]
   (-> s
@@ -43,6 +44,9 @@
                    :truncate false})
                  (:data)
                  (first))
+
+        feed (hon/find-one ds {:tname :feeds
+                               :where [:= :id (:feed-id post)]})
 
         verb (cond
                (= (:content-type-id post) 1) "Watch"
@@ -82,7 +86,9 @@
                  :elements [{:type "button"
                              :text {:type "plain_text"
                                     :text verb}
-                             :url (or (:url post) (:stream-url post))}]}]]
+                             :url (or (:url post)
+                                      (when (= (:content-type-id post) 3) (:url feed))
+                                      (:stream-url post))}]}]]
     (send-slack-message! channel-id message blocks)))
 
 (comment
