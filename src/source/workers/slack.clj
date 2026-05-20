@@ -5,8 +5,7 @@
             [source.config :as conf]
             [clojure.string :as str]
             [source.util :as util]
-            [source.db.util :as db.util]
-            [source.db.honey :as hon]))
+            [source.db.util :as db.util]))
 
 (defn strip-html [s]
   (-> s
