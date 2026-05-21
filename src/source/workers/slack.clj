@@ -7,7 +7,26 @@
             [source.util :as util]
             [source.db.util :as db.util]))
 
-(defn strip-html [s]
+(defn unfurlable? [s]
+  (or
+   (str/includes? s "youtube.com")
+   (str/includes? s "youtu.be")
+   (str/includes? s "open.spotify.com")
+   (str/includes? s "podcasts.apple.com")
+   (str/includes? s "substack.com")))
+
+(defn decode-entities [s]
+  (-> s
+      (str/replace #"&nbsp;" " ")
+      (str/replace #"&amp;" "&")
+      (str/replace #"&lt;" "<")
+      (str/replace #"&gt;" ">")
+      (str/replace #"&quot;" "\"")
+      (str/replace #"&apos;" "'")
+      (str/replace #"&#39;" "'")
+      (str/replace #"&#x?[0-9a-fA-F]+;" " ")))
+
+(defn strip-tags [s]
   (-> s
       (str/replace #"<br\s*\/?>" "\n")
       (str/replace #"<\/p>" "\n\n")
@@ -20,17 +39,20 @@
 
 (defn clean [s]
   (-> s
-      (strip-html)
+      (strip-tags)
+      (decode-entities)
       (truncate 600)))
 
-(defn send-slack-message! [channel-id message blocks]
+(defn send-slack-message! [channel-id message blocks unfurl?]
   @(http/request {:url "https://slack.com/api/chat.postMessage"
                   :method :post
                   :headers {"Authorization" (str "Bearer " (conf/read-value :slack :token))
                             "Content-Type" "application/json; charset=utf-8"}
                   :body (json/write-str {:channel channel-id
                                          :text message
-                                         :blocks blocks})}))
+                                         :blocks blocks
+                                         :unfurl_links unfurl?
+                                         :unfurl_media unfurl?})}))
 
 (defn slack-post! [ds bundle-id channel-id]
   (let [post (-> (bundles/get-outgoing-posts
@@ -38,15 +60,11 @@
                   {:bundle-id bundle-id
                    :start 0
                    :limit 1
+                   :type 1
                    :seed (util/uuid)
                    :truncate false})
                  (:data)
                  (first))
-
-        verb (cond
-               (= (:content-type-id post) 1) "Watch"
-               (= (:content-type-id post) 2) "Listen"
-               (= (:content-type-id post) 3) "Read")
 
         section (cond
                   (= (:content-type-id post) 1)
@@ -56,24 +74,32 @@
                   (= (:content-type-id post) 3)
                   (str ":newspaper: *" (:feed-title post) " — " (:title post) "*\n"))
 
+        verb (cond
+               (= (:content-type-id post) 1)
+               "Watch"
+               (= (:content-type-id post) 2)
+               "Listen"
+               (= (:content-type-id post) 3)
+               "Read")
+
         message (cond
                   (= (:content-type-id post) 1)
                   (str section
                        (:stream-url post))
                   (= (:content-type-id post) 2)
                   (str section
-                       #_(clean (:info post)) "\n"
-                       (:stream-url post))
+                       (clean (:info post)) "\n"
+                       (or (:url post)
+                           (:stream-url post)))
                   (= (:content-type-id post) 3)
                   (str section
-                       #_(clean (:info post)) "\n"
+                       (clean (:info post)) "\n"
                        (or (:url post)
-                           (:stream-url post)
-                           (:thumbnail post))))
+                           (:stream-url post))))
 
         blocks [{:type "section"
                  :text {:type "mrkdwn"
-                        :text (str section #_(clean (:info post)))}
+                        :text section}
                  :accessory {:type "image"
                              :image_url (:thumbnail post)
                              :alt_text (:title post)}}
@@ -81,9 +107,11 @@
                  :elements [{:type "button"
                              :text {:type "plain_text"
                                     :text verb}
-                             :url (or (:url post)
-                                      (:stream-url post))}]}]]
-    (send-slack-message! channel-id message blocks)))
+                             :url (or (:url post) (:stream-url post))}]}]]
+
+    (if (unfurlable? (or (:url post) (:stream-url post)))
+      (send-slack-message! channel-id message nil true)
+      (send-slack-message! channel-id message blocks false))))
 
 (comment
   (slack-post! (db.util/conn) 26 "C0AV8471CJE")
