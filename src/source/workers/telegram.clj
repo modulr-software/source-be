@@ -74,7 +74,7 @@
       (send-telegram-photo!
        channel-id
        (:thumbnail post)
-       (str section (util/truncate (util/strip-tags (:info post)) 600) "\n")
+       (str section (util/truncate (util/strip-tags (or (:info post) " ")) 600) "\n")
        reply-markup))))
 
 (comment
