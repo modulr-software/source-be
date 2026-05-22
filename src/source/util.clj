@@ -128,6 +128,45 @@
       out)
     (catch Exception _ s)))
 
+(defn unfurlable? [s]
+  (or
+   (string/includes? s "youtube.com")
+   (string/includes? s "youtu.be")
+   (string/includes? s "open.spotify.com")
+   (string/includes? s "podcasts.apple.com")
+   (string/includes? s "substack.com")))
+
+(defn decode-entities [s]
+  (-> s
+      (string/replace #"&nbsp;" " ")
+      (string/replace #"&amp;" "&")
+      (string/replace #"&lt;" "<")
+      (string/replace #"&gt;" ">")
+      (string/replace #"&quot;" "\"")
+      (string/replace #"&apos;" "'")
+      (string/replace #"&#39;" "'")
+      (string/replace #"&#x?[0-9a-fA-F]+;" " ")))
+
+(defn strip-tags [s]
+  (-> s
+      (string/replace #"<br\s*\/?>" "\n")
+      (string/replace #"<\/p>" "\n\n")
+      (string/replace #"<[^>]*>" "")
+      (string/replace #"<" "")
+      (string/replace #">" "")
+      (string/replace #"<*?\.\.\." "")))
+
+(defn truncate [s max-len]
+  (if (> (count s) max-len)
+    (subs s 0 max-len)
+    s))
+
+(defn clean [s]
+  (-> s
+      (strip-tags)
+      (decode-entities)
+      (truncate 600)))
+
 (comment
   (sha256 "1")
   (validate {:a "1"} [:map [:a {:title "aoeu"
