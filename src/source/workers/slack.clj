@@ -3,45 +3,8 @@
             [source.workers.bundles :as bundles]
             [org.httpkit.client :as http]
             [source.config :as conf]
-            [clojure.string :as str]
             [source.util :as util]
             [source.db.util :as db.util]))
-
-(defn unfurlable? [s]
-  (or
-   (str/includes? s "youtube.com")
-   (str/includes? s "youtu.be")
-   (str/includes? s "open.spotify.com")
-   (str/includes? s "podcasts.apple.com")
-   (str/includes? s "substack.com")))
-
-(defn decode-entities [s]
-  (-> s
-      (str/replace #"&nbsp;" " ")
-      (str/replace #"&amp;" "&")
-      (str/replace #"&lt;" "<")
-      (str/replace #"&gt;" ">")
-      (str/replace #"&quot;" "\"")
-      (str/replace #"&apos;" "'")
-      (str/replace #"&#39;" "'")
-      (str/replace #"&#x?[0-9a-fA-F]+;" " ")))
-
-(defn strip-tags [s]
-  (-> s
-      (str/replace #"<br\s*\/?>" "\n")
-      (str/replace #"<\/p>" "\n\n")
-      (str/replace #"<[^>]*>" "")))
-
-(defn truncate [s max-len]
-  (if (> (count s) max-len)
-    (subs s 0 max-len)
-    s))
-
-(defn clean [s]
-  (-> s
-      (strip-tags)
-      (decode-entities)
-      (truncate 600)))
 
 (defn send-slack-message! [channel-id message blocks unfurl?]
   @(http/request {:url "https://slack.com/api/chat.postMessage"
@@ -88,12 +51,12 @@
                        (:stream-url post))
                   (= (:content-type-id post) 2)
                   (str section
-                       (clean (:info post)) "\n"
+                       (util/clean (:info post)) "\n"
                        (or (:url post)
                            (:stream-url post)))
                   (= (:content-type-id post) 3)
                   (str section
-                       (clean (:info post)) "\n"
+                       (util/clean (:info post)) "\n"
                        (or (:url post)
                            (:stream-url post))))
 
@@ -109,7 +72,7 @@
                                     :text verb}
                              :url (or (:url post) (:stream-url post))}]}]]
 
-    (if (unfurlable? (or (:url post) (:stream-url post)))
+    (if (util/unfurlable? (or (:url post) (:stream-url post)))
       (send-slack-message! channel-id message nil true)
       (send-slack-message! channel-id message blocks false))))
 
