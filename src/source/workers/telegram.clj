@@ -16,15 +16,14 @@
                                          :parse_mode "HTML"
                                          :reply_markup reply-markup})}))
 
-(defn send-telegram-message! [chat-id message web-preview? reply-markup]
+(defn send-telegram-message! [chat-id message web-preview?]
   @(http/request {:url (str "https://api.telegram.org/bot" (conf/read-value :telegram :token) "/sendMessage")
                   :method :post
                   :headers {"Content-Type" "application/json; charset=utf-8"}
                   :body (json/write-str {:chat_id chat-id
                                          :text message
                                          :parse_mode "HTML"
-                                         :disable_web_page_preview web-preview?
-                                         :reply_markup reply-markup})}))
+                                         :disable_web_page_preview web-preview?})}))
 
 (defn telegram-post! [ds bundle-id channel-id]
   (let [post (-> (bundles/get-outgoing-posts
@@ -32,9 +31,7 @@
                   {:bundle-id bundle-id
                    :start 0
                    :limit 1
-                   :type 2
-                   :seed (util/uuid)
-                   :truncate false})
+                   :seed (util/uuid)})
                  (:data)
                  (first))
 
@@ -56,8 +53,8 @@
 
         reply-markup (when (or (:url post) (:stream-url post))
                        {:inline_keyboard [[{:text verb
-                                                 :url
-                                                 (or (:url post) (:stream-url post))}]]})
+                                            :url
+                                            (or (:url post) (:stream-url post))}]]})
 
         message (cond
                   (= (:content-type-id post) 1)
@@ -73,11 +70,11 @@
                            (:stream-url post))))]
 
     (if (util/unfurlable? (or (:url post) (:stream-url post)))
-      (send-telegram-message! channel-id message false nil)
+      (send-telegram-message! channel-id message false)
       (send-telegram-photo!
        channel-id
        (:thumbnail post)
-       (str section (util/clean (:info post)) "\n")
+       (str section (util/truncate (util/strip-tags (:info post)) 600) "\n")
        reply-markup))))
 
 (comment

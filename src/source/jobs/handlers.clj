@@ -3,6 +3,7 @@
             [source.workers.xml-schemas :as xml]
             [source.workers.users :as users]
             [source.workers.slack :as slack]
+            [source.workers.telegram :as telegram]
             [source.util :as util]
             [source.services.incoming-posts :as incoming-posts]
             [source.db.util :as db.util]
@@ -204,7 +205,10 @@
     (try
       (let [{:keys [channel-id bundle-id platform]} args]
         (t/log! (str "bundle " bundle-id " posting to platform " platform " with channel id " channel-id ""))
-        (slack/slack-post! ds bundle-id channel-id))
+        (cond
+          (= platform "slack")
+          (t/log! (slack/slack-post! ds bundle-id channel-id))
+          (= platform "telegram")
+          (t/log! (telegram/telegram-post! ds bundle-id channel-id))))
       (catch Exception e (t/log! {:level :error
                                   :msg (str "Failed to post to integration channel: " e)}) :fail))))
-

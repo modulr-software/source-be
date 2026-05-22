@@ -151,7 +151,10 @@
   (-> s
       (string/replace #"<br\s*\/?>" "\n")
       (string/replace #"<\/p>" "\n\n")
-      (string/replace #"<[^>]*>" "")))
+      (string/replace #"<[^>]*>" "")
+      (string/replace #"<" "")
+      (string/replace #">" "")
+      (string/replace #"<*?\.\.\." "")))
 
 (defn truncate [s max-len]
   (if (> (count s) max-len)

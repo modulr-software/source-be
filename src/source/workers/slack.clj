@@ -23,7 +23,6 @@
                   {:bundle-id bundle-id
                    :start 0
                    :limit 1
-                   :type 1
                    :seed (util/uuid)
                    :truncate false})
                  (:data)
