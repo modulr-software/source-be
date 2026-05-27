@@ -22,9 +22,9 @@
    :parameters {:query [:map
                         [:code :string]
                         [:scope :string]
-                        [:state :string]]}
+                        [:state :int]]}
    :responses {200 {:body [:map [:message :string]]}}}
   [{:keys [query-params] :as req}]
   (let [{:keys [state]} query-params
-        result (slack/slack-integration-details state (:params req))]
+        result (slack/slack-integration-details (:params req))]
     (res/response {:message (str result)})))

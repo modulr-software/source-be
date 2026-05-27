@@ -7,5 +7,5 @@
 (defn auth-uri []
   (slack/-auth-uri auth-reqs-service))
 
-(defn slack-integration-details [uuid params]
-  (slack/-slack-integration-details auth-reqs-service uuid params))
+(defn slack-integration-details [params]
+  (slack/-slack-integration-details params))
