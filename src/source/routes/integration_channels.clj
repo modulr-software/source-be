@@ -1,12 +1,11 @@
  (ns source.routes.integration-channels
    (:require [ring.util.response :as res]
              [source.routes.openapi :as api]
-             [source.jobs.core :as jobs]
              [source.jobs.handlers :as handlers]
-             [source.util :as util]
              [congest.jobs :as congest]
              [source.db.honey :as hon]
-             [source.workers.schemas :as schemas]))
+             [source.workers.schemas :as schemas]
+             [source.workers.integration-channels :as channels]))
 
 (defn channels
   {:summary "Get all channels for the integration ID"
@@ -46,30 +45,11 @@
   [{:keys [ds js body path-params] :as _request}]
   (let [{:keys [platform channel-id thread-id post-interval]} body
         ;;TODO: validate input data
-        {:keys [id] :as channel} (hon/insert! ds {:tname :integration-channels
-                                                  :data {:name platform
-                                                         :bundle-id (:id path-params)
-                                                         :channel-id channel-id
-                                                         :thread-id thread-id
-                                                         :post-interval post-interval}
-                                                  :ret :1})]
-
-    (->> (jobs/prepare-congest-metadata
-          ds
-          {:id (handlers/integration-channel-job-id id (:id path-params))
-           :initial-delay 0
-           :auto-start true
-           :stop-after-fail false
-           :interval post-interval
-           :recurring? true
-           :args {:channel-id channel-id
-                  :platform platform
-                  :bundle-id (:id path-params)}
-           :handler :post-to-integration-channel
-           :created-at (util/get-utc-timestamp-string)
-           :sleep false})
-         (congest/register! js))
-
+        channel (channels/create-channel! ds js {:platform platform
+                                                 :bundle-id (:id path-params)
+                                                 :channel-id channel-id
+                                                 :thread-id thread-id
+                                                 :post-interval post-interval})]
     (res/response channel)))
 
 #_(defn update-channel

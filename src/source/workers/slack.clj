@@ -4,12 +4,13 @@
             [org.httpkit.client :as http]
             [source.config :as conf]
             [source.util :as util]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [source.db.honey :as hon]))
 
-(defn send-slack-message! [channel-id message blocks unfurl?]
+(defn send-slack-message! [{:keys [channel-id message blocks unfurl? access-token]}]
   @(http/request {:url "https://slack.com/api/chat.postMessage"
                   :method :post
-                  :headers {"Authorization" (str "Bearer " (conf/read-value :slack :token))
+                  :headers {"Authorization" (str "Bearer " (or access-token (conf/read-value :slack :token)))
                             "Content-Type" "application/json; charset=utf-8"}
                   :body (json/write-str {:channel channel-id
                                          :text message
@@ -69,11 +70,23 @@
                  :elements [{:type "button"
                              :text {:type "plain_text"
                                     :text verb}
-                             :url (or (:url post) (:stream-url post))}]}]]
+                             :url (or (:url post) (:stream-url post))}]}]
+
+        {:keys [access-token]} (hon/find-one ds {:tname :integration-channels
+                                                 :where [:and
+                                                         [:= :channel-id channel-id]
+                                                         [:= :bundle-id bundle-id]]})]
 
     (if (util/unfurlable? (or (:url post) (:stream-url post)))
-      (send-slack-message! channel-id message nil true)
-      (send-slack-message! channel-id message blocks false))))
+      (send-slack-message! {:channel-id channel-id
+                            :message message
+                            :access-token access-token
+                            :unfurl? true})
+      (send-slack-message! {:channel-id channel-id
+                            :message message
+                            :access-token access-token
+                            :blocks blocks
+                            :unfurl? false}))))
 
 (comment
   (slack-post! (db.util/conn) 26 "C0AV8471CJE")
