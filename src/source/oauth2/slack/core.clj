@@ -36,4 +36,5 @@
                     params
                     (cache/get-item auth-reqs-service uuid)))]
     (cache/remove-item auth-reqs-service uuid)
-    (slack-channel-id (:access-token result))))
+    #_(slack-channel-id (:access-token result))
+    result))
