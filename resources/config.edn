@@ -19,4 +19,12 @@
                    :client-secret       #env GOOGLE_CLIENT_SECRET
                    :access-query-param  :access_token
                    :scope               ["https://www.googleapis.com/auth/userinfo.email"]
-                   :grant-type          "authorization_code"}}}
+                   :grant-type          "authorization_code"}
+          :slack {:authorization-uri "https://slack.com/oauth/v2/authorize"
+                  :access-token-uri  "https://slack.com/api/oauth.v2.access"
+                  :redirect-uri      #or [#env SLACK_REDIRECT_URI "https://api.wearesource.earth/oauth2/slack/callback"]
+                  :client-id         #env SLACK_CLIENT_ID
+                  :client-secret     #env SLACK_CLIENT_SECRET
+                  :access-query-param :access_token
+                  :scope             ["chat:write" "chat:write.public" "files:write" "incoming-webhook"]
+                  :grant-type        "authorization_code"}}}

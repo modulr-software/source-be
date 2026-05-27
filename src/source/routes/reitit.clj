@@ -15,6 +15,7 @@
             [source.routes.google-launch :as google-launch]
             [source.routes.google-redirect :as google-redirect]
             [source.routes.google-user :as google-user]
+            [source.routes.slack :as slack]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]
             [source.routes.business :as business]
@@ -144,7 +145,13 @@
        ["" (get google-launch/get)]
        ["/callback" {:no-doc true}
         ["" (get google-redirect/get)]]
-       ["/user" (get google-user/get)]]]
+       ["/user" (get google-user/get)]]
+
+      ["/slack" {:tags #{"slack"}}
+       ["" (get slack/launch)]
+       ["/callback" {:no-doc true}
+        ["" (get slack/redirect)]]
+       ["/complete" (get slack/complete)]]]
 
      ["/protected" {:middleware [[mw/apply-auth]]
                     :tags #{"protected"}
