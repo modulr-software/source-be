@@ -34,6 +34,6 @@
   (let [result (-> (conf/read-value :oauth2 :slack)
                    (oauth2/get-access-token
                     params
-                    (:uri (cache/get-item auth-reqs-service uuid))))]
+                    (cache/get-item auth-reqs-service uuid)))]
     (cache/remove-item auth-reqs-service uuid)
     (slack-channel-id (:access-token result))))
