@@ -198,3 +198,9 @@
 
 (def IntegrationChannelIdParam
   [:channel-id {:title "channel-id" :description "Channel ID"} :int])
+
+(def UpdateIntegrationChannelParams
+  [:map
+   (sometimes :channel-id :string)
+   (sometimes :thread-id :string)
+   (sometimes :post-interval :int)])

@@ -201,6 +201,7 @@
       ["/:id/channels" (-> (get integration-channels/channels)
                            (post integration-channels/create-channel))]
       ["/:id/channels/:channel-id" (-> (get integration-channels/channel)
+                                       (post integration-channels/update-channel)
                                        (delete integration-channels/delete-channel))]]
 
      ["/integration/types" {:tags #{"integrations"}}
