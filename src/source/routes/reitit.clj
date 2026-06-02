@@ -38,8 +38,13 @@
             [source.routes.feeds :as feeds]
             [source.routes.feed :as feed]
             [source.routes.feed-categories :as feed-categories]
-            [source.routes.creator-analytics :as creator-analytics]
-            [source.routes.distributor-analytics :as distributor-analytics]
+            [source.routes.analytics.creator.general :as analytics-creator-general]
+            [source.routes.analytics.creator.deltas :as analytics-creator-deltas]
+            [source.routes.analytics.creator.top :as analytics-creator-top]
+            [source.routes.analytics.creator.top-average :as analytics-creator-top-average]
+            [source.routes.analytics.distributor.general :as analytics-distributor-general]
+            [source.routes.analytics.distributor.top :as analytics-distributor-top]
+            [source.routes.analytics.distributor.top-average :as analytics-distributor-top-average]
             [source.routes.bundle-analytics :as bundle-analytics]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
@@ -219,14 +224,14 @@
      ["/analytics" {:tags #{"analytics"}}
 
       ["/creator" {:middleware [[mw/apply-auth {:required-type :creator}]]}
-       ["/general" (get creator-analytics/general-statistics)]
-       ["/deltas" (get creator-analytics/weekly-growth-deltas)]
-       ["/top" (get creator-analytics/top-statistics)]
-       ["/top/average" (get creator-analytics/average-engagement)]]
+       ["/general" (get analytics-creator-general/get)]
+       ["/deltas" (get analytics-creator-deltas/get)]
+       ["/top" (get analytics-creator-top/get)]
+       ["/top/average" (get analytics-creator-top-average/get)]]
       ["/distributor" {:middleware [[mw/apply-auth {:required-type :distributor}]]}
-       ["/general" (get distributor-analytics/general-statistics)]
-       ["/top" (get distributor-analytics/top-statistics)]
-       ["/top/average" (get distributor-analytics/average-engagement)]]
+       ["/general" (get analytics-distributor-general/get)]
+       ["/top" (get analytics-distributor-top/get)]
+       ["/top/average" (get analytics-distributor-top-average/get)]]
       ["/bundle" {:middleware [[mw/apply-bundle]]}
        ["/posts/:id/views" (post bundle-analytics/post-view)]]
       ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
