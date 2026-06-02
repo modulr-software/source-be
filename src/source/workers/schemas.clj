@@ -201,6 +201,12 @@
     :description "Filters by most recently published"}
    [:enum "true" "false"]])
 
+(def QueryAnalytics
+  [:analytics
+   {:optional true
+    :description "Automatically update analytics for the returned content. Defaults to true."}
+   [:enum "true" "false"]])
+
 (def JobStatus [:enum ["running" "stopped"]])
 
 (def Job

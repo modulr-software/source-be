@@ -2,13 +2,16 @@
   (:require [ring.util.response :as res]
             [source.db.honey :as hon]
             [source.services.analytics.interface :as analytics]
-            [taoensso.telemere :as t]))
+            [taoensso.telemere :as t]
+            [source.workers.schemas :as schemas]))
 
 (defn get
   {:summary "Get all posts present within a given RSS feed by feed id, within the uuid-authorized bundle.
    This endpoint will update impressions analytics for the returned posts."
    :description "This endpoint will fetch all posts within the given feed, regardless of whether these posts made it into this bundle during post selection."
-   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
+   :parameters {:query [:map
+                        schemas/QueryUUID
+                        schemas/QueryAnalytics]
                 :path [:map [:id {:title "id"
                                   :description "Feed ID"} :int]]}
    :responses {200 {:body [:vector
@@ -30,13 +33,15 @@
                401 {:body [:map [:message :string]]}
                403 {:body [:map [:message :string]]}}}
 
-  [{:keys [ds bundle-id path-params] :as _request}]
+  [{:keys [ds bundle-id path-params query-params] :as _request}]
   (let [posts (hon/find ds {:tname :incoming-posts
                             :order-by [[:posted-at :desc]]
                             :where [:= :feed-id (:id path-params)]
                             :ret :*})]
-    (try
-      (analytics/insert-post-impressions! ds posts bundle-id)
-      (catch Exception e (t/log! {:level :error
-                                  :msg (str "Failed to insert post impressions for bundle feed posts: " (.getMessage e))})))
+    (when (not (= (:analytics query-params) "false"))
+      (try
+        (analytics/insert-post-impressions! ds posts bundle-id)
+        (catch Exception e (t/log! {:level :error
+                                    :msg (str "Failed to insert post impressions for bundle feed posts: " (.getMessage e))}))))
+
     (res/response posts)))

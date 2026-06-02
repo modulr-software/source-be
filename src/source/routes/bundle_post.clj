@@ -14,21 +14,24 @@
    Used to return a single post present in the bundle.
    This endpoint updates click analytics for the returned post."
    :description "This endpoint will pull a single post by ID that made it into the bundle during post selection."
-   :parameters {:query [:map [:uuid {:description "Bundle UUID"} :string]]
+   :parameters {:query [:map
+                        schemas/QueryUUID
+                        schemas/QueryAnalytics]
                 :path [:map [:id {:title "id"
                                   :description "Post ID"} :int]]}
    :responses (-> (api/success (-> schemas/Post
                                    (mu/assoc :feed-title :string)))
                   (api/not-found))}
 
-  [{:keys [ds bundle-id path-params] :as _request}]
+  [{:keys [ds bundle-id path-params query-params] :as _request}]
   (let [post (hon/execute! ds (-> (hsql/select-distinct :p.* [:f.title :feed-title])
                                   (hsql/from [(:tname (db.util/tname :outgoing-posts bundle-id)) :p])
                                   (hsql/join [:feeds :f] [:= :p.feed-id :f.id])
                                   (hsql/where [:= :p.id (:id path-params)]))
                            {:ret :1})]
-    (try
-      (analytics/insert-post-click! ds post bundle-id)
-      (catch Exception e (t/log! {:level :error
-                                  :msg (str "Failed to insert post click on bundle post: " (.getMessage e))})))
+    (when (not (= (:analytics query-params) "false"))
+      (try
+        (analytics/insert-post-click! ds post bundle-id)
+        (catch Exception e (t/log! {:level :error
+                                    :msg (str "Failed to insert post click on bundle post: " (.getMessage e))}))))
     (res/response post)))
