@@ -31,13 +31,14 @@
                         schemas/QueryStart
                         schemas/QueryContentType
                         schemas/QueryLatest
+                        schemas/QueryAnalytics
                         QueryTruncatePosts
                         QuerySeed])
    :responses (api/success (api/paginated [:vector (-> schemas/Post
                                                        (mu/assoc :feed-title :string))]))}
 
   [{:keys [ds bundle-id query-params body] :as _request}]
-  (let [{:keys [limit start type latest seed truncate]} (walk/keywordize-keys query-params)
+  (let [{:keys [limit start type latest seed truncate analytics]} (walk/keywordize-keys query-params)
         {:keys [data] :as posts} (bundles/get-outgoing-posts
                                   ds
                                   {:bundle-id bundle-id
@@ -48,8 +49,9 @@
                                    :seed seed
                                    :truncate truncate
                                    :category-ids (:category-ids body)})]
-    (try
-      (analytics/insert-post-impressions! ds data bundle-id)
-      (catch Exception e (t/log! {:level :error
-                                  :msg (str "Failed to insert post impressions on bundle posts: " (.getMessage e))})))
+    (when (not (= analytics "false"))
+      (try
+        (analytics/insert-post-impressions! ds data bundle-id)
+        (catch Exception e (t/log! {:level :error
+                                    :msg (str "Failed to insert post impressions on bundle posts: " (.getMessage e))}))))
     (res/response posts)))
