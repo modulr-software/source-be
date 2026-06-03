@@ -228,7 +228,9 @@
        ["/top" (get distributor-analytics/top-statistics)]
        ["/top/average" (get distributor-analytics/average-engagement)]]
       ["/bundle" {:middleware [[mw/apply-bundle]]}
-      ["/posts/:id/views" (post bundle-analytics/post-view)]
+       ["/feeds/:id/clicks" (post bundle-analytics/feed-click)]
+       ["/feeds/impressions" (post bundle-analytics/feed-impressions)]
+       ["/posts/:id/views" (post bundle-analytics/post-view)]
        ["/posts/:id/clicks" (post bundle-analytics/post-click)]
        ["/posts/impressions" (post bundle-analytics/post-impressions)]]
       ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
