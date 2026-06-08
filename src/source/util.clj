@@ -134,7 +134,8 @@
    (string/includes? s "youtu.be")
    (string/includes? s "open.spotify.com")
    (string/includes? s "podcasts.apple.com")
-   (string/includes? s "substack.com")))
+   (string/includes? s "substack.com")
+   (string/includes? s "ghost.io")))
 
 (defn decode-entities [s]
   (-> s
@@ -152,9 +153,9 @@
       (string/replace #"<br\s*\/?>" "\n")
       (string/replace #"<\/p>" "\n\n")
       (string/replace #"<[^>]*>" "")
+      (string/replace #"<[^>]*\.\.\." "")
       (string/replace #"<" "")
-      (string/replace #">" "")
-      (string/replace #"<*?\.\.\." "")))
+      (string/replace #">" "")))
 
 (defn truncate [s max-len]
   (if (> (count s) max-len)
@@ -165,12 +166,15 @@
   (-> s
       (strip-tags)
       (decode-entities)
-      (truncate 600)))
+      (truncate 200)
+      (str "...")))
 
 (comment
   (sha256 "1")
   (validate {:a "1"} [:map [:a {:title "aoeu"
                                 :description "aoeu"} :int]])
+
+  (clean "<img src=\"https://storage.ghost.io/c/c5/e5/c5e56595-f8c2-4710-add0-9676a6de9c77/content/images/2026/...")
 
   (validate {:message "yeet"
              :b 1

@@ -31,7 +31,8 @@
                   {:bundle-id bundle-id
                    :start 0
                    :limit 1
-                   :seed (util/uuid)})
+                   :seed (util/uuid)
+                   :truncate "false"})
                  (:data)
                  (first))
 
