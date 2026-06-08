@@ -6,7 +6,115 @@
             [source.services.feed-categories :as feed-categories]
             [honey.sql :as sql]
             [clojure.walk :as walk]
-            [pg.core :as pg]))
+            [pg.core :as pg]
+            [source.db.util :as db.util]))
+
+(defn stat-field
+  "Returns the select field for the number of records for the given statistic 
+  where stat :impressions | :clicks | :views"
+  [stat]
+  (cond
+    (= stat :impressions)
+    [(hsql/filter :%count.* (hsql/where := :event "impression")) stat]
+    (= stat :clicks)
+    [(hsql/filter :%count.* (hsql/where := :event "click")) stat]
+    (= stat :views)
+    [(hsql/filter :%count.* (hsql/where := :event "view")) stat]
+    :else nil))
+
+(defn feed-statistics
+  "Returns the overall impressions, clicks and views for each feed live on the system"
+  [ds]
+  (hon/execute!
+   ds
+   (-> (hsql/select-distinct
+        :feed-id
+        :title
+        (stat-field :impressions)
+        (stat-field :clicks)
+        (stat-field :views))
+       (hsql/from :events)
+       (hsql/join :feeds [:= :feeds.id :events.feed-id])
+       (hsql/group-by :feed-id :title)
+       (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
+   {:ret :*}))
+
+(defn distributor-statistics
+  "Returns the overall impressions, clicks and views for each distributor on the system"
+  [ds]
+  (hon/execute!
+   ds
+   (-> (hsql/select-distinct
+        :e.distributor-id
+        :e.bundle-id
+        :b.name
+        (stat-field :impressions)
+        (stat-field :clicks)
+        (stat-field :views))
+       (hsql/from [:events :e])
+       (hsql/join [:bundles :b] [:= :b.id :e.bundle-id])
+       (hsql/group-by :e.bundle-id :e.distributor-id :name)
+       (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
+   {:ret :*}))
+
+(defn category-statistics
+  "Returns the overall impressions, clicks and views for each category on the system"
+  [ds]
+  (hon/execute!
+   ds
+   (-> (hsql/select-distinct
+        [:c.id :category-id]
+        :c.name
+        (stat-field :impressions)
+        (stat-field :clicks)
+        (stat-field :views))
+       (hsql/from [:events :e])
+       (hsql/join [:event-categories :ec] [:= :ec.event-id :e.id])
+       (hsql/join [:categories :c] [:= :c.id :ec.category-id])
+       (hsql/group-by :c.id :c.name)
+       (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
+   {:ret :*}))
+
+(defn top-post-statistics
+  "Returns a paginated list of the best performing posts on the system in terms of impressions, clicks and views"
+  [ds {:keys [start limit] :as _opts}]
+  (let [results (hon/execute!
+                 ds
+                 (-> (hsql/select-distinct
+                      :e.post-id
+                      :p.feed-id
+                      :p.title
+                      [:f.title :feed-title]
+                      (stat-field :impressions)
+                      (stat-field :clicks)
+                      (stat-field :views))
+                     (hsql/from [:events :e])
+                     (hsql/join [:incoming-posts :p] [:= :p.id :e.post-id])
+                     (hsql/join [:feeds :f] [:= :f.id :p.feed-id])
+                     (hsql/group-by :e.post-id :p.feed-id :p.title :f.title)
+                     (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
+                 {:ret :*})
+
+        total-size (count results)
+
+        valid-start? (and (some? start) (>= start 0) (< start total-size))
+        started-results (if valid-start?
+                          (subvec results start)
+                          results)
+
+        valid-limit? (and (some? limit) (> (count started-results) limit))
+        limited-results (if valid-limit?
+                          (subvec started-results 0 limit)
+                          started-results)
+
+        next-index (when (and start limit) (+ start limit))]
+
+    {:pagination {:page-size (count limited-results)
+                  :total-size total-size
+                  :current-index start
+                  :next-index (when (and next-index (< next-index total-size))
+                                next-index)}
+     :data limited-results}))
 
 (defn convert-all-datetimes-to-string
   "Uses postwalk to convert all instances of java.time.LocalDate into string"

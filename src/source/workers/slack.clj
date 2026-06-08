@@ -25,7 +25,7 @@
                    :start 0
                    :limit 1
                    :seed (util/uuid)
-                   :truncate false})
+                   :truncate "false"})
                  (:data)
                  (first))
 

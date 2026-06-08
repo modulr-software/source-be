@@ -41,6 +41,7 @@
             [source.routes.creator-analytics :as creator-analytics]
             [source.routes.distributor-analytics :as distributor-analytics]
             [source.routes.bundle-analytics :as bundle-analytics]
+            [source.routes.admin-analytics :as admin-analytics]
             [source.routes.integrations :as integrations]
             [source.routes.integration :as integration]
             [source.routes.integration-categories :as integration-categories]
@@ -233,9 +234,12 @@
        ["/posts/:id/views" (post bundle-analytics/post-view)]
        ["/posts/:id/clicks" (post bundle-analytics/post-click)]
        ["/posts/impressions" (post bundle-analytics/post-impressions)]]
-      ["admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
-       ["/general"]
-       ["/top"]]]
+      ["/admin" {:middleware [[mw/apply-auth {:required-type :admin}]]}
+       ["/general" (get admin-analytics/general)]
+       ["/feeds" (get admin-analytics/feeds)]
+       ["/distributors" (get admin-analytics/distributors)]
+       ["/categories" (get admin-analytics/categories)]
+       ["/top" (get admin-analytics/top)]]]
 
      ["/bundle" {:middleware [[mw/apply-bundle]]
                  :tags #{"bundles"}}

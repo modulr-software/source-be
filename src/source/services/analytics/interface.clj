@@ -94,3 +94,29 @@
   for the given post"
   [ds {:keys [_id _feed-id _content-type-id _creator-id] :as post} bundle-id]
   (core/insert-post-view! ds post bundle-id))
+
+(defn stat-field
+  "Returns the select field for the number of records for the given statistic 
+  where stat :impressions | :clicks | :views"
+  [stat]
+  (core/stat-field stat))
+
+(defn feed-statistics
+  "Returns the overall impressions, clicks and views for each feed live on the system"
+  [ds]
+  (core/feed-statistics ds))
+
+(defn distributor-statistics
+  "Returns the overall impressions, clicks and views for each distributor on the system"
+  [ds]
+  (core/distributor-statistics ds))
+
+(defn category-statistics
+  "Returns the overall impressions, clicks and views for each category on the system"
+  [ds]
+  (core/category-statistics ds))
+
+(defn top-post-statistics
+  "Returns a paginated list of the best performing posts on the system in terms of impressions, clicks and views"
+  [ds {:keys [_start _limit] :as opts}]
+  (core/top-post-statistics ds opts))

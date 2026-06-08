@@ -262,7 +262,7 @@
 
 (def integration-types
   (tables/create-table-sql
-   :business-types
+   :integration-types
    (tables/table-id)
    [:name :text :not nil]))
 
