@@ -35,6 +35,7 @@
         (stat-field :views))
        (hsql/from :events)
        (hsql/join :feeds [:= :feeds.id :events.feed-id])
+       (hsql/where := :state "live")
        (hsql/group-by :feed-id :title)
        (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
    {:ret :*}))
