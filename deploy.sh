@@ -26,7 +26,7 @@ sshpass -e ssh deploy@api.wearesource.earth "
 	tar -xzf source-be-deploy.tar.gz
 
 	echo "Restarting service..."
-	sudo systemctl restart source-fe.service
+	sudo systemctl restart source-be.service
 "
 
 echo "Cleaning up..."
