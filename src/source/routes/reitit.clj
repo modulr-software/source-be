@@ -267,6 +267,7 @@
                              (patch business-types/patch)
                              (delete business-types/delete))]
       ["/feeds" (get admin-feeds/get)]
+      ["/feeds/:id/delete" (delete admin-feeds/delete-feed)]
       ["/feeds/:id/approve" (post approve-feed/post)]
       ["/feeds/:id/reject" (post reject-feed/post)]
       ["/jobs" (get jobs/get)]
