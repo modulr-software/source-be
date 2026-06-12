@@ -18,6 +18,14 @@
    [:business-id :int]
    (tables/foreign-key :business-id :businesses :id)))
 
+(def user-locations
+  (tables/create-table-sql
+   :user-locations
+   (tables/table-id)
+   [:user-id :int]
+   [:location :text]
+   (tables/foreign-key :user-id :users :id)))
+
 (def sectors
   (tables/create-table-sql
    :sectors

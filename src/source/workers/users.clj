@@ -42,6 +42,8 @@
                        :where [:= :user-id user-id]})
       (when (some? business-id) (hon/delete! ds {:tname :businesses
                                                  :where [:= :id business-id]}))
+      (hon/delete! ds {:tname :user-locations
+                       :where [:= :user-id user-id]})
       (hon/delete! ds {:tname :users
                        :where [:= :id user-id]}))))
 

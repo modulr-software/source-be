@@ -68,38 +68,73 @@
           "The Source Team"]]
         (footer)]]]]]))
 
+(defn admin-feed-deletion
+  "Returns the completed HTML for an admin feed deletion email"
+  [{:keys [creator-name feed-title]}]
+  (h/html5
+    {:lang "en"}
+    (head-metadata)
+    [:body {:style "font-family: 'Switzer', sans-serif"}
+     [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
+      [:tr
+       [:td {:align "center" :style "padding: 20px;"}
+        [:table {:class "content"
+                 :width "600"
+                 :border "0"
+                 :cellspacing "0"
+                 :cellpadding "0"
+                 :style "border-collapse: collapse; border: 1px solid #cccccc;"}
+         (header)
+         [:tr
+          [:td {:class "body"
+                :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+           (str "Hi " creator-name)
+           [:br]
+           (str "Unfortunately, the feed \"" feed-title "\" has been removed from the platform by admin discretion.")
+           [:br] [:br]
+           "If you believe this was in error, you can reply to this email or click on the link below to leave us a message."]]
+         (button {:text "Leave us a message"
+                  :redirect (str (conf/read-value :cors-origin) "/report-a-problem")})
+         [:tr
+          [:td {:class "body"
+                :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+           "Regards,"
+           [:br]
+           "The Source Team"]]
+         (footer)]]]]]))
+
 (defn email-verification
   "Returns the completed HTML for a feed rejection email"
   [{:keys [email-hash]}]
   (h/html5
-   {:lang "en"}
-   (head-metadata)
-   [:body {:style "font-family: 'Switzer', sans-serif"}
-    [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
-     [:tr
-      [:td {:align "center" :style "padding: 20px;"}
-       [:table {:class "content"
-                :width "600"
-                :border "0"
-                :cellspacing "0"
-                :cellpadding "0"
-                :style "border-collapse: collapse; border: 1px solid #cccccc;"}
-        (header)
-        [:tr
-         [:td {:class "body"
-               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-          "Welcome to Source!"
-          [:br] [:br]
-          "Thanks for signing up. Please click the button below to verify your email."]]
-        (button {:text "Verify"
-                 :redirect (str (conf/read-value :base-url) "/email/verify/" email-hash)})
-        [:tr
-         [:td {:class "body"
-               :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
-          "Regards,"
-          [:br]
-          "The Source Team"]]
-        (footer)]]]]]))
+    {:lang "en"}
+    (head-metadata)
+    [:body {:style "font-family: 'Switzer', sans-serif"}
+     [:table {:width "100%" :border "0" :cellspacing "0" :cellpadding "0"}
+      [:tr
+       [:td {:align "center" :style "padding: 20px;"}
+        [:table {:class "content"
+                 :width "600"
+                 :border "0"
+                 :cellspacing "0"
+                 :cellpadding "0"
+                 :style "border-collapse: collapse; border: 1px solid #cccccc;"}
+         (header)
+         [:tr
+          [:td {:class "body"
+                :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+           "Welcome to Source!"
+           [:br] [:br]
+           "Thanks for signing up. Please click the button below to verify your email."]]
+         (button {:text "Verify"
+                  :redirect (str (conf/read-value :base-url) "/email/verify/" email-hash)})
+         [:tr
+          [:td {:class "body"
+                :style "padding: 40px; text-align: left; font-size: 16px; line-height: 1.6;"}
+           "Regards,"
+           [:br]
+           "The Source Team"]]
+         (footer)]]]]]))
 
 (defn feed-approval
   "Returns the completed HTML for a feed approval email"
