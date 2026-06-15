@@ -72,6 +72,7 @@
        (hsql/from [:events :e])
        (hsql/join [:event-categories :ec] [:= :ec.event-id :e.id])
        (hsql/join [:categories :c] [:= :c.id :ec.category-id])
+       (hsql/where [:is-not :post-id nil])
        (hsql/group-by :c.id :c.name)
        (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
    {:ret :*}))
