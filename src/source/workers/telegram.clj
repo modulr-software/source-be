@@ -25,18 +25,8 @@
                                          :parse_mode "HTML"
                                          :disable_web_page_preview web-preview?})}))
 
-(defn telegram-post! [ds bundle-id channel-id]
-  (let [post (-> (bundles/get-outgoing-posts
-                  ds
-                  {:bundle-id bundle-id
-                   :start 0
-                   :limit 1
-                   :seed (util/uuid)
-                   :truncate "false"})
-                 (:data)
-                 (first))
-
-        section (cond
+(defn telegram-post! [post channel-id]
+  (let [section (cond
                   (= (:content-type-id post) 1)
                   (str "🎬 <b>" (:feed-title post) " — " (:title post) "</b>\n\n")
                   (= (:content-type-id post) 2)
@@ -79,5 +69,5 @@
        reply-markup))))
 
 (comment
-  (telegram-post! (db.util/conn) 26 "-5073615757")
+  #_(telegram-post! (db.util/conn) 26 "-5073615757")
   ())

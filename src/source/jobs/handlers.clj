@@ -10,7 +10,8 @@
             [clojure.set :as set]
             [clojure.string :as string]
             [source.db.honey :as hon]
-            [taoensso.telemere :as t]))
+            [taoensso.telemere :as t]
+            [source.workers.bundles :as bundles]))
 
 (defmulti handler
   (fn [opts]
@@ -203,12 +204,20 @@
 (defmethod handler :post-to-integration-channel [_]
   (fn [{:keys [args ds]}]
     (try
-      (let [{:keys [channel-id bundle-id platform]} args]
+      (let [{:keys [channel-id bundle-id platform]} args
+            posts (-> (bundles/get-outgoing-posts
+                       ds
+                       {:bundle-id bundle-id
+                        :start 0
+                        :limit 5
+                        :seed (util/uuid)
+                        :truncate "false"})
+                      (:data))]
         (t/log! (str "bundle " bundle-id " posting to platform " platform " with channel id " channel-id ""))
         (cond
           (= platform "slack")
-          (t/log! (slack/slack-post! ds bundle-id channel-id))
+          (run! #(t/log! (slack/slack-post! ds % bundle-id channel-id)) posts)
           (= platform "telegram")
-          (t/log! (telegram/telegram-post! ds bundle-id channel-id))))
+          (run! #(t/log! (telegram/telegram-post! % channel-id)) posts)))
       (catch Exception e (t/log! {:level :error
                                   :msg (str "Failed to post to integration channel: " e)}) :fail))))
