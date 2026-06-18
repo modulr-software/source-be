@@ -204,12 +204,12 @@
 (defmethod handler :post-to-integration-channel [_]
   (fn [{:keys [args ds]}]
     (try
-      (let [{:keys [channel-id bundle-id platform]} args
+      (let [{:keys [channel-id bundle-id platform posts]} args
             posts (-> (bundles/get-outgoing-posts
                        ds
                        {:bundle-id bundle-id
                         :start 0
-                        :limit 5
+                        :limit (or posts 4)
                         :seed (util/uuid)
                         :truncate "false"})
                       (:data))]

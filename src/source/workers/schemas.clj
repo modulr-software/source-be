@@ -306,7 +306,8 @@
    [:channel-id :string]
    (api/sometimes :thread-id :string)
    [:post-interval :int]
-   [:active :int]])
+   [:active :int]
+   [:posts :int]])
 
 (def IntegrationChannels
   [:vector IntegrationChannel])

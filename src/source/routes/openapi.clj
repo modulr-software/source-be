@@ -191,7 +191,8 @@
    [:platform :string]
    [:channel-id :string]
    (sometimes :thread-id :string)
-   [:post-interval :int]])
+   [:post-interval :int]
+   [:posts {:description "Number of posts to be sent at a time. Defaults to 4."} :int]])
 
 (def IntegrationIdParam
   [:id {:title "id" :description "Integration ID"} :int])
@@ -203,4 +204,5 @@
   [:map
    (sometimes :channel-id :string)
    (sometimes :thread-id :string)
-   (sometimes :post-interval :int)])
+   (sometimes :post-interval :int)
+   (sometimes :posts :int)])

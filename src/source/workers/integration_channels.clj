@@ -6,14 +6,15 @@
             [congest.jobs :as congest]))
 
 (defn create-channel!
-  [ds js {:keys [platform bundle-id access-token channel-id thread-id post-interval]}]
+  [ds js {:keys [platform bundle-id access-token channel-id thread-id post-interval posts]}]
   (let [{:keys [id] :as channel} (hon/insert! ds {:tname :integration-channels
                                                   :data {:name platform
                                                          :bundle-id bundle-id
                                                          :channel-id channel-id
                                                          :thread-id thread-id
                                                          :post-interval post-interval
-                                                         :access-token access-token}
+                                                         :access-token access-token
+                                                         :posts posts}
                                                   :ret :1})]
     (->> (jobs/prepare-congest-metadata
           ds
@@ -25,7 +26,8 @@
            :recurring? true
            :args {:channel-id channel-id
                   :platform platform
-                  :bundle-id bundle-id}
+                  :bundle-id bundle-id
+                  :posts posts}
            :handler :post-to-integration-channel
            :created-at (util/get-utc-timestamp-string)
            :sleep false})
