@@ -45,13 +45,14 @@
                400 {:body (api/response-schema)}}}
 
   [{:keys [ds js body path-params] :as _request}]
-  (let [{:keys [platform channel-id thread-id post-interval]} body
+  (let [{:keys [platform channel-id thread-id post-interval posts]} body
         ;;TODO: validate input data
         channel (channels/create-channel! ds js {:platform platform
                                                  :bundle-id (:id path-params)
                                                  :channel-id channel-id
                                                  :thread-id thread-id
-                                                 :post-interval post-interval})]
+                                                 :post-interval post-interval
+                                                 :posts posts})]
     (res/response channel)))
 
 (defn update-channel
@@ -71,6 +72,7 @@
                            :data body})
         {:keys [post-interval
                 channel-id
+                posts
                 platform]} (hon/find-one ds {:tname :integration-channels
                                              :where [:= :id channel-id]})]
     (congest/deregister! js job-id)
@@ -84,7 +86,8 @@
            :recurring? true
            :args {:channel-id channel-id
                   :platform platform
-                  :bundle-id id}
+                  :bundle-id id
+                  :posts (or posts 4)}
            :handler :post-to-integration-channel
            :created-at (util/get-utc-timestamp-string)
            :sleep false})

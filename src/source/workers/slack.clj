@@ -18,18 +18,8 @@
                                          :unfurl_links unfurl?
                                          :unfurl_media unfurl?})}))
 
-(defn slack-post! [ds bundle-id channel-id]
-  (let [post (-> (bundles/get-outgoing-posts
-                  ds
-                  {:bundle-id bundle-id
-                   :start 0
-                   :limit 1
-                   :seed (util/uuid)
-                   :truncate "false"})
-                 (:data)
-                 (first))
-
-        section (cond
+(defn slack-post! [ds post bundle-id channel-id]
+  (let [section (cond
                   (= (:content-type-id post) 1)
                   (str ":clapper: *" (:feed-title post) " — " (:title post) "*\n")
                   (= (:content-type-id post) 2)
@@ -89,5 +79,5 @@
                             :unfurl? false}))))
 
 (comment
-  (slack-post! (db.util/conn) 26 "C0AV8471CJE")
+  #_(slack-post! (db.util/conn) 26 "C0AV8471CJE")
   ())
