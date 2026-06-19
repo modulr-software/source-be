@@ -48,13 +48,16 @@
    (-> (hsql/select-distinct
         :e.distributor-id
         :e.bundle-id
+        [:bs.name :business-name]
         :b.name
         (stat-field :impressions)
         (stat-field :clicks)
         (stat-field :views))
        (hsql/from [:events :e])
        (hsql/join [:bundles :b] [:= :b.id :e.bundle-id])
-       (hsql/group-by :e.bundle-id :e.distributor-id :name)
+       (hsql/join [:users :u] [:= :u.id :e.distributor-id])
+       (hsql/join [:businesses :bs] [:= :bs.id :u.business-id])
+       (hsql/group-by :e.bundle-id :e.distributor-id :b.name :bs.name)
        (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
    {:ret :*}))
 

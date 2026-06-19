@@ -39,6 +39,7 @@
                            [:map
                             [:distributor-id :int]
                             [:bundle-id :int]
+                            [:business-name :string]
                             [:name :string]
                             [:impressions :int]
                             [:clicks :int]
