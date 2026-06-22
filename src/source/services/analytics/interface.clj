@@ -95,6 +95,11 @@
   [ds {:keys [_id _feed-id _content-type-id _creator-id] :as post} bundle-id]
   (core/insert-post-view! ds post bundle-id))
 
+(defn insert-bot-post!
+  "Given a post and a bundle id, inserts a bot post event record for the given post"
+  [ds {:keys [_id _feed-id _content-type-id _creator-id] :as post} bundle-id]
+  (core/insert-bot-post! ds post bundle-id))
+
 (defn stat-field
   "Returns the select field for the number of records for the given statistic 
   where stat :impressions | :clicks | :views"

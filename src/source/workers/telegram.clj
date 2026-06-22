@@ -4,7 +4,8 @@
             [clojure.data.json :as json]
             [source.workers.bundles :as bundles]
             [source.util :as util]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [source.services.analytics.interface :as analytics]))
 
 (defn send-telegram-photo! [chat-id thumbnail caption reply-markup]
   @(http/request {:url (str "https://api.telegram.org/bot" (conf/read-value :telegram :token) "/sendPhoto")
@@ -25,7 +26,7 @@
                                          :parse_mode "HTML"
                                          :disable_web_page_preview web-preview?})}))
 
-(defn telegram-post! [post channel-id]
+(defn telegram-post! [ds post bundle-id channel-id]
   (let [section (cond
                   (= (:content-type-id post) 1)
                   (str "🎬 <b>" (:feed-title post) " — " (:title post) "</b>\n\n")
@@ -66,7 +67,9 @@
        channel-id
        (:thumbnail post)
        (str section (util/truncate (util/strip-tags (or (:info post) " ")) 600) "\n")
-       reply-markup))))
+       reply-markup))
+
+    (analytics/insert-bot-post! ds post bundle-id)))
 
 (comment
   #_(telegram-post! (db.util/conn) 26 "-5073615757")
