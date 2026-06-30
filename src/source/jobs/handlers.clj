@@ -218,6 +218,6 @@
           (= platform "slack")
           (run! #(t/log! (slack/slack-post! ds % bundle-id channel-id)) posts)
           (= platform "telegram")
-          (run! #(t/log! (telegram/telegram-post! % channel-id)) posts)))
+          (run! #(t/log! (telegram/telegram-post! ds % bundle-id channel-id)) posts)))
       (catch Exception e (t/log! {:level :error
                                   :msg (str "Failed to post to integration channel: " e)}) :fail))))

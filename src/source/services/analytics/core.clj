@@ -6,8 +6,7 @@
             [source.services.feed-categories :as feed-categories]
             [honey.sql :as sql]
             [clojure.walk :as walk]
-            [pg.core :as pg]
-            [source.db.util :as db.util]))
+            [pg.core :as pg]))
 
 (defn stat-field
   "Returns the select field for the number of records for the given statistic 
@@ -48,13 +47,16 @@
    (-> (hsql/select-distinct
         :e.distributor-id
         :e.bundle-id
+        [:bs.name :business-name]
         :b.name
         (stat-field :impressions)
         (stat-field :clicks)
         (stat-field :views))
        (hsql/from [:events :e])
        (hsql/join [:bundles :b] [:= :b.id :e.bundle-id])
-       (hsql/group-by :e.bundle-id :e.distributor-id :name)
+       (hsql/join [:users :u] [:= :u.id :e.distributor-id])
+       (hsql/join [:businesses :bs] [:= :bs.id :u.business-id])
+       (hsql/group-by :e.bundle-id :e.distributor-id :b.name :bs.name)
        (hsql/order-by [:impressions :desc] [:clicks :desc] [:views :desc]))
    {:ret :*}))
 
@@ -397,6 +399,21 @@
     (let [bundle (bundles/bundle ds {:id bundle-id})
           event {:timestamp (util/get-utc-timestamp-string)
                  :event "view"
+                 :feed-id feed-id
+                 :post-id id
+                 :content-type-id content-type-id
+                 :creator-id creator-id
+                 :bundle-id bundle-id
+                 :distributor-id (:user-id bundle)}
+          event' (insert-event! ds {:data event
+                                    :ret :*})]
+      (insert-post-event-categories! ds event' post))))
+
+(defn insert-bot-post! [ds {:keys [id feed-id content-type-id creator-id] :as post} bundle-id]
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          event {:timestamp (util/get-utc-timestamp-string)
+                 :event "bot_post"
                  :feed-id feed-id
                  :post-id id
                  :content-type-id content-type-id

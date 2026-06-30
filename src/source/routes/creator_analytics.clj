@@ -89,8 +89,7 @@
         results (->> {:creator-id (:id user)
                       :content-type-id contenttype}
                      (analytics/top-statistics-query ds mindate maxdate n top-field)
-                     (mapv (fn [result]
-                             (set/rename-keys result {top-field :top}))))
+                     (mapv #(set/rename-keys % {top-field :top})))
         ids (mapv :top results)
         names (record-names ds top-field ids)
         juxted (->> names

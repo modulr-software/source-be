@@ -1,11 +1,10 @@
 (ns source.workers.slack
   (:require [clojure.data.json :as json]
-            [source.workers.bundles :as bundles]
             [org.httpkit.client :as http]
             [source.config :as conf]
             [source.util :as util]
-            [source.db.util :as db.util]
-            [source.db.honey :as hon]))
+            [source.db.honey :as hon]
+            [source.services.analytics.interface :as analytics]))
 
 (defn send-slack-message! [{:keys [channel-id message blocks unfurl? access-token]}]
   @(http/request {:url "https://slack.com/api/chat.postMessage"
@@ -76,7 +75,9 @@
                             :message message
                             :access-token access-token
                             :blocks blocks
-                            :unfurl? false}))))
+                            :unfurl? false}))
+
+    (analytics/insert-bot-post! ds post bundle-id)))
 
 (comment
   #_(slack-post! (db.util/conn) 26 "C0AV8471CJE")
