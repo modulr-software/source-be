@@ -274,9 +274,9 @@
       ["/jobs/manage/view" (get jobs-view/get)]
       ["/jobs/manage/register" (post jobs/post)]
       ["/jobs/:id" (get job/get)]
-      ["/jobs/manage/deregister" (get job-deregister/get)]
-      ["/jobs/manage/start" (get job-start/get)]
-      ["/jobs/manage/stop" (get job-stop/get)]
+      ["/jobs/:id/manage/deregister" (get job-deregister/get)]
+      ["/jobs/:id/manage/start" (get job-start/get)]
+      ["/jobs/:id/manage/stop" (get job-stop/get)]
       ["/add-admin" (post admin/post)]
       ["/selection-schemas" (-> (get selection-schemas/get)
                                 (post selection-schemas/post))]
