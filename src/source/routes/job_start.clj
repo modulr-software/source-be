@@ -9,6 +9,6 @@
    :params (api/params :path [:map [:id :int]])
    :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params]}]
-  (let [job (services/job ds path-params)]
-    (jobs/start! js ds (Integer/parseInt (:job-id job)))
+  (let [job (services/job ds {:id (Integer/parseInt (:id path-params))})]
+    (jobs/start! js ds (:job-id job))
     (res/response {:message "successfully started job"})))

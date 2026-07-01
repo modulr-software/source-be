@@ -19,7 +19,8 @@
       (res/response)))
 
 (defn post
-  {:summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
+  {:dev/debt "job service cleanup required here, the job scheduling function needs to move and the function itself needs cleanup"
+   :summary "adds a feed and extracts data from RSS feed URL to create incoming posts and schedules a job to keep them updated"
    :parameters {:body (-> schemas/Feed
                           (api/missoc :id :title :user-id :created-at :updated-at :state))}
    :responses (api/success schemas/Feed)}
@@ -43,7 +44,7 @@
             (->> (jobs/prepare-congest-metadata
                   ds
                   {:id (str email "-" (:id new-feed))
-                   :initial-delay (* 1000 60 60 24)
+                   :initial-delay 0
                    :auto-start true
                    :stop-after-fail false,
                    :interval (* 1000 60 60 24)
