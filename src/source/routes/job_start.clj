@@ -10,5 +10,5 @@
    :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params]}]
   (let [job (services/job ds path-params)]
-    (jobs/start! js ds (:job-id job))
+    (jobs/start! js ds (Integer/parseInt (:job-id job)))
     (res/response {:message "successfully started job"})))

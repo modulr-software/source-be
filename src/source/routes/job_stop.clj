@@ -10,5 +10,5 @@
    :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params]}]
   (let [job (services/job ds path-params)]
-    (jobs/stop! js (:job-id job) false)
+    (jobs/stop! js (Integer/parseInt (:job-id job)) false)
     (res/response {:message "successfully stopped job"})))

@@ -10,5 +10,5 @@
    :responses (api/success (api/response-schema))}
   [{:keys [js ds path-params] :as _req}]
   (let [job (services/job ds path-params)]
-    (jobs/deregister! js (:job-id job))
+    (jobs/deregister! js (Integer/parseInt (:job-id job)))
     (res/response {:message "successfully deregistered job"})))
