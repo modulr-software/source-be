@@ -3,7 +3,8 @@
             [clojure.data.json :as json]
             [source.services.interface :as services]
             [source.jobs.oplog :as oplog]
-            [source.jobs.handlers :as handlers]))
+            [source.jobs.handlers :as handlers]
+            [taoensso.telemere :as t]))
 
 (defn prepare-congest-metadata
   "given raw job metadata, returns extended metadata necessary for use with congest"
@@ -54,6 +55,7 @@
                                     :interval (if (some? interval)
                                                 (+' interval (*' 1000 5 i))
                                                 0))]
+                (t/log! (str "scheduling " job-id " " handler " " initial-delay "ms from now" "..."))
                 (prepare-congest-metadata ds metadata))))
           jobs
           (-> jobs count inc range))))
