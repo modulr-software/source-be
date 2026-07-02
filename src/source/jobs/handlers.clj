@@ -73,18 +73,27 @@
                                            :where [:= :creator-id creator-id]})
               existing-feed (hon/find-one ds {:tname :feeds
                                               :where [:= :id feed-id]})]
-          (hon/update! ds {:tname :feeds
-                           :where [:= :id feed-id]
-                           :data {:title (or
-                                          (get-in extracted [:feed :title])
-                                          (:title existing-feed))
-                                  :description (or (get-in extracted [:feed :description])
-                                                   (:description existing-feed))
-                                  :display-picture (if (and (:display-picture existing-feed)
-                                                            (seq (:display-picture existing-feed)))
-                                                     (:display-picture existing-feed)
-                                                     extracted-display)
-                                  :updated-at (util/get-utc-timestamp-string)}})
+          (try
+            (hon/update! ds {:tname :feeds :where [:= :id feed-id]
+                             :data {:title (or
+                                            (get-in extracted [:feed :title])
+                                            (:title existing-feed))
+                                    :description (or (get-in extracted [:feed :description])
+                                                     (:description existing-feed))
+                                    :display-picture (if (and (:display-picture existing-feed)
+                                                              (seq (:display-picture existing-feed)))
+                                                       (:display-picture existing-feed)
+                                                       extracted-display)
+                                    :updated-at (util/get-utc-timestamp-string)}})
+            (catch Exception e
+              (throw
+               (t/error!
+                ::feed-update
+                (ex-info (str "Feed metadata update for feed job failed: feed-id " feed-id " creator-id " creator-id)
+                         {:panic? "Yes, extraction might be pulling null values for required fields. This should not happen."
+                          :possible-cause "The system may be failing to pull backup values for required fields"
+                          :next-steps (str "Check selection-schema-id " latest-ss " and feed-id " feed-id ". Test extraction manually.")
+                          :raw-error (.getMessage e)})))))
           (run!
            (fn [post]
              (if (some #(= (:post-id post) (:post-id %)) existing-posts)
