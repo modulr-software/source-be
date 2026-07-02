@@ -55,7 +55,7 @@
                                     :interval (if (some? interval)
                                                 (+' interval (*' 1000 5 i))
                                                 0))]
-                (t/log! (str "scheduling " job-id " " handler " " initial-delay "ms from now" "..."))
+                (t/log! (str "scheduling " job-id " " handler " for " (/ initial-delay 1000) "s from now" "..."))
                 (prepare-congest-metadata ds metadata))))
           jobs
           (-> jobs count inc range))))
