@@ -11,7 +11,8 @@
             [clojure.string :as string]
             [source.db.honey :as hon]
             [taoensso.telemere :as t]
-            [source.workers.bundles :as bundles]))
+            [source.workers.bundles :as bundles]
+            [pg.core :as pg]))
 
 (defmulti handler
   (fn [opts]
@@ -175,9 +176,10 @@
                                        acc))
                                    [] posts-in)]
         (when (seq posts-in)
-          (hon/delete! ds (db.util/tname :outgoing-posts bundle-id))
-          (hon/insert! ds (-> (db.util/tname :outgoing-posts bundle-id)
-                              (assoc :data outgoing-posts)))
+          (pg/with-transaction [ds ds]
+            (hon/delete! ds (db.util/tname :outgoing-posts bundle-id))
+            (hon/insert! ds (-> (db.util/tname :outgoing-posts bundle-id)
+                                (assoc :data outgoing-posts))))
           (when (< (count outgoing-posts) 10)
             (throw
              (t/error!

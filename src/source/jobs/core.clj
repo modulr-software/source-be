@@ -33,8 +33,19 @@
                      (assoc :id job-id
                             :args args
                             :handler handler))]
-    (congest/deregister! js job-id)
-    (congest/register! js (prepare-congest-metadata ds metadata))))
+    (try
+      (congest/deregister! js job-id)
+      (congest/register! js (prepare-congest-metadata ds metadata))
+      (catch Exception e
+        (t/error!
+         ::congest-job-start
+         (ex-info (str
+                   "Failed to reschedule " handler " job with id " job-id
+                   "\nThe job has the following arguments: \n" args
+                   "\nRaw error: " (.getMessage e))
+                  {:panic? "Yes, this job will never run unless the issue described is resolved"
+                   :possible-cause "It could be that the job with this id couldn't be found and therefore cannot be restarted"
+                   :next-steps "Check the job metadata of this job and look for issues"}))))))
 
 (defn interrupted-jobs
   "Get vec of congest-ready metadata of all jobs marked as running"
