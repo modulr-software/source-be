@@ -26,7 +26,7 @@
         (throw
          (t/error!
           ::send-email
-          (ex-info (str "Failed to send email to " to)
+          (ex-info (str "Failed to send email of type " type " to " to)
                    {:panic? "Yes, if this failed to send, others will likely also fail"
                     :possible-cause "Postal config could be incorrect or email type might be set incorrectly"
                     :next-steps "Check that email environment variables are correctly configured"
