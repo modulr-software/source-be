@@ -1,6 +1,7 @@
 (ns source.email.gmail
   (:require [postal.core :as postal]
-            [source.config :as conf]))
+            [source.config :as conf]
+            [taoensso.telemere :as t]))
 
 (defn postal-config []
   (let [email-username (conf/read-value :email :username)
@@ -13,13 +14,23 @@
 
 (defn send-email [{:keys [to subject body type] :as _opts}]
   (let [email-username (conf/read-value :email :username)]
-    (-> (postal-config)
-        (postal/send-message
-         {:from email-username
-          :to to
-          :subject subject
-          :body [{:type (str (namespace type) "/" (name type))
-                  :content body}]}))))
+    (try
+      (-> (postal-config)
+          (postal/send-message
+           {:from email-username
+            :to to
+            :subject subject
+            :body [{:type (str (namespace type) "/" (name type))
+                    :content body}]}))
+      (catch Exception e
+        (throw
+         (t/error!
+          ::send-email
+          (ex-info (str "Failed to send email of type " type " to " to)
+                   {:panic? "Yes, if this failed to send, others will likely also fail"
+                    :possible-cause "Postal config could be incorrect or email type might be set incorrectly"
+                    :next-steps "Check that email environment variables are correctly configured"
+                    :raw-error (.getMessage e)})))))))
 
 (comment
   (require '[source.email.templates :as templates])
@@ -37,10 +48,10 @@
                :type :text/html})
 
   (send-email {:to "keaganncollins@gmail.com"
-              :subject "feed approval template"
-              :body (templates/feed-approval {:creator-name "Keagan"
-                                              :feed-title "Keagan's Mukbang Channel"
-                                              :feed-id 2})
+               :subject "feed approval template"
+               :body (templates/feed-approval {:creator-name "Keagan"
+                                               :feed-title "Keagan's Mukbang Channel"
+                                               :feed-id 2})
                :type :text/html})
 
   (send-email {:to "keaganncollins@gmail.com"

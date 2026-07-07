@@ -53,7 +53,8 @@
   (res/response {:message "successfully updated user"}))
 
 (defn delete-user
-  {:summary "delete logged-in user by access token"
+  {:dev/debt "replace prepare-congest-metadata function with job scheduling function once created"
+   :summary "delete logged-in user by access token"
    :responses {200 {:body [:map [:message :string]]}}}
 
   [{:keys [ds js user] :as _request}]
@@ -61,7 +62,6 @@
         job-id (handlers/user-deletion-job-id type id)]
     (users/soft-delete-user! ds js id)
 
-    ; TODO: service needed
     (->> (jobs/prepare-congest-metadata
           ds
           {:id job-id

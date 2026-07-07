@@ -43,26 +43,36 @@
                                                            :content-types content-types})))
 
 (defn hard-delete-bundle! [ds bundle-id]
-  (pg/with-transaction [ds ds]
-    (let [event-ids (mapv :id (hon/find ds {:tname :events
-                                            :where [:= :bundle-id bundle-id]}))]
-      (hon/delete! ds {:tname :filtered-feeds
-                       :where [:= :bundle-id bundle-id]})
-      (hon/delete! ds {:tname :filtered-posts
-                       :where [:= :bundle-id bundle-id]})
-      (hon/delete! ds {:tname :bundle-content-types
-                       :where [:= :bundle-id bundle-id]})
-      (when (seq event-ids)
-        (hon/delete! ds {:tname :event-categories
-                         :where [:in :event-id event-ids]}))
-      (hon/delete! ds {:tname :events
-                       :where [:= :bundle-id bundle-id]})
-      (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
-                                               :bundle-categories
-                                               :post-heuristics]
-                                              bundle-id))
-      (hon/delete! ds {:tname :bundles
-                       :where [:= :id bundle-id]}))))
+  (try
+    (pg/with-transaction [ds ds]
+      (let [event-ids (mapv :id (hon/find ds {:tname :events
+                                              :where [:= :bundle-id bundle-id]}))]
+        (hon/delete! ds {:tname :filtered-feeds
+                         :where [:= :bundle-id bundle-id]})
+        (hon/delete! ds {:tname :filtered-posts
+                         :where [:= :bundle-id bundle-id]})
+        (hon/delete! ds {:tname :bundle-content-types
+                         :where [:= :bundle-id bundle-id]})
+        (when (seq event-ids)
+          (hon/delete! ds {:tname :event-categories
+                           :where [:in :event-id event-ids]}))
+        (hon/delete! ds {:tname :events
+                         :where [:= :bundle-id bundle-id]})
+        (tables/drop-tables! ds (db.util/tnames [:outgoing-posts
+                                                 :bundle-categories
+                                                 :post-heuristics]
+                                                bundle-id))
+        (hon/delete! ds {:tname :bundles
+                         :where [:= :id bundle-id]})))
+    (catch Exception e
+      (throw
+       (t/error!
+        ::bundle-hard-delete
+        (ex-info (str "Bundle deletion failed for bundle id " bundle-id)
+                 {:panic? "Yes, this should not be failing, resolve this issue ASAP and ensure all content is properly deleted"
+                  :possible-cause "Most likely a failure due to a dependency not being deleted beforehand"
+                  :next-steps "Read the SQL error to see what went wrong"
+                  :raw-error (.getMessage e)}))))))
 
 (defn deregister-bundle-job! [js job-id]
   (congest/deregister! js job-id))

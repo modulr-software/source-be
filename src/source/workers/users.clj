@@ -2,14 +2,30 @@
   (:require [source.workers.feeds :as feeds]
             [source.workers.integrations :as integrations]
             [source.db.honey :as hon]
-            [pg.core :as pg]))
+            [pg.core :as pg]
+            [honey.sql.helpers :as hsql]
+            [taoensso.telemere :as t]))
 
 (defn hard-delete-creator! [ds user-id]
   (let [feed-ids (mapv :id (hon/find ds {:tname :feeds
-                                         :where [:= :user-id user-id]}))]
+                                         :where [:= :user-id user-id]}))
+        event-category-ids (->>
+                            {:ret :*}
+                            (hon/execute! ds
+                                          (-> (hsql/select :ec.id)
+                                              (hsql/from :event-categories :ec)
+                                              (hsql/join [:events :e] [:= :e.id :ec.event-id])
+                                              (hsql/where [:= :e.creator-id user-id])))
+                            (mapv #(:id %)))]
+
     (run! #(feeds/hard-delete-feed! ds %) feed-ids)
-    (hon/delete! ds {:tname :events
-                     :where [:= :creator-id user-id]})))
+
+    (pg/with-transaction [ds ds]
+      (when (seq event-category-ids)
+        (hon/delete! ds {:tname :event-categories
+                         :where [:in :id event-category-ids]}))
+      (hon/delete! ds {:tname :events
+                       :where [:= :creator-id user-id]}))))
 
 (defn deregister-creator-jobs! [ds js user-id email]
   (let [feed-ids (mapv :id (hon/find ds {:tname :feeds
@@ -18,10 +34,24 @@
 
 (defn hard-delete-distributor! [ds user-id]
   (let [bundle-ids (mapv :id (hon/find ds {:tname :bundles
-                                           :where [:= :user-id user-id]}))]
+                                           :where [:= :user-id user-id]}))
+        event-category-ids (->>
+                            {:ret :*}
+                            (hon/execute! ds
+                                          (-> (hsql/select :ec.id)
+                                              (hsql/from :event-categories :ec)
+                                              (hsql/join [:events :e] [:= :e.id :ec.event-id])
+                                              (hsql/where [:= :e.distributor-id user-id])))
+                            (mapv #(:id %)))]
+
     (run! #(integrations/hard-delete-bundle! ds %) bundle-ids)
-    (hon/delete! ds {:tname :events
-                     :where [:= :distributor-id user-id]})))
+
+    (pg/with-transaction [ds ds]
+      (when (seq event-category-ids)
+        (hon/delete! ds {:tname :event-categories
+                         :where [:in :id event-category-ids]}))
+      (hon/delete! ds {:tname :events
+                       :where [:= :distributor-id user-id]}))))
 
 (defn deregister-distributor-jobs! [ds js user-id]
   (let [bundle-ids (mapv :id (hon/find ds {:tname :bundles
@@ -29,23 +59,33 @@
     (run! #(integrations/hard-delete-bundle! js (str "bundle_" %)) bundle-ids)))
 
 (defn hard-delete-user! [ds user-type user-id]
-  (pg/with-transaction [ds ds]
-    (let [{:keys [business-id]} (hon/find-one ds {:tname :users
-                                                  :where [:= :id user-id]})]
-      (cond
-        (= user-type :creator)
-        (hard-delete-creator! ds user-id)
-        (= user-type :distributor)
-        (hard-delete-distributor! ds user-id))
+  (try
+    (pg/with-transaction [ds ds]
+      (let [{:keys [business-id]} (hon/find-one ds {:tname :users
+                                                    :where [:= :id user-id]})]
+        (cond
+          (= user-type :creator)
+          (hard-delete-creator! ds user-id)
+          (= user-type :distributor)
+          (hard-delete-distributor! ds user-id))
 
-      (hon/delete! ds {:tname :user-sectors
-                       :where [:= :user-id user-id]})
-      (when (some? business-id) (hon/delete! ds {:tname :businesses
-                                                 :where [:= :id business-id]}))
-      (hon/delete! ds {:tname :user-locations
-                       :where [:= :user-id user-id]})
-      (hon/delete! ds {:tname :users
-                       :where [:= :id user-id]}))))
+        (hon/delete! ds {:tname :user-sectors
+                         :where [:= :user-id user-id]})
+        (when (some? business-id) (hon/delete! ds {:tname :businesses
+                                                   :where [:= :id business-id]}))
+        (hon/delete! ds {:tname :user-locations
+                         :where [:= :user-id user-id]})
+        (hon/delete! ds {:tname :users
+                         :where [:= :id user-id]})))
+    (catch Exception e
+      (throw
+       (t/error!
+        ::user-hard-delete
+        (ex-info (str "User deletion failed for user id " user-id)
+                 {:panic? "Yes, this should not be failing, resolve this issue ASAP and ensure all content is properly deleted"
+                  :possible-cause "Most likely a failure due to a dependency not being deleted beforehand"
+                  :next-steps "Read the SQL error to see what went wrong"
+                  :raw-error (.getMessage e)}))))))
 
 (defn soft-delete-user! [ds js user-id]
   (let [{:keys [email type]} (hon/find-one ds {:tname :users

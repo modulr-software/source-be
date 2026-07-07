@@ -44,16 +44,29 @@
           display-picture (if youtube?
                             (yt/channel-image (get-in extracted [:feed :url]))
                             (get-in extracted [:feed :display-picture]))
-          new-feed (hon/insert!
-                    ds
-                    {:tname :feeds
-                     :data (merge feed-metadata {:title (get-in extracted [:feed :title])
-                                                 :display-picture display-picture
-                                                 :description (get-in extracted [:feed :description])
-                                                 :user-id user-id
-                                                 :created-at datetime
-                                                 :state "pending"})
-                     :ret :1})
+          new-feed (try
+                     (hon/insert!
+                      ds
+                      {:tname :feeds
+                       :data (merge feed-metadata {:title (get-in extracted [:feed :title])
+                                                   :display-picture display-picture
+                                                   :description (get-in extracted [:feed :description])
+                                                   :user-id user-id
+                                                   :created-at datetime
+                                                   :state "pending"})
+                       :ret :1})
+                     (catch Exception e
+                       (throw
+                        (t/error!
+                         ::feed-creation
+                         (ex-info (str "RSS feed data extraction succeeded, but feed creation failed.\n"
+                                       "RSS Feed URL: " rss-url " - Creator ID: " user-id)
+                                  {:panic? "Not a huge deal, possibly just user error - but panic if it's not user error"
+                                   :possible-cause "It is likely that required fields for feed creation weren't pulled correctly"
+                                   :next-steps (str
+                                                "Check if the RSS feed url is correct. If it is, test data extraction in the admin panel with provider-id "
+                                                provider-id)
+                                   :raw-error (.getMessage e)})))))
 
           _ (when (or (nil? display-picture) (= display-picture ""))
               (t/log! {:level :error
@@ -74,32 +87,53 @@
         false))))
 
 (defn update-feed! [ds {:keys [feed-id feed-metadata]}]
-  (hon/update! ds {:tname :feeds
-                   :where [:= :id feed-id]
-                   :data feed-metadata
-                   :ret :1}))
+  (try
+    (hon/update! ds {:tname :feeds
+                     :where [:= :id feed-id]
+                     :data feed-metadata
+                     :ret :1})
+    (catch Exception e
+      (throw
+       (t/error!
+        ::feed-creation
+        (ex-info (str "Feed update failed for feed id " feed-id "\n"
+                      "Feed metadata: " feed-metadata)
+                 {:panic? "Not necessarily, most likely user error"
+                  :possible-cause "Most likely something wrong in the input data"
+                  :next-steps "Read the SQL error to see what went wrong"
+                  :raw-error (.getMessage e)}))))))
 
 (defn hard-delete-feed! [ds feed-id]
-  (pg/with-transaction [ds ds]
-    (let [post-ids (mapv :id (hon/find ds {:tname :incoming-posts
-                                           :where [:= :feed-id feed-id]}))
-          event-ids (mapv :id (hon/find ds {:tname :events
-                                            :where [:= :feed-id feed-id]}))]
-      (when (seq event-ids)
-        (hon/delete! ds {:tname :event-categories
-                         :where [:in :event-id event-ids]}))
-      (hon/delete! ds {:tname :events
-                       :where [:= :feed-id feed-id]})
-      (hon/delete! ds {:tname :filtered-feeds
-                       :where [:= :feed-id feed-id]})
-      (hon/delete! ds {:tname :filtered-posts
-                       :where [:in :post-id post-ids]})
-      (hon/delete! ds {:tname :incoming-posts
-                       :where [:= :feed-id feed-id]})
-      (hon/delete! ds {:tname :feed-categories
-                       :where [:= :feed-id feed-id]})
-      (hon/delete! ds {:tname :feeds
-                       :where [:= :id feed-id]}))))
+  (try
+    (pg/with-transaction [ds ds]
+      (let [post-ids (mapv :id (hon/find ds {:tname :incoming-posts
+                                             :where [:= :feed-id feed-id]}))
+            event-ids (mapv :id (hon/find ds {:tname :events
+                                              :where [:= :feed-id feed-id]}))]
+        (when (seq event-ids)
+          (hon/delete! ds {:tname :event-categories
+                           :where [:in :event-id event-ids]}))
+        (hon/delete! ds {:tname :events
+                         :where [:= :feed-id feed-id]})
+        (hon/delete! ds {:tname :filtered-feeds
+                         :where [:= :feed-id feed-id]})
+        (hon/delete! ds {:tname :filtered-posts
+                         :where [:in :post-id post-ids]})
+        (hon/delete! ds {:tname :incoming-posts
+                         :where [:= :feed-id feed-id]})
+        (hon/delete! ds {:tname :feed-categories
+                         :where [:= :feed-id feed-id]})
+        (hon/delete! ds {:tname :feeds
+                         :where [:= :id feed-id]})))
+    (catch Exception e
+      (throw
+       (t/error!
+        ::feed-hard-delete
+        (ex-info (str "Feed deletion failed for feed id " feed-id)
+                 {:panic? "Yes, this should not be failing, resolve this issue ASAP and ensure all content is properly deleted"
+                  :possible-cause "Most likely a failure due to a dependency not being deleted beforehand"
+                  :next-steps "Read the SQL error to see what went wrong"
+                  :raw-error (.getMessage e)}))))))
 
 (defn deregister-feed-job! [js job-id]
   (congest/deregister! js job-id))
