@@ -32,5 +32,6 @@
                                      :bundle-id state
                                      :channel-id channel-id
                                      :access-token access-token
-                                     :post-interval (* 1000 60 60 24)})
+                                     :post-interval (* 1000 60 60 24)
+                                     :posts 4})
     (res/response {:message "successfully added channel"})))
