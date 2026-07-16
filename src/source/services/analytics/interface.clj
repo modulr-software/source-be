@@ -125,3 +125,12 @@
   "Returns a paginated list of the best performing posts on the system in terms of impressions, clicks and views"
   [ds {:keys [_start _limit] :as opts}]
   (core/top-post-statistics ds opts))
+
+(defn insert-selected-event! [ds {:keys [_id _feed-id _content-type-id _creator-id] :as post} bundle-id]
+  (core/insert-selected-event! ds post bundle-id))
+
+(defn insert-selected-events!
+  "Given a list of posts and a bundle id, inserts selected event reconds 
+  for each given post. Inserts event categories for each post."
+  [ds posts bundle-id]
+  (core/insert-selected-events! ds posts bundle-id))
