@@ -424,6 +424,36 @@
                                     :ret :*})]
       (insert-post-event-categories! ds event' post))))
 
+(defn insert-selected-event! [ds {:keys [id feed-id content-type-id creator-id] :as post} bundle-id]
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          event {:timestamp (util/get-utc-timestamp-string)
+                 :event "selected"
+                 :feed-id feed-id
+                 :post-id id
+                 :content-type-id content-type-id
+                 :creator-id creator-id
+                 :bundle-id bundle-id
+                 :distributor-id (:user-id bundle)}]
+      (insert-event! ds {:data event}))))
+
+(defn insert-selected-events!
+  "Given a list of posts and a bundle id, inserts selected event reconds 
+  for each given post. Inserts event categories for each post."
+  [ds posts bundle-id]
+  (pg/with-transaction [ds ds]
+    (let [bundle (bundles/bundle ds {:id bundle-id})
+          events (mapv (fn [{:keys [id feed-id content-type-id creator-id]}]
+                         {:timestamp (util/get-utc-timestamp-string)
+                          :event "selected"
+                          :feed-id feed-id
+                          :post-id id
+                          :content-type-id content-type-id
+                          :creator-id creator-id
+                          :bundle-id bundle-id
+                          :distributor-id (:user-id bundle)}) posts)]
+      (when (seq posts) (insert-event! ds {:data events})))))
+
 (comment
   (require '[source.db.util :as db.util])
 
@@ -572,5 +602,11 @@
                            :ret :*}
                           {:content-type-id 3}))
 
-  ())
+  (hon/execute! 
+    ds
+    (-> (hsql/select [[:count :*]])
+        (hsql/from :events)
+        (hsql/where [:= :event "selected"]))
+    {:ret :*})
 
+  ())

@@ -12,7 +12,8 @@
             [source.db.honey :as hon]
             [taoensso.telemere :as t]
             [source.workers.bundles :as bundles]
-            [pg.core :as pg]))
+            [pg.core :as pg]
+            [source.services.analytics.interface :as analytics]))
 
 (defmulti handler
   (fn [opts]
@@ -180,6 +181,8 @@
             (hon/delete! ds (db.util/tname :outgoing-posts bundle-id))
             (hon/insert! ds (-> (db.util/tname :outgoing-posts bundle-id)
                                 (assoc :data outgoing-posts))))
+          (analytics/insert-selected-events! ds outgoing-posts bundle-id)
+
           (when (< (count outgoing-posts) 10)
             (throw
              (t/error!
