@@ -27,6 +27,7 @@
    :parameters {:body (-> [:map
                            [:name :string]
                            [:ts-and-cs {:optional true} :int]
+                           [:strict {:optional true} :int]
                            [:integration-type-id :int]]
                           (mu/assoc :content-types [:vector schemas/ConstantSchema])
                           (mu/assoc :categories [:vector schemas/ConstantSchema]))}

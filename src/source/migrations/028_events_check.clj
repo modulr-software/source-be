@@ -1,4 +1,4 @@
-(ns source.migrations.027-events-check
+(ns source.migrations.028-events-check
   (:require [source.db.master]
             [pg.core :as pg]))
 

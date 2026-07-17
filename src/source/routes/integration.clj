@@ -32,6 +32,7 @@
                                   :description "Integration ID"} :int]]
                 :body (-> [:map
                            [:name :string]
+                           [:strict {:optional true} :int]
                            [:integration-type-id :int]]
                           (mu/assoc :content-types [:vector schemas/ConstantSchema])
                           (mu/assoc :categories [:vector schemas/ConstantSchema]))}
