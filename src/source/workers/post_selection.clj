@@ -1,6 +1,7 @@
 (ns source.workers.post-selection
   (:require [source.db.honey :as hon]
-            [source.db.util :as db.util]))
+            [source.db.util :as db.util]
+            [clojure.set :as set]))
 
 (defn bundle-content-type-ids
   "returns vec of content type ids associated with the given bundle"
@@ -33,9 +34,26 @@
   (let [valid-ids (set content-type-ids)]
     (filterv #(contains? valid-ids (:content-type-id %)) dataset)))
 
-#_(defn count-shared-categories
-    "returns single int as count of distinct categories appearing both on the posts inherited feed and the bundle's category set"
-    [feed-categories category-ids])
+(defn filter-category-ids
+  "returns a filtered version of the dataset containing only those with category-ids matching at least one of the provided category ids"
+  [dataset category-ids]
+  (let [valid-ids (set category-ids)]
+    (filterv #(some valid-ids (:category-ids %)) dataset)))
+
+(defn count-shared-categories
+  "returns single int as count of distinct categories appearing both on the feed and the bundle's category set"
+  [feed-categories category-ids]
+  (count (set/intersection
+          (set (mapcat :category-ids feed-categories))
+          (set category-ids))))
+
+(defn feed-posts
+  "returns a vec of posts from all the feed ids provided"
+  [ds feed-ids]
+  (if (seq feed-ids)
+    (hon/find ds {:tname :incoming-posts
+                  :where [:in :feed-id feed-ids]})
+    []))
 
 #_(defn bundle-post-times-selected
     "returns map of all post-ids that have been in the bundle, with the corresponding number of times they have been selected"
@@ -58,5 +76,18 @@
   (filter-content-type
    (feed-categories ds)
    [1])
+
+  (filter-category-ids
+   (feed-categories ds)
+   [190 191 192 193 194 195 196 197 198 199 200])
+
+  (count-shared-categories
+   (feed-categories ds)
+   (bundle-category-ids (db.util/conn) 26))
+
+  (feed-posts ds (mapv :id
+                       (filter-content-type
+                        (feed-categories ds)
+                        [1])))
 
   ())
