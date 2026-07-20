@@ -33,7 +33,7 @@
                 :body (-> [:map
                            [:name :string]
                            [:strict {:optional true} :int]
-                           [:integration-type-id :int]]
+                           [:integration-type-id {:optional true} :int]]
                           (mu/assoc :content-types [:vector schemas/ConstantSchema])
                           (mu/assoc :categories [:vector schemas/ConstantSchema]))}
    :responses {200 {:body [:map [:message :string]]}
