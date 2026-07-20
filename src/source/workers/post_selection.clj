@@ -17,13 +17,21 @@
        (hon/find ds)
        (mapv #(:category-id %))))
 
-#_(defn feed-categories
-    "returns a vec of feeds with their associated category ids attached"
-    [ds])
+(defn feed-categories
+  "returns a vec of feeds with their associated category ids attached"
+  [ds]
+  (->> (hon/find ds {:tname :feeds
+                     :where [:= :state "live"]})
+       (mapv #(assoc % :category-ids (->> {:tname :feed-categories
+                                           :where [:= :feed-id (:id %)]}
+                                          (hon/find ds)
+                                          (mapv :id))))))
 
-#_(defn filter-content-type
-    "returns a filtered version of the dataset containing only those with content-type-ids matching the provided content type ids"
-    [dataset content-type-ids])
+(defn filter-content-type
+  "returns a filtered version of the dataset containing only those with content-type-ids matching the provided content type ids"
+  [dataset content-type-ids]
+  (let [valid-ids (set content-type-ids)]
+    (filterv #(contains? valid-ids (:content-type-id %)) dataset)))
 
 #_(defn count-shared-categories
     "returns single int as count of distinct categories appearing both on the posts inherited feed and the bundle's category set"
@@ -39,9 +47,16 @@
 
 (comment
   (def ds (db.util/conn))
-  (def bundle-id 14)
+  (def bundle-id 26)
 
-  (bundle-content-type-ids (db.util/conn) 14)
+  (bundle-content-type-ids (db.util/conn) 26)
 
-  (bundle-category-ids (db.util/conn) 14)
+  (bundle-category-ids (db.util/conn) 26)
+
+  (feed-categories ds)
+
+  (filter-content-type
+   (feed-categories ds)
+   [1])
+
   ())
