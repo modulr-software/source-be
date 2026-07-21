@@ -1,22 +1,35 @@
 (ns source.workers.post-selection
   (:require [source.db.honey :as hon]
             [source.db.util :as db.util]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [honey.sql.helpers :as hsql]))
 
 (defn bundle-content-type-ids
-  "returns vec of content type ids associated with the given bundle"
+  "returns vec of content type ids associated with the given bundle. If there are
+   no content type ids in bundle-content-types, returns all content type ids from
+   the content-types table."
   [ds bundle-id]
-  (->> (hon/find ds {:tname :bundle-content-types
-                     :where [:= :bundle-id bundle-id]})
-       (mapv #(:content-type-id %))))
+  (let [ids (->> (hon/find ds {:tname :bundle-content-types
+                               :where [:= :bundle-id bundle-id]})
+                 (mapv :content-type-id))]
+    (if (seq ids)
+      ids
+      (->> (hon/find ds {:tname :content-types})
+           (mapv :id)))))
 
 (defn bundle-category-ids
-  "returns a vec of category ids associated with the given bundle"
+  "returns a vec of category ids associated with the given bundle. If there are
+   no category ids in bundle-categories, returns all category ids from the
+   categories table."
   [ds bundle-id]
-  (->> (db.util/tname :bundle-categories bundle-id)
-       (merge {:where [:= :bundle-id bundle-id]})
-       (hon/find ds)
-       (mapv #(:category-id %))))
+  (let [ids (->> (db.util/tname :bundle-categories bundle-id)
+                 (merge {:where [:= :bundle-id bundle-id]})
+                 (hon/find ds)
+                 (mapv :category-id))]
+    (if (seq ids)
+      ids
+      (->> (hon/find ds {:tname :categories})
+           (mapv :id)))))
 
 (defn feed-categories
   "returns a vec of feeds with their associated category ids attached"
@@ -55,13 +68,35 @@
                   :where [:in :feed-id feed-ids]})
     []))
 
-#_(defn bundle-post-times-selected
-    "returns map of all post-ids that have been in the bundle, with the corresponding number of times they have been selected"
-    [ds post-ids bundle-id])
+(defn bundle-post-times-selected
+  "returns vec of maps of all post-ids that have been in the bundle, with the corresponding number of times they have been selected"
+  [ds bundle-id post-ids]
+  (let [counts (when (seq post-ids)
+                 (->> (hon/execute!
+                       ds
+                       (-> (hsql/select :post-id [[:count :*] :times-selected])
+                           (hsql/from :events)
+                           (hsql/where [:and
+                                        [:in :post-id post-ids]
+                                        [:= :bundle-id bundle-id]
+                                        [:= :event "selected"]])
+                           (hsql/group-by :post-id))
+                       :ret :*)
+                      (into {} (map (juxt :post-id :times-selected)))))]
+    (mapv (fn [post-id]
+            {:post-id post-id
+             :times-selected (get counts post-id 0)})
+          post-ids)))
 
-#_(defn avg-bundle-post-times-selected
-    "returns the average no. times a post has been selected for the bundle, taking the result of bundle-post-times-selected as input"
-    [times-selected])
+(defn avg-bundle-post-times-selected
+  "returns the average no. times a post has been selected for the bundle, taking the result of bundle-post-times-selected as input"
+  [times-selected]
+  (let [selected (filterv #(pos? (:times-selected %)) times-selected)]
+    (if (seq selected)
+      (float
+       (/ (reduce + (map :times-selected selected))
+          (count selected)))
+      0)))
 
 (comment
   (def ds (db.util/conn))
@@ -89,5 +124,13 @@
                        (filter-content-type
                         (feed-categories ds)
                         [1])))
+
+  (->> [1]
+       (filter-content-type (feed-categories ds))
+       (mapv :id)
+       (feed-posts ds)
+       (mapv :id)
+       (bundle-post-times-selected ds bundle-id)
+       (avg-bundle-post-times-selected))
 
   ())
