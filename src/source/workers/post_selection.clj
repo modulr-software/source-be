@@ -4,6 +4,8 @@
             [clojure.set :as set]
             [honey.sql.helpers :as hsql]))
 
+(def ^:private selection-threshold 2000)
+
 (defn bundle-content-type-ids
   "returns vec of content type ids associated with the given bundle. If there are
    no content type ids in bundle-content-types, returns all content type ids from
@@ -39,17 +41,26 @@
        (mapv #(assoc % :category-ids (->> {:tname :feed-categories
                                            :where [:= :feed-id (:id %)]}
                                           (hon/find ds)
-                                          (mapv :id))))))
+                                          (mapv :category-id))))))
+
+(defn feeds-per-content-type
+  "Returns a vec of maps containing each content type id with their corresponding feed-ids"
+  [ds]
+  (->> (hon/find ds {:tname :feeds})
+       (group-by :content-type-id)
+       (mapv (fn [[content-type-id feeds]]
+               {:content-type-id content-type-id
+                :feed-ids (mapv :id feeds)}))))
 
 (defn filter-content-type
   "returns a filtered version of the dataset containing only those with content-type-ids matching the provided content type ids"
-  [dataset content-type-ids]
+  [content-type-ids dataset]
   (let [valid-ids (set content-type-ids)]
     (filterv #(contains? valid-ids (:content-type-id %)) dataset)))
 
 (defn filter-category-ids
   "returns a filtered version of the dataset containing only those with category-ids matching at least one of the provided category ids"
-  [dataset category-ids]
+  [category-ids dataset]
   (let [valid-ids (set category-ids)]
     (filterv #(some valid-ids (:category-ids %)) dataset)))
 
@@ -61,12 +72,16 @@
           (set category-ids))))
 
 (defn feed-posts
-  "returns a vec of posts from all the feed ids provided"
-  [ds feed-ids]
-  (if (seq feed-ids)
-    (hon/find ds {:tname :incoming-posts
-                  :where [:in :feed-id feed-ids]})
-    []))
+  "returns a vec of posts from all the feeds or feed-ids provided. Accepts either
+   a vec of feed maps (extracting :id from each) or a vec of integer ids."
+  [ds feeds-or-ids]
+  (let [ids (if (map? (first feeds-or-ids))
+              (mapv :id feeds-or-ids)
+              feeds-or-ids)]
+    (if (seq ids)
+      (hon/find ds {:tname :incoming-posts
+                    :where [:in :feed-id ids]})
+      [])))
 
 (defn bundle-post-times-selected
   "returns vec of maps of all post-ids that have been in the bundle, with the corresponding number of times they have been selected"
@@ -98,6 +113,31 @@
           (count selected)))
       0)))
 
+(defn relevant-feeds
+  "returns a vec of feeds that meet the content type and category criteria given by the bundle"
+  [ds bundle-id]
+  (let [content-type-ids (bundle-content-type-ids ds bundle-id)
+        category-ids (bundle-category-ids ds bundle-id)]
+    (->> (feed-categories ds)
+         (filter-content-type content-type-ids)
+         (filter-category-ids category-ids))))
+
+(defn primary-selection [ds bundle-id]
+  (let [category-ids (bundle-category-ids ds bundle-id)
+        total-available (->> (hon/find ds {:tname :feeds
+                                           :where [:= :state "live"]})
+                             (feed-posts ds)
+                             (count))
+
+        relevant-posts (->> (relevant-feeds ds bundle-id)
+                            (feed-posts ds))
+
+        category-matched-posts (when (and (>= total-available selection-threshold)
+                                          (< (count relevant-posts) selection-threshold))
+                                 (->> (feed-categories ds)
+                                      (filter-category-ids category-ids)
+                                      (feed-posts ds)))]))
+
 (comment
   (def ds (db.util/conn))
   (def bundle-id 26)
@@ -108,29 +148,36 @@
 
   (feed-categories ds)
 
-  (filter-content-type
-   (feed-categories ds)
-   [1])
+  (->> (feed-categories ds)
+       (filter-content-type [1]))
 
   (filter-category-ids
-   (feed-categories ds)
-   [190 191 192 193 194 195 196 197 198 199 200])
+   (bundle-category-ids ds bundle-id)
+   (feed-categories ds))
 
   (count-shared-categories
    (feed-categories ds)
-   (bundle-category-ids (db.util/conn) 26))
+   (bundle-category-ids ds bundle-id))
 
   (feed-posts ds (mapv :id
                        (filter-content-type
                         (feed-categories ds)
                         [1])))
 
-  (->> [1]
-       (filter-content-type (feed-categories ds))
-       (mapv :id)
+  (->> (feed-categories ds)
+       (filter-content-type [1])
        (feed-posts ds)
        (mapv :id)
        (bundle-post-times-selected ds bundle-id)
        (avg-bundle-post-times-selected))
+
+  (->> (relevant-feeds ds bundle-id)
+       (feed-posts ds)
+       (mapv :id)
+       (bundle-post-times-selected ds bundle-id)
+       (filterv #(< (:times-selected %) 6.7))
+       (count))
+
+  (feeds-per-content-type ds)
 
   ())
