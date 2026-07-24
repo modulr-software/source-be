@@ -25,6 +25,13 @@
    [:base-url :string]
    [:port :int]
    [:env :string]
+   [:slack [:map
+            [:token :string]]]
+   [:telegram [:map
+               [:token :string]]]
+   [:whatsapp [:map
+               [:token :string]
+               [:session :string]]]
    [:database [:map
                [:url :string]
                [:type :string]]]

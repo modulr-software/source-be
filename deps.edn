@@ -36,6 +36,9 @@
         com.draines/postal {:mvn/version "2.0.5"}
         hiccup/hiccup {:mvn/version "2.0.0"}
         clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
+        com.github.oliyh/martian {:mvn/version "0.2.3"}
+        com.github.oliyh/martian-httpkit {:mvn/version "0.2.3"}
+        com.github.oliyh/martian-clj-http {:mvn/version "0.2.3"}
         metosin/jsonista {:mvn/version "0.3.13"}
         metosin/reitit {:mvn/version "0.9.1"}
         metosin/reitit-middleware {:mvn/version "0.9.1"}
