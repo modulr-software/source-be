@@ -191,6 +191,7 @@
    [:platform :string]
    [:channel-id :string]
    (sometimes :thread-id :string)
+   (sometimes :phone-number :string)
    [:post-interval :int]
    [:posts {:description "Number of posts to be sent at a time. Defaults to 4."} :int]])
 
