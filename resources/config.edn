@@ -7,7 +7,8 @@
  :env #or [#env ENV "prod"]
  :database {:url #or [#env DATABASE_URL "postgres://localhost"]
             :type "postgresql"}
- :slack {:token #env SLACK_TOKEN}
+ :slack {:token #env SLACK_TOKEN
+         :test-token #env SLACK_TEST_TOKEN}
  :telegram {:token #env TELEGRAM_TOKEN}
  :whatsapp {:token #env WHATSAPP_TOKEN
             :session #env WHATSAPP_SESSION}
