@@ -2,9 +2,7 @@
   (:require [org.httpkit.client :as http]
             [source.config :as conf]
             [clojure.data.json :as json]
-            [source.workers.bundles :as bundles]
             [source.util :as util]
-            [source.db.util :as db.util]
             [source.services.analytics.interface :as analytics]))
 
 (defn send-telegram-photo! [chat-id thumbnail caption reply-markup]
