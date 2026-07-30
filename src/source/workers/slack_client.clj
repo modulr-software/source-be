@@ -168,7 +168,7 @@
                                     :text action-text}
                              :url url}]}]]
     (if (util/unfurlable? url)
-      opts
+      (assoc opts :text (str text url))
       (merge opts {:blocks blocks}))))
 
 ;; ─── Request middleware (req -> req) ───
@@ -348,25 +348,19 @@
 
            message (cond
                      (= (:content-type-id post) 1)
-                     (str section
-                          (:stream-url post))
+                     section
                      (= (:content-type-id post) 2)
                      (str section
-                          (util/clean (:info post)) "\n"
-                          (or (:url post)
-                              (:stream-url post)))
+                          (util/clean (:info post)) "\n")
                      (= (:content-type-id post) 3)
                      (str section
-                          (util/clean (:info post)) "\n"
-                          (or (:url post)
-                              (:stream-url post))))]
+                          (util/clean (:info post)) "\n"))]
 
-       (println
-        (send-post client {:title (:title post)
-                           :thumbnail (:thumbnail post)
-                           :url (or (:url post) (:stream-url post))
-                           :text message
-                           :action-text verb}))))
+       (send-post client {:title (:title post)
+                          :thumbnail (:thumbnail post)
+                          :url (or (:url post) (:stream-url post))
+                          :text message
+                          :action-text verb})))
    posts))
 
 (comment
@@ -377,7 +371,7 @@
   (def bundle-id 26)
 
   (send-posts! {:posts (-> (bundles/get-outgoing-posts ds {:bundle-id bundle-id
-                                                           :type 2
+                                                           :type 1
                                                            :seed (util/get-utc-timestamp-string)
                                                            :limit 1})
                            (:data))
