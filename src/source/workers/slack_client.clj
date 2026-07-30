@@ -3,7 +3,9 @@
             [clojure.data.json :as json]
             [clojure.string :as str]
             [source.config :as conf]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.db.util :as db.util]
+            [source.workers.bundles :as bundles]))
 
 (def ^:private default-base-url "https://slack.com")
 
@@ -53,14 +55,15 @@
     "Send a post (rich content) to a channel. Constructs the request
     body via build-post-body from :text and :action-text.
     :unfurl-links and :unfurl-media both default to true. opts:
-    :channel-id, :text, :action-text, :blocks, :attachments, :as-user,
-    :icon-emoji, :icon-url, :link-names, :mrkdwn, :parse,
-    :reply-broadcast, :thread-ts, :unfurl-links, :unfurl-media,
-    :username, :token")
+    :channel-id, :title, :thumbnail, :text, :action-text, :url,
+    :blocks, :attachments, :as-user, :icon-emoji, :icon-url,
+    :link-names, :mrkdwn, :parse, :reply-broadcast, :thread-ts,
+    :unfurl-links, :unfurl-media, :username, :token")
   (update-message [this opts]
     "Update an existing message. opts: :channel-id, :ts, :text,
     :blocks, :attachments, :as-user, :link-names, :parse, :token")
-  (delete-message [this opts]
+  (delete-message
+    [this opts]
     "Delete a message. opts: :channel-id, :ts, :as-user, :token")
   (schedule-message [this opts]
     "Schedule a message for future delivery. opts: :channel-id,
@@ -153,19 +156,20 @@
   opts (:channel, :title, :thumbnail, :text, :action-text, :url, :unfurl-links, :unfurl-media,
   ...) and returns the body map to be sent to chat.postMessage."
   [{:keys [title thumbnail text action-text url] :as opts}]
-  (if (util/unfurlable? url)
-    opts
-    (merge opts {:blocks [{:type "section"
-                           :text {:type "mrkdwn"
-                                  :text text}
-                           :accessory {:type "image"
-                                       :image_url thumbnail
-                                       :alt_text title}}
-                          {:type "actions"
-                           :elements [{:type "button"
-                                       :text {:type "plain_text"
-                                              :text action-text}
-                                       :url url}]}]})))
+  (let [blocks [{:type "section"
+                 :text {:type "mrkdwn"
+                        :text text}
+                 :accessory {:type "image"
+                             :image_url thumbnail
+                             :alt_text title}}
+                {:type "actions"
+                 :elements [{:type "button"
+                             :text {:type "plain_text"
+                                    :text action-text}
+                             :url url}]}]]
+    (if (util/unfurlable? url)
+      opts
+      (merge opts {:blocks blocks}))))
 
 ;; ─── Request middleware (req -> req) ───
 
@@ -278,17 +282,13 @@
            (execute {:method :post :path-template "/api/chat.postMessage"
                      :token (:token opts)
                      :body-fn (body-from-opts body)} cfg)))
-       (update-message
-         {:dev/debt "we need to store message ids before this can be used"}
-         [_ opts]
+       (update-message [_ opts]
          (let [cfg @cfg-atom
                opts (resolve-channel cfg opts)]
            (execute {:method :post :path-template "/api/chat.update"
                      :token (:token opts)
                      :body-fn (body-from-opts (dissoc opts :token))} cfg)))
-       (delete-message
-         {:dev/debt "we need to store message ids before this can be used"}
-         [_ opts]
+       (delete-message [_ opts]
          (let [cfg @cfg-atom
                opts (resolve-channel cfg opts)]
            (execute {:method :post :path-template "/api/chat.delete"
@@ -318,18 +318,71 @@
            (execute {:method :post :path-template "/api/chat.deleteScheduledMessage"
                      :token (:token opts)
                      :body-fn (body-from-opts (dissoc opts :token))} cfg)))
-       (get-permalink
-         {:dev/debt "we need to store message ids before this can be used"}
-         [_ opts]
+       (get-permalink [_ opts]
          (let [cfg @cfg-atom
                opts (resolve-channel cfg opts)]
            (execute {:method :get :path-template "/api/chat.getPermalink"
                      :token (:token opts)
                      :query-fn (fn [] (to-slack (dissoc opts :token)))} cfg)))))))
 
+(defn send-posts! [{:keys [posts channel-id token]}]
+  (run!
+   (fn [post]
+     (let [client (create-client {:token token
+                                  :channel-id channel-id})
+           section (cond
+                     (= (:content-type-id post) 1)
+                     (str ":clapper: *" (:feed-title post) " — " (:title post) "*\n")
+                     (= (:content-type-id post) 2)
+                     (str ":studio_microphone: *" (:feed-title post) " — " (:title post) "*\n")
+                     (= (:content-type-id post) 3)
+                     (str ":newspaper: *" (:feed-title post) " — " (:title post) "*\n"))
+
+           verb (cond
+                  (= (:content-type-id post) 1)
+                  "Watch"
+                  (= (:content-type-id post) 2)
+                  "Listen"
+                  (= (:content-type-id post) 3)
+                  "Read")
+
+           message (cond
+                     (= (:content-type-id post) 1)
+                     (str section
+                          (:stream-url post))
+                     (= (:content-type-id post) 2)
+                     (str section
+                          (util/clean (:info post)) "\n"
+                          (or (:url post)
+                              (:stream-url post)))
+                     (= (:content-type-id post) 3)
+                     (str section
+                          (util/clean (:info post)) "\n"
+                          (or (:url post)
+                              (:stream-url post))))]
+
+       (println
+        (send-post client {:title (:title post)
+                           :thumbnail (:thumbnail post)
+                           :url (or (:url post) (:stream-url post))
+                           :text message
+                           :action-text verb}))))
+   posts))
+
 (comment
   (def client (create-client {:token (conf/read-value :slack :test-token)
                               :channel-id "C0B6ZBDFV08"}))
+
+  (def ds (db.util/conn))
+  (def bundle-id 26)
+
+  (send-posts! {:posts (-> (bundles/get-outgoing-posts ds {:bundle-id bundle-id
+                                                           :type 2
+                                                           :seed (util/get-utc-timestamp-string)
+                                                           :limit 1})
+                           (:data))
+                :channel-id "C0B6ZBDFV08"
+                :token (conf/read-value :slack :test-token)})
 
   ;; channel-id from the client, unfurl-links defaults to true
   (send-message client {:text "Hello from Clojure!"})

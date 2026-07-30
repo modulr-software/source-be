@@ -3,7 +3,9 @@
             [clojure.data.json :as json]
             [clojure.string :as str]
             [source.config :as conf]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.db.util :as db.util]
+            [source.workers.bundles :as bundles]))
 
 (def ^:private default-base-url "https://whatsapp.modulrza.app")
 
@@ -406,44 +408,44 @@
                    :session (:session opts)
                    :body-fn (fn [_] (to-waha {:admins-only (:admins-only opts)}))} @cfg-atom))))))
 
-(defn whatsapp-post! [ds post bundle-id group-id]
-  (let [client (create-client)
-        section (cond
-                  (= (:content-type-id post) 1)
-                  (str "🎬 *" (:feed-title post) " — " (:title post) "*\n\n")
-                  (= (:content-type-id post) 2)
-                  (str "🎙 *" (:feed-title post) " — " (:title post) "*\n\n")
-                  (= (:content-type-id post) 3)
-                  (str "📰 *" (:feed-title post) " — " (:title post) "*\n\n"))
+(defn send-posts! [{:keys [posts group-id]}]
+  (run!
+   (fn [post]
+     (let [client (create-client)
+           section (cond
+                     (= (:content-type-id post) 1)
+                     (str "🎬 *" (:feed-title post) " — " (:title post) "*\n\n")
+                     (= (:content-type-id post) 2)
+                     (str "🎙 *" (:feed-title post) " — " (:title post) "*\n\n")
+                     (= (:content-type-id post) 3)
+                     (str "📰 *" (:feed-title post) " — " (:title post) "*\n\n"))
 
-        message (cond
-                  (= (:content-type-id post) 1)
-                  (str section
-                       (:stream-url post))
-                  (= (:content-type-id post) 2)
-                  (str section
-                       (or (:url post)
-                           (:stream-url post)))
-                  (= (:content-type-id post) 3)
-                  (str section
-                       (or (:url post)
-                           (:stream-url post))))]
+           message (cond
+                     (= (:content-type-id post) 1)
+                     (str section
+                          (:stream-url post))
+                     (= (:content-type-id post) 2)
+                     (str section
+                          (or (:url post)
+                              (:stream-url post)))
+                     (= (:content-type-id post) 3)
+                     (str section
+                          (or (:url post)
+                              (:stream-url post))))]
 
-    (if (util/unfurlable? (or (:url post) (:stream-url post)))
-      (send-text client {:chat-id group-id
-                         :text message
-                         :link-preview true
-                         :link-preview-high-quality true})
-      (send-text client {:chat-id group-id
-                         :text (str section (util/truncate (util/strip-tags (or (:info post) " ")) 600) "\n")
-                         :link-preview true
-                         :link-preview-high-quality true})
-      #_(send-telegram-photo!
-         channel-id
-         (:thumbnail post)
-         (str section (util/truncate (util/strip-tags (or (:info post) " ")) 600) "\n")))
-
-    #_(analytics/insert-bot-post! ds post bundle-id)))
+       (if (util/unfurlable? (or (:url post) (:stream-url post)))
+         (send-text client {:chat-id group-id
+                            :text message
+                            :link-preview true
+                            :link-preview-high-quality true})
+         (send-image client {:chat-id group-id
+                             :file {:mimetype "image/jpeg" :url (:thumbnail post)}
+                             :caption (str
+                                       section
+                                       (util/truncate (util/strip-tags (or (:info post) " ")) 600)
+                                       "\n\n"
+                                       (or (:url post) (:stream-url post)))}))))
+   posts))
 
 (defn group-id-by-name [group-name]
   (let [client (create-client)]
@@ -467,22 +469,19 @@
 
 (comment
 
+  (def ds (db.util/conn))
+  (def bundle-id 26)
+
+  (send-posts! {:posts (-> (bundles/get-outgoing-posts ds {:bundle-id bundle-id
+                                                           :seed (util/get-utc-timestamp-string)
+                                                           :limit 3})
+                           (:data))
+                :group-id (group-id-by-name "thisisatest")})
+
   (def client (create-client))
 
   (-> (group-id-by-name "thisisatest")
       (group-participant? "27607205781"))
-
-  (->> (get-group client {:group-id
-                          (->> (get-groups client {})
-                               (:body)
-                               (filterv #(= (:name %) "thisisatest"))
-                               (first)
-                               (:id)
-                               (:_serialized))})
-       (:body)
-       (:groupMetadata)
-       (:participants)
-       (filterv #(= (get-in % [:id :user]) "27607205781")))
 
   (send-text client {:chat-id "120363430117241162@g.us" :text "*is this bold?*"})
   (send-image client {:chat-id "11111111111@c.us"
