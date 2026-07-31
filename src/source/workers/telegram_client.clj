@@ -3,7 +3,9 @@
             [clojure.data.json :as json]
             [clojure.string :as str]
             [source.config :as conf]
-            [source.util :as util]))
+            [source.util :as util]
+            [source.db.util :as db.util]
+            [source.workers.bundles :as bundles]))
 
 (def ^:private default-base-url "https://api.telegram.org")
 
@@ -65,7 +67,11 @@
   (send-chat-action [this opts]
     "Tell the user something is happening on the bot's side. opts: :chat-id,
     :action, :message-thread-id, :business-connection-id. Returns true on
-    success."))
+    success.")
+  (get-chat [this opts]
+    "Get info about a chat. opts: :chat-id, :business-connection-id.
+    Returns the Chat object on success; throws if the chat-id is invalid
+    or the bot is not a member — use this to validate a chat-id."))
 
 ;; ─── Key conversion (kebab-case -> snake_case) ───
 
@@ -203,13 +209,13 @@
        (set-config! [_ cfg] (reset! cfg-atom cfg))
 
         ;; ─── Sending messages ───
-        (send-message [_ opts]
-          (let [cfg @cfg-atom
-                opts (resolve-chat cfg opts)]
-            (execute {:method :post :path-template "/sendMessage"
-                      :token (:token opts)
-                      :body-fn (body-from-opts (dissoc opts :token))} cfg)))
-        (send-photo [_ opts]
+       (send-message [_ opts]
+         (let [cfg @cfg-atom
+               opts (resolve-chat cfg opts)]
+           (execute {:method :post :path-template "/sendMessage"
+                     :token (:token opts)
+                     :body-fn (body-from-opts (dissoc opts :token))} cfg)))
+       (send-photo [_ opts]
          (let [cfg @cfg-atom
                opts (resolve-chat cfg opts)]
            (execute {:method :post :path-template "/sendPhoto"
@@ -244,10 +250,75 @@
                opts (resolve-chat cfg opts)]
            (execute {:method :post :path-template "/sendChatAction"
                      :token (:token opts)
+                     :body-fn (body-from-opts (dissoc opts :token))} cfg)))
+       (get-chat [_ opts]
+         (let [cfg @cfg-atom
+               opts (resolve-chat cfg opts)]
+           (execute {:method :post :path-template "/getChat"
+                     :token (:token opts)
                      :body-fn (body-from-opts (dissoc opts :token))} cfg)))))))
+
+(defn send-posts! [{:keys [posts chat-id]}]
+  (run!
+   (fn [post]
+     (let [client (create-client {:chat-id chat-id})
+           section (cond
+                     (= (:content-type-id post) 1)
+                     (str "🎬 <b>" (:feed-title post) " — " (:title post) "</b>\n\n")
+                     (= (:content-type-id post) 2)
+                     (str "🎙 <b>" (:feed-title post) " — " (:title post) "</b>\n\n")
+                     (= (:content-type-id post) 3)
+                     (str "📰 <b>" (:feed-title post) " — " (:title post) "</b>\n\n"))
+
+           verb (cond
+                  (= (:content-type-id post) 1)
+                  "Watch"
+                  (= (:content-type-id post) 2)
+                  "Listen"
+                  (= (:content-type-id post) 3)
+                  "Read")
+
+           reply-markup (when (or (:url post) (:stream-url post))
+                          {:inline_keyboard [[{:text verb
+                                               :url
+                                               (or (:url post) (:stream-url post))}]]})
+
+           message (cond
+                     (= (:content-type-id post) 1)
+                     (str section
+                          (:stream-url post))
+                     (= (:content-type-id post) 2)
+                     (str section
+                          (or (:url post)
+                              (:stream-url post)))
+                     (= (:content-type-id post) 3)
+                     (str section
+                          (or (:url post)
+                              (:stream-url post))))]
+
+       (if (util/unfurlable? (or (:url post) (:stream-url post)))
+         (send-message client {:chat-id chat-id
+                               :text message
+                               :parse-mode "HTML"
+                               :disable-web-page-preview false})
+         (send-photo client {:chat-id chat-id
+                             :photo (:thumbnail post)
+                             :caption (str section (util/truncate (util/strip-tags (or (:info post) " ")) 600) "\n")
+                             :parse-mode "HTML"
+                             :reply-markup reply-markup}))))
+   posts))
 
 (comment
   (def client (create-client {:chat-id "-5073615757"}))
+
+  (def ds (db.util/conn))
+  (def bundle-id 26)
+
+  (send-posts! {:posts (-> (bundles/get-outgoing-posts ds {:bundle-id bundle-id
+                                                           :seed (util/get-utc-timestamp-string)
+                                                           :limit 3})
+                           (:data))
+                :chat-id "-5073615757"})
 
   ;; chat-id from the client
   (send-message client {:text "Hello from Clojure!"
