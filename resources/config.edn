@@ -10,7 +10,8 @@
  :slack {:token #env SLACK_TOKEN
          :test-token #env SLACK_TEST_TOKEN}
  :telegram {:token #env TELEGRAM_TOKEN}
- :whatsapp {:token #env WHATSAPP_TOKEN
+ :whatsapp {:base-url #or [#env WHATSAPP_URL "https://whatsapp.modulrza.app"]
+            :token #env WHATSAPP_TOKEN
             :session #env WHATSAPP_SESSION}
  :email {:address #or [#env SUPPORT_ADDRESS "lee@wearesource.earth"]
          :username #env EMAIL_USERNAME

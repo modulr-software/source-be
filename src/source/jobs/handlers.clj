@@ -13,7 +13,8 @@
             [taoensso.telemere :as t]
             [source.workers.bundles :as bundles]
             [pg.core :as pg]
-            [source.services.analytics.interface :as analytics]))
+            [source.services.analytics.interface :as analytics]
+            [source.workers.whatsapp :as whatsapp]))
 
 (defmulti handler
   (fn [opts]
@@ -235,6 +236,9 @@
           (= platform "slack")
           (run! #(t/log! (slack/slack-post! ds % bundle-id channel-id)) posts)
           (= platform "telegram")
-          (run! #(t/log! (telegram/telegram-post! ds % bundle-id channel-id)) posts)))
+          (run! #(t/log! (telegram/telegram-post! ds % bundle-id channel-id)) posts)
+          (= platform "whatsapp")
+          (do (whatsapp/send-posts! {:posts posts :group-id channel-id})
+              (run! #(analytics/insert-bot-post! ds % bundle-id) posts))))
       (catch Exception e (t/log! {:level :error
                                   :msg (str "Failed to post to integration channel: " e)}) :fail))))

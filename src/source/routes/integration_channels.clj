@@ -6,6 +6,7 @@
              [source.db.honey :as hon]
              [source.workers.schemas :as schemas]
              [source.workers.integration-channels :as channels]
+             [source.workers.whatsapp :as whatsapp]
              [source.jobs.core :as jobs]
              [source.util :as util]))
 
@@ -45,15 +46,25 @@
                400 {:body (api/response-schema)}}}
 
   [{:keys [ds js body path-params] :as _request}]
-  (let [{:keys [platform channel-id thread-id post-interval posts]} body
-        ;;TODO: validate input data
-        channel (channels/create-channel! ds js {:platform platform
-                                                 :bundle-id (:id path-params)
-                                                 :channel-id channel-id
-                                                 :thread-id thread-id
-                                                 :post-interval post-interval
-                                                 :posts posts})]
-    (res/response channel)))
+  (let [{:keys [platform channel-id thread-id post-interval posts phone-number]} body
+
+        channel-id (if (= platform "whatsapp")
+                     (whatsapp/group-id-by-name channel-id)
+                     channel-id)
+        valid-group-id (when (= platform "whatsapp")
+                         (whatsapp/group-participant? channel-id phone-number))
+
+        channel (when (or (and (not (= platform "whatsapp")) channel-id) valid-group-id)
+                  (channels/create-channel! ds js {:platform platform
+                                                   :bundle-id (:id path-params)
+                                                   :channel-id channel-id
+                                                   :thread-id thread-id
+                                                   :post-interval post-interval
+                                                   :posts posts}))]
+    (if (some? channel)
+      (res/response channel)
+      (-> (res/response {:message "post destination not found"})
+          (res/status 400)))))
 
 (defn update-channel
   {:summary "Update a channel by ID"

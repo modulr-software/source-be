@@ -7,8 +7,6 @@
             [source.db.util :as db.util]
             [source.workers.bundles :as bundles]))
 
-(def ^:private default-base-url "https://whatsapp.modulrza.app")
-
 (defprotocol WhatsAppClient
   "A WhatsApp HTTP client backed by a server speaking the WAHA HTTP API.
 
@@ -241,7 +239,7 @@
   Pings the server on creation and throws if it is not reachable."
   ([] (create-client {}))
   ([opts]
-   (let [initial-cfg (merge {:base-url default-base-url
+   (let [initial-cfg (merge {:base-url (conf/read-value :whatsapp :base-url)
                              :api-key  (conf/read-value :whatsapp :token)
                              :session  (conf/read-value :whatsapp :session)}
                             opts)
@@ -442,7 +440,7 @@
                              :file {:mimetype "image/jpeg" :url (:thumbnail post)}
                              :caption (str
                                        section
-                                       (util/truncate (util/strip-tags (or (:info post) " ")) 600)
+                                       (util/clean (or (:info post) " "))
                                        "\n\n"
                                        (or (:url post) (:stream-url post)))}))))
    posts))
@@ -480,8 +478,8 @@
 
   (def client (create-client))
 
-  (-> (group-id-by-name "thisisatest")
-      (group-participant? "27607205781"))
+  (-> (group-id-by-name "Cluck cluck clan")
+      (group-participant? "+27842548270"))
 
   (send-text client {:chat-id "120363430117241162@g.us" :text "*is this bold?*"})
   (send-image client {:chat-id "11111111111@c.us"
