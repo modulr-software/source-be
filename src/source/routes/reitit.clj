@@ -16,6 +16,7 @@
             [source.routes.google-redirect :as google-redirect]
             [source.routes.google-user :as google-user]
             [source.routes.slack :as slack]
+            [source.routes.whatsapp :as whatsapp]
             [source.routes.admin :as admin]
             [source.routes.authorized :as authorized]
             [source.routes.business :as business]
@@ -216,6 +217,11 @@
       ["/:id/posts/:post-id/prune" (post post-prune/post)]
       ["/:id/categories" (-> (get feed-categories/get)
                              (post feed-categories/post))]]
+
+     ["/whatsapp" {:tags #{"whatsapp"}}
+      ["/session" (get whatsapp/session)]
+      ["/session/start" (get whatsapp/start-session)]
+      ["/session/qr" (get whatsapp/qr)]]
 
      ["/analytics" {:tags #{"analytics"}}
 
