@@ -116,7 +116,37 @@
     "Get whether only admins can send messages. opts: :group-id, :session")
   (set-messages-admin-only [this opts]
     "Set whether only admins can send messages. opts: :group-id,
-    :admins-only, :session"))
+    :admins-only, :session")
+
+  ;; ─── Session management ───
+  (get-sessions [this opts]
+    "List all sessions. opts: :expand (vector, currently #{\"apps\"}),
+    :all (bool, include STOPPED), :session")
+  (get-session [this opts]
+    "Get one session's info. opts: :expand, :session")
+  (get-me [this opts]
+    "Get info about the authenticated account. opts: :session")
+  (create-session [this opts]
+    "Create (and optionally start) a session. opts: :name, :start, :config,
+    :apps, :session")
+  (update-session [this opts]
+    "Update a session's config/apps. opts: :config, :apps, :session")
+  (delete-session [this opts]
+    "Stop, logout and delete a session. Idempotent. opts: :session")
+  (start-session [this opts]
+    "Start a session (must exist). Idempotent. opts: :session")
+  (stop-session [this opts]
+    "Stop a session. Idempotent. opts: :session")
+  (logout-session [this opts]
+    "Logout a session; restarts if it was not STOPPED. opts: :session")
+  (restart-session [this opts]
+    "Restart a session. opts: :session")
+
+  ;; ─── Pairing ───
+  (get-qr [this opts]
+    "Get QR code for pairing. opts: :format (\"image\" default, or \"raw\"),
+    :session. Returns the raw http-kit response map; :body is a PNG byte
+    array for :format \"image\", or parsed JSON for \"raw\"."))
 
 ;; ─── Key conversion (kebab-case -> WAHA mixed case) ───
 
@@ -404,7 +434,59 @@
                    :path-template (str "/api/{session}/groups/" (:group-id opts)
                                        "/settings/security/messages-admin-only")
                    :session (:session opts)
-                   :body-fn (fn [_] (to-waha {:admins-only (:admins-only opts)}))} @cfg-atom))))))
+                   :body-fn (fn [_] (to-waha {:admins-only (:admins-only opts)}))} @cfg-atom))
+
+       ;; ─── Session management ───
+       (get-sessions [_ opts]
+         (execute {:method :get :path-template "/api/sessions"
+                   :session (:session opts)
+                   :query-fn (fn [_] (to-waha (dissoc opts :session)))} @cfg-atom))
+       (get-session [_ opts]
+         (execute {:method :get
+                   :path-template "/api/sessions/{session}"
+                   :session (:session opts)
+                   :query-fn (fn [_] (to-waha (dissoc opts :session)))} @cfg-atom))
+       (get-me [_ opts]
+         (execute {:method :get
+                   :path-template "/api/sessions/{session}/me"
+                   :session (:session opts)} @cfg-atom))
+       (create-session [_ opts]
+         (execute {:method :post :path-template "/api/sessions"
+                   :session (:session opts)
+                   :body-fn (fn [_] (to-waha (dissoc opts :session)))} @cfg-atom))
+       (update-session [_ opts]
+         (execute {:method :put
+                   :path-template "/api/sessions/{session}"
+                   :session (:session opts)
+                   :body-fn (fn [_] (to-waha (dissoc opts :session)))} @cfg-atom))
+       (delete-session [_ opts]
+         (execute {:method :delete
+                   :path-template "/api/sessions/{session}"
+                   :session (:session opts)} @cfg-atom))
+       (start-session [_ opts]
+         (execute {:method :post
+                   :path-template "/api/sessions/{session}/start"
+                   :session (:session opts)} @cfg-atom))
+       (stop-session [_ opts]
+         (execute {:method :post
+                   :path-template "/api/sessions/{session}/stop"
+                   :session (:session opts)} @cfg-atom))
+       (logout-session [_ opts]
+         (execute {:method :post
+                   :path-template "/api/sessions/{session}/logout"
+                   :session (:session opts)} @cfg-atom))
+       (restart-session [_ opts]
+         (execute {:method :post
+                   :path-template "/api/sessions/{session}/restart"
+                   :session (:session opts)} @cfg-atom))
+
+       ;; ─── Pairing ───
+       (get-qr [_ opts]
+         (execute {:method :get
+                   :path-template "/api/{session}/auth/qr"
+                   :session (:session opts)
+                   :query-fn (fn [_] {:format (or (:format opts) "image")})}
+                  @cfg-atom))))))
 
 (defn send-posts! [{:keys [posts group-id]}]
   (run!
@@ -465,8 +547,13 @@
     (when (map? user)
       true)))
 
-(comment
+(defn session-status []
+  (let [client (create-client)]
+    (->> (get-session client {})
+         (:body)
+         (:status))))
 
+(comment
   (def ds (db.util/conn))
   (def bundle-id 26)
 
@@ -499,6 +586,23 @@
   (get-invite-code client {:group-id "123123123@g.us"})
   (join-group client {:code "https://chat.whatsapp.com/1234567890abcdef"})
   (set-messages-admin-only client {:group-id "123123123@g.us" :admins-only true})
+
+  ;; ─── Session management ───
+  (get-sessions client nil)
+  (get-sessions client {:all true :expand ["apps"]})
+  (get-session client {:session "snource"})
+  (get-me client {:session "default"})
+  (create-session client {:name "default" :start true})
+  (update-session client {:session "default" :config {:debug true}})
+  (delete-session client {:session "default"})
+  (start-session client {:session "default"})
+  (stop-session client {:session "default"})
+  (logout-session client {:session "default"})
+  (restart-session client {:session "default"})
+
+  ;; ─── Pairing ───
+  (get-qr client {:session "snource"})                  ; PNG image bytes
+  (get-qr client {:session "default" :format "raw"})    ; JSON QR value
 
   (get-groups client {:sort-by "subject" :session "other"})
 

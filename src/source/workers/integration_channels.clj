@@ -3,14 +3,7 @@
             [source.jobs.core :as jobs]
             [source.jobs.handlers :as handlers]
             [source.util :as util]
-            [congest.jobs :as congest]
-            [source.workers.integration-channels.interface :as intchan]
-            [source.workers.integration-channels.whatsapp-channel.interface :as wachan]
-            [source.workers.integration-channels.slack-channel.interface :as slackchan]
-            [source.workers.integration-channels.telegram-channel.interface :as telechan]
-            [source.db.util :as db.util]
-            [source.workers.whatsapp :as wa]
-            [source.config :as conf]))
+            [congest.jobs :as congest]))
 
 (defn create-channel!
   [ds js {:keys [platform bundle-id access-token channel-id thread-id post-interval posts]}]
@@ -42,7 +35,13 @@
     channel))
 
 (comment
-  (require '[source.workers.bundles :as bundles])
+  (require '[source.workers.bundles :as bundles]
+           '[source.db.util :as db.util]
+           '[source.config :as conf]
+           '[source.workers.integration-channels.interface :as intchan]
+           '[source.workers.integration-channels.whatsapp-channel.interface :as wachan]
+           '[source.workers.integration-channels.slack-channel.interface :as slackchan]
+           '[source.workers.integration-channels.telegram-channel.interface :as telechan])
 
   (let [bundle-id 26
         ds (db.util/conn)
